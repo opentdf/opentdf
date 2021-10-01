@@ -1,0 +1,202 @@
+global:
+  postgresql:
+    postgresqlUsername: postgres
+    postgresqlPassword: mydbapassword
+
+keycloak:
+#  configuration https://github.com/codecentric/helm-charts/tree/master/charts/keycloak#configuration
+  image:
+    repository: virtru/tdf-keycloak
+    tag: "f224f622a4ad12f92db6902f20b3eecdf9d04a28"
+  postgresql:
+    enabled: false
+    postgresqlUsername: postgres
+    postgresqlPassword: mydbapassword
+    postgresqlDatabase: keycloak_database
+  extraEnv: |
+    - name: KEYCLOAK_USER
+      value: technoking
+    - name: KEYCLOAK_PASSWORD
+      value: mykeycloakpassword
+    - name: ATTRIBUTE_PROVIDER_URL
+      value: http://opentdf-claims:5000
+  ingress:
+    enabled: true
+    hosts:
+      - paths:
+          - path: /keycloak(/|$)(.*)
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+postgresql:
+#  configuration https://github.com/bitnami/charts/tree/master/bitnami/postgresql/#parameters
+  image:
+    debug: true
+  initdbUser: postgres
+  initdbPassword: mydbapassword
+  initdbScripts:
+    init.sql: |
+      -- keycloak_database
+      CREATE DATABASE keycloak_database;
+
+      -- tdf_database
+      CREATE DATABASE tdf_database;
+      \connect tdf_database;
+
+      -- performs nocase checks
+      CREATE COLLATION IF NOT EXISTS NOCASE
+      (
+          provider = 'icu',
+          locale = 'und-u-ks-level2'
+      );
+
+      CREATE SCHEMA IF NOT EXISTS tdf_attribute;
+      CREATE TABLE IF NOT EXISTS tdf_attribute.attribute_namespace
+      (
+          id   SERIAL PRIMARY KEY,
+          name VARCHAR COLLATE NOCASE NOT NULL UNIQUE
+      );
+
+      CREATE TABLE IF NOT EXISTS tdf_attribute.attribute
+      (
+          id           SERIAL PRIMARY KEY,
+          namespace_id INTEGER NOT NULL REFERENCES tdf_attribute.attribute_namespace,
+          state        INTEGER NOT NULL,
+          rule         VARCHAR NOT NULL,
+          name         VARCHAR NOT NULL UNIQUE, -- ??? COLLATE NOCASE
+          description  VARCHAR,
+          values       TEXT[]
+      );
+
+      CREATE SCHEMA IF NOT EXISTS tdf_entitlement;
+      CREATE TABLE IF NOT EXISTS tdf_entitlement.entity_attribute
+      (
+          id        SERIAL PRIMARY KEY,
+          entity_id VARCHAR NOT NULL,
+          namespace VARCHAR NOT NULL,
+          name      VARCHAR NOT NULL,
+          value     VARCHAR NOT NULL
+      );
+      CREATE INDEX entity_id_index ON tdf_entitlement.entity_attribute (entity_id);
+
+      CREATE SCHEMA IF NOT EXISTS tdf_entity;
+      CREATE TABLE IF NOT EXISTS tdf_entity.entity
+      (
+          id        SERIAL PRIMARY KEY,
+          is_person BOOLEAN NOT NULL,
+          state     INTEGER,
+          entity_id VARCHAR,
+          name      VARCHAR,
+          email     VARCHAR
+      );
+
+      -- tdf_attribute
+      CREATE ROLE tdf_attribute_manager WITH LOGIN PASSWORD 'myPostgresPassword';
+      GRANT USAGE ON SCHEMA tdf_attribute TO tdf_attribute_manager;
+      GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_attribute TO tdf_attribute_manager;
+      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_attribute TO tdf_attribute_manager;
+
+      -- tdf_entitlement
+      CREATE ROLE tdf_entitlement_manager WITH LOGIN PASSWORD 'myPostgresPassword';
+      GRANT USAGE ON SCHEMA tdf_entitlement TO tdf_entitlement_manager;
+      GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entitlement TO tdf_entitlement_manager;
+      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_entitlement TO tdf_entitlement_manager;
+
+      -- service_entity_object
+      CREATE ROLE tdf_entitlement_reader WITH LOGIN PASSWORD 'myPostgresPassword';
+      GRANT USAGE ON SCHEMA tdf_entitlement TO tdf_entitlement_reader;
+      GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entitlement TO tdf_entitlement_reader;
+      GRANT SELECT ON tdf_entitlement.entity_attribute TO tdf_entitlement_reader;
+
+      -- tdf_entity
+      CREATE ROLE tdf_entity_manager WITH LOGIN PASSWORD 'myPostgresPassword';
+      GRANT USAGE ON SCHEMA tdf_entity TO tdf_entity_manager;
+      GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entity TO tdf_entity_manager;
+      GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_entity TO tdf_entity_manager;
+
+abacus:
+  ingress:
+    enabled: true
+    hosts:
+      - paths:
+          - path: /abacus(/|$)(.*)
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+attributes:
+  postgres:
+    host: opentdf-postgresql
+    port: 5432
+    user: tdf_attribute_manager
+    password: bXlQb3N0Z3Jlc1Bhc3N3b3Jk
+    database: tdf_database
+    schema: tdf_attribute
+  ingress:
+    enabled: true
+    hosts:
+      - paths:
+          - path: /attributes(/|$)(.*)
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+claims:
+  image:
+    repository: virtru/mock-tdf-claims-service
+    tag: "b7651f6569faba693bbc33db3dca674566c12509"
+  service:
+    port: 5000
+  postgres:
+    host: opentdf-postgresql
+    port: 5432
+    user: tdf_entitlement_reader
+    password: bXlQb3N0Z3Jlc1Bhc3N3b3Jk
+    database: tdf_database
+    schema: tdf_entitlement
+  ingress:
+    enabled: true
+    hosts:
+      - paths:
+          - path: /claims(/|$)(.*)
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+entitlement:
+  postgres:
+    host: opentdf-postgresql
+    port: 5432
+    user: tdf_entitlement_manager
+    password: bXlQb3N0Z3Jlc1Bhc3N3b3Jk
+    database: tdf_database
+    schema: tdf_entitlement
+  ingress:
+    enabled: true
+    hosts:
+      - paths:
+          - path: /entitlement(/|$)(.*)
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+key-access:
+  endpoints:
+    easHost: http://opentdf-attributes:4020
+    statsdHost: opentdf-statsd
+    oidcPubkeyEndpoint: http://opentdf-keycloak-http
+  ingress:
+    enabled: true
+    hosts:
+      - paths:
+          - path: /kas(/|$)(.*)
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2

@@ -1,0 +1,11 @@
+name: opentdf-keycloak-bootstrap
+replicaCount: 1
+image:
+  name: "virtru/keycloak-bootstrap:206c5bd4eaed795610c2fd26322df72ac67ad89c"
+keycloak:
+  hostname: http://opentdf-keycloak-http
+  clientId: tdf-client
+  clientSecret: 123-456
+  username: technoking
+  password: mykeycloakpassword
+  realm: tdf

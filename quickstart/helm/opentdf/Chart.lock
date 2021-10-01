@@ -1,0 +1,33 @@
+dependencies:
+- name: abacus
+  repository: ""
+  version: 0.1.0
+- name: attributes
+  repository: ""
+  version: 0.1.0
+- name: claims
+  repository: ""
+  version: 0.1.0
+- name: entitlement
+  repository: ""
+  version: 0.1.0
+- name: key-access
+  repository: ""
+  version: 0.1.0
+- name: keycloak-bootstrap
+  repository: ""
+  version: 0.1.6
+- name: keycloak
+  repository: https://codecentric.github.io/helm-charts
+  version: 15.0.2
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 10.9.5
+- name: statsd
+  repository: https://keyporttech.github.io/helm-charts
+  version: 0.1.19
+- name: ingress-nginx
+  repository: https://kubernetes.github.io/ingress-nginx
+  version: 4.0.1
+digest: sha256:91cf3f6b448a9e97cce88c6d24c2c8d479c6236efaf959d54debda06a561a7cb
+generated: "2021-09-15T10:12:12.166027-04:00"

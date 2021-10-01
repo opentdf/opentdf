@@ -1,0 +1,11 @@
+apiVersion: v2
+name: keycloak-bootstrap
+description: Keycloak Bootstrap Application
+
+type: application
+
+version: 0.1.6
+appVersion: 0.3.4
+maintainers:
+  - name: Virtru
+icon: https://inxmad4bw31barrx17wec71c-wpengine.netdna-ssl.com/wp-content/uploads/2018/12/o_efa1e48d0db5ebc8-4.png

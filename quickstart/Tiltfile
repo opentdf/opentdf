@@ -1,0 +1,20 @@
+# Tiltfile for development
+# https://docs.tilt.dev/api.html
+
+# helm
+k8s_yaml(helm('helm/opentdf', 'opentdf'), allow_duplicates=True)
+
+# resource dependencies
+k8s_resource('opentdf-attributes', resource_deps=['opentdf-postgresql'])
+k8s_resource('opentdf-entitlement', resource_deps=['opentdf-postgresql'])
+k8s_resource('opentdf-claims', resource_deps=['opentdf-postgresql'])
+k8s_resource('opentdf-keycloak', resource_deps=['opentdf-postgresql'], port_forwards='8443', links=link('https://localhost:8443/auth'))
+k8s_resource('opentdf-keycloak-bootstrap', resource_deps=['opentdf-keycloak'])
+k8s_resource('opentdf-key-access', resource_deps=['opentdf-attributes'])
+
+# port forward
+k8s_resource('opentdf-postgresql', port_forwards='5432')
+k8s_resource('opentdf-claims', port_forwards=['4010','5000'])
+k8s_resource('opentdf-attributes', port_forwards='4020')
+k8s_resource('opentdf-entitlement', port_forwards='4030')
+k8s_resource('opentdf-ingress-nginx-controller', port_forwards='8080:80')
