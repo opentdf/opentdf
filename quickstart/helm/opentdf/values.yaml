@@ -4,31 +4,38 @@ global:
     postgresqlPassword: mydbapassword
 
 keycloak:
-#  configuration https://github.com/codecentric/helm-charts/tree/master/charts/keycloak#configuration
   image:
     repository: virtru/tdf-keycloak
-    tag: "f224f622a4ad12f92db6902f20b3eecdf9d04a28"
+    tag: "54fe56afc39057361c1c46249a0f8abdbf051abe"
+#  https://artifacthub.io/packages/helm/bitnami/keycloak
+  auth:
+    createAdminUser: true
+    adminUser: technoking
+    adminPassword: mykeycloakpassword
   postgresql:
     enabled: false
-    postgresqlUsername: postgres
-    postgresqlPassword: mydbapassword
+    postgresqlUsername:	postgres
+    postgresqlPassword:	mydbapassword
     postgresqlDatabase: keycloak_database
-  extraEnv: |
-    - name: KEYCLOAK_USER
-      value: technoking
-    - name: KEYCLOAK_PASSWORD
-      value: mykeycloakpassword
+  externalDatabase:
+    host: opentdf-postgresql
+    user: postgres
+    password: mydbapassword
+    database: keycloak_database
+  extraEnvVars:
     - name: ATTRIBUTE_PROVIDER_URL
       value: http://opentdf-claims:5000
+    - name: KEYCLOAK_EXTRA_ARGS
+      value: "-Dkeycloak.frontendUrl=http://localhost:65432/keycloak/auth"
   ingress:
     enabled: true
-    hosts:
-      - paths:
-          - path: /keycloak(/|$)(.*)
-            pathType: Prefix
     annotations:
       kubernetes.io/ingress.class: nginx
       nginx.ingress.kubernetes.io/rewrite-target: /$2
+    path: /keycloak(/|$)(.*)
+    hostname: localhost
+#    tls: true
+#    certManager: true
 
 postgresql:
 #  configuration https://github.com/bitnami/charts/tree/master/bitnami/postgresql/#parameters
@@ -63,7 +70,7 @@ postgresql:
       (
           id           SERIAL PRIMARY KEY,
           namespace_id INTEGER NOT NULL REFERENCES tdf_attribute.attribute_namespace,
-          state        INTEGER NOT NULL,
+          state        VARCHAR NOT NULL,
           rule         VARCHAR NOT NULL,
           name         VARCHAR NOT NULL UNIQUE, -- ??? COLLATE NOCASE
           description  VARCHAR,
@@ -120,12 +127,15 @@ abacus:
   ingress:
     enabled: true
     hosts:
-      - paths:
-          - path: /abacus(/|$)(.*)
+      - host: localhost
+        paths:
+#          - path: /abacus(/|$)(.*)
+#            pathType: Prefix
+          - path: /
             pathType: Prefix
     annotations:
       kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/rewrite-target: /$2
+#      nginx.ingress.kubernetes.io/rewrite-target: /$2
 
 attributes:
   postgres:
@@ -138,7 +148,8 @@ attributes:
   ingress:
     enabled: true
     hosts:
-      - paths:
+      - host: localhost
+        paths:
           - path: /attributes(/|$)(.*)
             pathType: Prefix
     annotations:
@@ -161,7 +172,8 @@ claims:
   ingress:
     enabled: true
     hosts:
-      - paths:
+      - host: localhost
+        paths:
           - path: /claims(/|$)(.*)
             pathType: Prefix
     annotations:
@@ -179,7 +191,8 @@ entitlement:
   ingress:
     enabled: true
     hosts:
-      - paths:
+      - host: localhost
+        paths:
           - path: /entitlement(/|$)(.*)
             pathType: Prefix
     annotations:
@@ -190,11 +203,12 @@ key-access:
   endpoints:
     easHost: http://opentdf-attributes:4020
     statsdHost: opentdf-statsd
-    oidcPubkeyEndpoint: http://opentdf-keycloak-http
+    oidcPubkeyEndpoint: http://opentdf-keycloak
   ingress:
     enabled: true
     hosts:
-      - paths:
+      - host: localhost
+        paths:
           - path: /kas(/|$)(.*)
             pathType: Prefix
     annotations:
