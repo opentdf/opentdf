@@ -129,15 +129,14 @@ abacus:
     hosts:
       - host: localhost
         paths:
-#          - path: /abacus(/|$)(.*)
-#            pathType: Prefix
           - path: /
             pathType: Prefix
     annotations:
       kubernetes.io/ingress.class: nginx
-#      nginx.ingress.kubernetes.io/rewrite-target: /$2
 
 attributes:
+  rootPath: /attributes
+  publicName: "Attribute Authority"
   postgres:
     host: opentdf-postgresql
     port: 5432
@@ -145,6 +144,13 @@ attributes:
     password: bXlQb3N0Z3Jlc1Bhc3N3b3Jk
     database: tdf_database
     schema: tdf_attribute
+  oidc:
+    clientId: attributes
+    clientSecret: myclientsecret
+    realm: tdf
+    configurationUrl: http://opentdf-keycloak/auth/realms/tdf/.well-known/openid-configuration
+    authorizationUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/auth
+    tokenUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/token
   ingress:
     enabled: true
     hosts:
