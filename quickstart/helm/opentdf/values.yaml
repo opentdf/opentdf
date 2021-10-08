@@ -14,8 +14,8 @@ keycloak:
     adminPassword: mykeycloakpassword
   postgresql:
     enabled: false
-    postgresqlUsername:	postgres
-    postgresqlPassword:	mydbapassword
+    postgresqlUsername: postgres
+    postgresqlPassword: mydbapassword
     postgresqlDatabase: keycloak_database
   externalDatabase:
     host: opentdf-postgresql
