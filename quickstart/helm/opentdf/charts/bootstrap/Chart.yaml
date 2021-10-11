@@ -3,4 +3,7 @@ name: bootstrap
 description: TDF bootstrap job
 type: application
 version: 0.1.0
-appVersion: "596f654b2cc22590adae9eea3c22596941e2a537"
+appVersion: "ef88234b8155a1aa43d15030b55e42a7abc9f83a"
+maintainers:
+  - name: Virtru
+icon: https://inxmad4bw31barrx17wec71c-wpengine.netdna-ssl.com/wp-content/uploads/2018/12/o_efa1e48d0db5ebc8-4.png
