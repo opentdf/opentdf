@@ -19,8 +19,8 @@ dependencies:
     version: 0.1.0
   - name: key-access
     version: 0.1.0
-  - name: keycloak-bootstrap
-    version: 0.1.6
+  - name: bootstrap
+    version: 0.1.0
   - name: keycloak
     repository: https://charts.bitnami.com/bitnami
     version: 5.1.1

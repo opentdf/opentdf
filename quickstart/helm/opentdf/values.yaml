@@ -3,6 +3,19 @@ global:
     postgresqlUsername: postgres
     postgresqlPassword: mydbapassword
 
+bootstrap:
+  name: opentdf-bootstrap
+  attributes:
+    hostname: http://localhost:65432/attributes/docs
+  entitlement:
+    hostname: http://localhost:65432/entitlement/docs
+  keycloak:
+    hostname: http://opentdf-keycloak
+    clientId: tdf-client
+    clientSecret: 123-456
+    username: technoking
+    password: mykeycloakpassword
+    realm: tdf
 keycloak:
   image:
     repository: virtru/tdf-keycloak
@@ -23,6 +36,8 @@ keycloak:
     password: mydbapassword
     database: keycloak_database
   extraEnvVars:
+    - name: KEYCLOAK_LOG_LEVEL
+      value: DEBUG
     - name: ATTRIBUTE_PROVIDER_URL
       value: http://opentdf-claims:5000
     - name: KEYCLOAK_EXTRA_ARGS
@@ -137,6 +152,7 @@ abacus:
 attributes:
   rootPath: /attributes
   publicName: "Attribute Authority"
+  logLevel: DEBUG
   postgres:
     host: opentdf-postgresql
     port: 5432
@@ -145,9 +161,11 @@ attributes:
     database: tdf_database
     schema: tdf_attribute
   oidc:
-    clientId: attributes
+    clientId: tdf-attributes
     clientSecret: myclientsecret
     realm: tdf
+#    trailing / is required
+    serverUrl: http://opentdf-keycloak/auth/
     configurationUrl: http://opentdf-keycloak/auth/realms/tdf/.well-known/openid-configuration
     authorizationUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/auth
     tokenUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/token

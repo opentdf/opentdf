@@ -12,7 +12,7 @@ spec:
       containers:
         - name: {{ .Values.name }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          image: {{ .Values.image.name }}
+          image: {{ .Values.image.repository }}:{{ .Chart.AppVersion }}
           env:
             - name: keycloak_hostname
               value: {{ .Values.keycloak.hostname }}
@@ -26,6 +26,10 @@ spec:
               value: {{ .Values.keycloak.clientSecret }}
             - name: realm
               value: {{ .Values.keycloak.realm }}
+            - name: ATTRIBUTE_AUTHORITY_HOST
+              value: {{ .Values.attributes.hostname }}
+            - name: ENTITLEMENT_HOST
+              value: {{ .Values.entitlement.hostname }}
       restartPolicy: Never
       {{ if .Values.image.pullSecret }}
       imagePullSecrets:

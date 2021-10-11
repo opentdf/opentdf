@@ -1,0 +1,16 @@
+name: bootstrap
+replicaCount: 1
+image:
+  repository: virtru/tdf-keycloak-bootstrap
+  pullPolicy: IfNotPresent
+keycloak:
+  hostname: http://opentdf-keycloak
+  clientId: tdf-client
+  clientSecret: 123-456
+  username: technoking
+  password: mykeycloakpassword
+  realm: tdf
+attributes:
+  hostname: http://opentdf-attributes
+entitlement:
+  hostname: http://opentdf-entitlement
