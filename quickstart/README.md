@@ -12,18 +12,22 @@ A quick (less than 10 minutes) and easy process to protect data with TDF using t
 
 - Install [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
   - On macOs via Homebrew: `brew install kubectl`
+  - On Linux or WSL2 for Windows: `curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && chmod +x kubectl && sudo mv kubectl /usr/local/bin/kubectl`
   - Others see https://kubernetes.io/docs/tasks/tools/
 
 - Install [kind](https://kind.sigs.k8s.io/)
   - On macOS via Homebrew: `brew install kind`
+  - On Linux or WSL2 for Windows: `curl -Lo kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64 && chmod +x kind && sudo mv kind /usr/local/bin/kind`
   - Others see https://kind.sigs.k8s.io/docs/user/quick-start/#installation
 
 - Install [helm](https://helm.sh/)
   - On macOS via Homebrew: `brew install helm`
+  - On Linux or WSL2 for Windows: `curl -LO https://get.helm.sh/helm-v3.7.0-linux-amd64.tar.gz && tar -zxvf helm-v3.0.0-linux-amd64.tar.gz && chmod +x linux-amd64/helm && sudo mv linux-amd64/helm /usr/local/bin/helm`
   - Others see https://helm.sh/docs/intro/install/
 
 - Install [Tilt](https://tilt.dev/)
   - On macOS via Homebrew: `brew install tilt-dev/tap/tilt`
+  - On Linux or WSL2 for Windows: `curl -fsSL https://github.com/tilt-dev/tilt/releases/download/v0.22.9/tilt.0.22.9.linux.x86_64.tar.gz | tar -xzv tilt && sudo mv tilt /usr/local/bin/tilt
   - Others see https://docs.tilt.dev/install.html
 
 ### Pull repository
