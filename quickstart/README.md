@@ -67,7 +67,7 @@ open a more detailed services dashboard.
 ### Install client library
 
 ```shell
-pip3 install --upgrade tdf3sdk
+pip3 install --upgrade opentdf
 ```
 
 ### Execute client to encrypt and decrypt
@@ -88,7 +88,7 @@ Report errors to <MAILTO:openstack-team@virtru.com>
 ```shell
 tilt down
 kind delete cluster --name opentdf
-pip3 uninstall tdf3sdk
+pip3 uninstall opentdf
 ```
 
 ## Overview
@@ -97,7 +97,7 @@ pip3 uninstall tdf3sdk
 
 ### Client
 
-See [opentdf/client](https://github.com/opentdf/client) page.
+See [the opentdf/client readme](https://github.com/opentdf/client) for details about how to configure a Python or C++ application to use opentdf.
 
 ### Services
 
