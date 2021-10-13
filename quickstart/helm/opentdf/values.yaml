@@ -8,9 +8,9 @@ bootstrap:
   attributes:
 #    hostname: http://localhost:65432
 #    FIXME update containers.keycloak_bootstrap.bootstrap.create_client_tdf_client
-    hostname: http://localhost:65432/attributes/docs
+    hostname: http://localhost:65432
   entitlement:
-    hostname: http://localhost:65432/entitlement/docs
+    hostname: http://localhost:65432
   keycloak:
     hostname: http://opentdf-keycloak
     clientId: tdf-client
@@ -212,6 +212,9 @@ claims:
       nginx.ingress.kubernetes.io/rewrite-target: /$2
 
 entitlement:
+  rootPath: /entitlement
+  publicName: "Entitlement"
+  logLevel: DEBUG
   postgres:
     host: opentdf-postgresql
     port: 5432
@@ -219,6 +222,15 @@ entitlement:
     password: bXlQb3N0Z3Jlc1Bhc3N3b3Jk
     database: tdf_database
     schema: tdf_entitlement
+  oidc:
+    clientId: tdf-entitlement
+    clientSecret: myclientsecret
+    realm: tdf
+#    trailing / is required
+    serverUrl: http://opentdf-keycloak/auth/
+    configurationUrl: http://opentdf-keycloak/auth/realms/tdf/.well-known/openid-configuration
+    authorizationUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/auth
+    tokenUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/token
   ingress:
     enabled: true
     hosts:
