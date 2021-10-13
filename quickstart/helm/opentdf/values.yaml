@@ -6,6 +6,8 @@ global:
 bootstrap:
   name: opentdf-bootstrap
   attributes:
+#    hostname: http://localhost:65432
+#    FIXME update containers.keycloak_bootstrap.bootstrap.create_client_tdf_client
     hostname: http://localhost:65432/attributes/docs
   entitlement:
     hostname: http://localhost:65432/entitlement/docs
@@ -16,6 +18,7 @@ bootstrap:
     username: keycloakadmin
     password: mykeycloakpassword
     realm: tdf
+
 keycloak:
   image:
     repository: virtru/tdf-keycloak
