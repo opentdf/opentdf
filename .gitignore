@@ -1,3 +1,25 @@
+*.deb
+*.egg-info
+*.log
+*.pyc
+*.sqlite
+*.swp
+*.tmp
+*.DS_Store
+*~
+node_modules
+.DS_Store
+.pytest_cache
+.scannerwork
+.venv*
+.vscode
+.run
+.build
+__pycache__
+**/.idea/
+*.pem
+/.helm/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <style>
+      body {
+        background-color: #FFF;
+        font-family: 'American Typewriter' sans-serif;
+        margin: 0;
+      }
+      .debug {
+        position: absolute;
+        bottom: 0;
+      }
+      .do {
+        display: flex;
+        flex-direction: row;
+        width: 100vw;
+        height: 100vh;
+        align-items: center;
+        justify-content: space-around;
+      }
+      .it {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="do">
+      <div class="it">
+        <h2>Encrypt</h2>
+        <form action="/encrypt/" enctype="multipart/form-data" method="post">
+          <input name="file" type="file">
+          <input type="submit" value="encrypt">
+        </form>
+      </div>
+      <div class="it">
+        <h2>Decrypt</h2>
+        <form action="/decrypt/" enctype="multipart/form-data" method="post">
+          <input name="file" type="file">
+          <input type="submit" value="decrypt">
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
