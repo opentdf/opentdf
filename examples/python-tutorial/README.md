@@ -1,13 +1,11 @@
-# tdf3-python-tutorial
+# opentdf for python: A Tutorial
 
 This repository provides the sample code used in the Python Quick start tutorial.
 
 ## Requirements
 
-* install `pip install tdf3sdk==1.2.6a1390`
-* You should be able to clone [Etheria](https://github.com/virtru-corp/etheria)
-* After minikube is done you should forward ports like this:
-* In etheria run `sh ./quickstart-minikube.sh` (Will take 20-60 minutes)
+* Install the opentdf SDK with `pip install opentdf`.
+* Start up a local cluster with `cd ../quickstart && tilt up`.
 * To port forward keycloak:
   * `export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=keycloak,app.kubernetes.io/instance=keycloak" -o name)`
   * `kubectl --namespace default port-forward "$POD_NAME" 8080`
