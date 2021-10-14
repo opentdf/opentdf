@@ -1,0 +1,37 @@
+# Encryption example - HTML format
+import os
+from tdf3sdk import TDF3Client, OIDCCredentials, LogLevel
+
+# Load email and appId from environment variables
+# encrypt the file and apply the policy on tdf file and also decrypt.
+
+OIDC_ENDPOINT = "http://localhost:8080"
+KAS_URL = "http://localhost:8000"
+# KAS_URL = os.getenv("KAS_URL")
+# OIDC_ENDPOINT = os.getenv('OIDC_ENDPOINT')
+
+if not (KAS_URL and OIDC_ENDPOINT):
+    raise EnvironmentError(
+        "An environment variable is not set:\n- KAS_URL\n- OIDC_ENDPOINT")
+
+# Authenticate
+oidc_creds = OIDCCredentials(owner="neep@yeep.dance",
+                             client_id="tdf-client",
+                             client_secret="123-456",
+                             organization_name="tdf",
+                             oidc_endpoint=OIDC_ENDPOINT)
+
+
+client = TDF3Client(oidc_credentials=oidc_creds,
+                    kas_url=KAS_URL)
+client.enable_console_logging(LogLevel.Info)
+
+# Create share
+client.share_with_users(["alice@nowhere.com"])
+unprotected_file = "sensitive.txt"
+protected_file = unprotected_file + ".tdf"
+
+# Encrypt
+client.encrypt_file(in_filename=unprotected_file,
+                    out_filename=protected_file)
+print(f"Encrypted file {protected_file}")
