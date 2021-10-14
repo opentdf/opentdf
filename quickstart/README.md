@@ -120,7 +120,7 @@ Abacus will automatically forward you to the login screen to acquire user creden
 
 Log in using the credentials generated with the bootstray script. These are currently "user1" and the password is "password". 
 
-![Keycloak login screen, filled with a user login credentials](static/keycloak-login-user1-filled.png)
+![Keycloak login screen, filled with a user login credentials](static/keycloak-login-filled-user1.png)
 
 If your credentials are accepted, keycloak will redirect you to the abacus home screen. If your credentials are not accepted, you can log in to keycloak separately with the client credentials and fix the user login information.
 
