@@ -112,23 +112,23 @@ The abacus web service provides a visual management interface for entitlements a
 
 To access, `tilt up` and navigate to `https://localhost:65432`.
 
-![Tile dashboard, with the abacus resource and its link displayed](/resources/tilt-abacus-link.png)
+![Tile dashboard, with the abacus resource and its link displayed](static/tilt-abacus-link.png)
 
 Abacus will automatically forward you to the login screen to acquire user credentials. 
 
-![Keycloak login screen, displaying an empty form for the 'TDF' identity realm](/resources/keycloak-login-empty.png)
+![Keycloak login screen, displaying an empty form for the 'TDF' identity realm](static/keycloak-login-empty.png)
 
 Log in using the credentials generated with the bootstray script. These are currently "user1" and the password is "password". 
 
-![Keycloak login screen, filled with a user login credentials](/resources/keycloak-login-user1-filled.png)
+![Keycloak login screen, filled with a user login credentials](static/keycloak-login-user1-filled.png)
 
 If your credentials are accepted, keycloak will redirect you to the abacus home screen. If your credentials are not accepted, you can log in to keycloak separately with the client credentials and fix the user login information.
 
-![The Abacus app home screen](/resources/abacus-home.png)
+![The Abacus app home screen](static/abacus-home.png)
 
 From here, you can get a list of attributes or entities.
 
-![Abacus entities page, showing with loading spinner](/resources/abacus-entities-loading.png)
+![Abacus entities page, showing with loading spinner](static/abacus-entities-loading.png)
 
 #### entitlement
 
