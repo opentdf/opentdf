@@ -106,6 +106,30 @@ See [the opentdf/client readme](https://github.com/opentdf/client) for details a
 Manage attributes with rules used in ABAC  
 OpenAPI http://localhost:4020/docs
 
+#### Abacus
+
+The abacus web service provides a visual management interface for entitlements and attribute rules.
+
+To access, `tilt up` and navigate to `https://localhost:65432`.
+
+![Tile dashboard, with the abacus resource and its link displayed](/resources/tilt-abacus-link.png)
+
+Abacus will automatically forward you to the login screen to acquire user credentials. 
+
+![Keycloak login screen, displaying an empty form for the 'TDF' identity realm](/resources/keycloak-login-empty.png)
+
+Log in using the credentials generated with the bootstray script. These are currently "user1" and the password is "password". 
+
+![Keycloak login screen, filled with a user login credentials](/resources/keycloak-login-user1-filled.png)
+
+If your credentials are accepted, keycloak will redirect you to the abacus home screen. If your credentials are not accepted, you can log in to keycloak separately with the client credentials and fix the user login information.
+
+![The Abacus app home screen](/resources/abacus-home.png)
+
+From here, you can get a list of attributes or entities.
+
+![Abacus entities page, showing with loading spinner](/resources/abacus-entities-loading.png)
+
 #### entitlement
 
 Manage assignment of attributes to entities  
