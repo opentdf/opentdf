@@ -45,8 +45,8 @@ from tempfile import NamedTemporaryFile
 
 logger = getLogger(__name__)
 
-KAS_URL = getenv('KAS_URL', "http://localhost:8080/kas")
-OIDC_ENDPONT = getenv('OIDC_ENDPONT', "https://localhost:8443")
+KAS_URL = getenv('KAS_URL', "http://opentdf-key-access:8000")
+OIDC_ENDPOINT = getenv('OIDC_ENDPOINT', "http://opentdf-keycloak")
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -76,9 +76,9 @@ async def create_upload_file(file: bytes = File(...)):
             client_id="tdf-client",
             client_secret="123-456",
             organization_name="tdf",
-            oidc_endpoint=OIDC_ENDPONT
+            oidc_endpoint=OIDC_ENDPOINT
         )
-        logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPONT, KAS_URL)
+        logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPOINT, KAS_URL)
         client = TDF3Client(oidc_credentials=oidc_creds,
                             kas_url=KAS_URL)
         client.enable_console_logging(LogLevel.Trace)
@@ -112,9 +112,9 @@ async def create_upload_file(file: bytes = File(...)):
             client_id="tdf-client",
             client_secret="123-456",
             organization_name="tdf",
-            oidc_endpoint=OIDC_ENDPONT
+            oidc_endpoint=OIDC_ENDPOINT
         )
-        logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPONT, KAS_URL)
+        logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPOINT, KAS_URL)
         client = TDF3Client(oidc_credentials=oidc_creds,
                             kas_url=KAS_URL)
         client.enable_console_logging(LogLevel.Trace)
@@ -154,7 +154,7 @@ To do this, we can extend the existing quickstart Tiltfile with the following:
 
 
 ```Python
-docker_build('web-app-image', '.',
+docker_build('opentdf/example-web-app-image', '.',
     live_update=[
         sync('.', '/app'),
         run('cd /app && pip install -r requirements.txt',
@@ -186,10 +186,10 @@ spec:
         - name: web-app
           env:
           - name: KAS_URL
-            value: "http://opentdf-key-access:8000"
-          - name: OIDC_ENDPONT
-            value: "https://opentdf-keycloak-http:8443"
-          image: web-app-image
+            value: "http://localhost:65432/kas"
+          - name: OIDC_ENDPOINT
+            value: "http://localhost:65432/"
+          image: opentdf/example-web-app-image
           ports:
             - containerPort: 8000
 ```

@@ -27,7 +27,7 @@ k8s_resource(
 )
 
 docker_build(
-    "web-app-image",
+    "opentdf/example-web-app-image",
     ".",
     live_update = [
         sync(".", "/app"),

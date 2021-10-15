@@ -17,9 +17,9 @@ spec:
         - name: web-app
           env:
           - name: KAS_URL
-            value: "http://localhost:65432/kas"
-          - name: OIDC_ENDPONT
-            value: "http://localhost:65432/"
-          image: web-app-image
+            value: "http://opentdf-key-access:8000"
+          - name: OIDC_ENDPOINT
+            value: "http://opentdf-keycloak"
+          image: opentdf/example-web-app-image
           ports:
             - containerPort: 8000

@@ -8,8 +8,8 @@ from tempfile import NamedTemporaryFile
 
 logger = getLogger(__name__)
 
-KAS_URL = getenv('KAS_URL', "http://localhost:8080/kas")
-OIDC_ENDPONT = getenv('OIDC_ENDPONT', "https://localhost:8443")
+KAS_URL = getenv('KAS_URL', "http://opentdf-key-access:8000")
+OIDC_ENDPOINT = getenv('OIDC_ENDPOINT', "http://opentdf-keycloak")
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -39,9 +39,9 @@ async def encrypt_file(file: bytes = File(...)):
             client_id="tdf-client",
             client_secret="123-456",
             organization_name="tdf",
-            oidc_endpoint=OIDC_ENDPONT
+            oidc_endpoint=OIDC_ENDPOINT
         )
-        logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPONT, KAS_URL)
+        logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPOINT, KAS_URL)
         client = TDFClient(oidc_credentials=oidc_creds,
                             kas_url=KAS_URL)
         client.enable_console_logging(LogLevel.Trace)
@@ -71,13 +71,13 @@ async def decrypt_file(file: bytes = File(...)):
         ciphertext.write(file)
         ciphertext.close()
 
-        logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPONT, KAS_URL)
+        logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPOINT, KAS_URL)
         oidc_creds = OIDCCredentials()
         oidc_creds.set_client_credentials(
             client_id="tdf-client",
             client_secret="123-456",
             organization_name="tdf",
-            oidc_endpoint=OIDC_ENDPONT
+            oidc_endpoint=OIDC_ENDPOINT
         )
         client = TDFClient(
             oidc_credentials=oidc_creds,
@@ -96,13 +96,13 @@ async def decrypt_file(file: bytes = File(...)):
 
 @app.get("/test/")
 async def oidc_test():
-    logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPONT, KAS_URL)
+    logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPOINT, KAS_URL)
     oidc_creds = OIDCCredentials()
     oidc_creds.set_client_credentials(
         client_id="tdf-client",
         client_secret="123-456",
         organization_name="tdf",
-        oidc_endpoint=OIDC_ENDPONT
+        oidc_endpoint=OIDC_ENDPOINT
     )
     client = TDFClient(oidc_credentials=oidc_creds,
                         kas_url=KAS_URL)
