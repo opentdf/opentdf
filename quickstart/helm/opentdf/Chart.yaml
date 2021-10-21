@@ -15,7 +15,7 @@ dependencies:
     version: 0.1.0
   - name: claims
     version: 0.1.0
-  - name: go-docs
+  - name: api-docs
     version: 0.1.0
   - name: entitlement
     version: 0.1.0

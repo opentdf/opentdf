@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "go-docs.fullname" . }}
+  name: {{ include "api-docs.fullname" . }}
   labels:
-    {{- include "go-docs.labels" . | nindent 4 }}
+    {{- include "api-docs.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +12,4 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "go-docs.selectorLabels" . | nindent 4 }}
+    {{- include "api-docs.selectorLabels" . | nindent 4 }}
