@@ -75,4 +75,3 @@ To associate a client with a set of entitlements, we must add the Auth and UserI
 A configured mapper should appear as follows:
 
 ![Screenshot of the OIDC authentication credentials mapper configuration](static/keycloak-mapper-config-client.png)
-

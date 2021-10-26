@@ -7,7 +7,7 @@ keycloak:
   hostname: http://opentdf-keycloak
   clientId: tdf-client
   clientSecret: 123-456
-  username: technoking
+  username: keycloakadmin
   password: mykeycloakpassword
   realm: tdf
 attributes:

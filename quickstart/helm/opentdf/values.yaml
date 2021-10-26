@@ -15,7 +15,7 @@ bootstrap:
     hostname: http://opentdf-keycloak
     clientId: tdf-client
     clientSecret: 123-456
-    username: technoking
+    username: keycloakadmin
     password: mykeycloakpassword
     realm: tdf
 
@@ -26,7 +26,7 @@ keycloak:
 #  https://artifacthub.io/packages/helm/bitnami/keycloak
   auth:
     createAdminUser: true
-    adminUser: technoking
+    adminUser: keycloakadmin
     adminPassword: mykeycloakpassword
   postgresql:
     enabled: false
@@ -42,7 +42,7 @@ keycloak:
 #    - name: KEYCLOAK_LOG_LEVEL
 #      value: DEBUG
     - name: KEYCLOAK_USER
-      value: technoking
+      value: keycloakadmin
     - name: KEYCLOAK_PASSWORD
       value: mykeycloakpassword
     - name: ATTRIBUTE_PROVIDER_URL
