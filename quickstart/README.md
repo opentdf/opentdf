@@ -128,7 +128,7 @@ Abacus will automatically forward you to the login screen to acquire user creden
 
 ![Keycloak login screen, displaying an empty form for the 'TDF' identity realm](static/keycloak-login-empty.png)
 
-Log in using the credentials generated with the bootstray script. These are currently "user1" and the password is "password".
+Log in using the credentials generated with the bootstray script, or using [the manual script below](#configuring-user-permissions-with-abacus). These are currently "user1" and the password is "password".
 
 ![Keycloak login screen, filled with a user login credentials](static/keycloak-login-filled-user1.png)
 
