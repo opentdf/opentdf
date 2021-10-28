@@ -6,8 +6,6 @@ global:
 bootstrap:
   name: opentdf-bootstrap
   attributes:
-#    hostname: http://localhost:65432
-#    FIXME update containers.keycloak_bootstrap.bootstrap.create_client_tdf_client
     hostname: http://localhost:65432
   entitlement:
     hostname: http://localhost:65432
@@ -22,7 +20,7 @@ bootstrap:
 keycloak:
   image:
     repository: virtru/tdf-keycloak
-    tag: "54fe56afc39057361c1c46249a0f8abdbf051abe"
+    tag: "6459f0baabe470fccef0f69aa66a1f48036bac61"
 #  https://artifacthub.io/packages/helm/bitnami/keycloak
   auth:
     createAdminUser: true
@@ -46,7 +44,7 @@ keycloak:
     - name: KEYCLOAK_PASSWORD
       value: mykeycloakpassword
     - name: ATTRIBUTE_PROVIDER_URL
-      value: http://opentdf-claims:5000
+      value: http://opentdf-claims:4010/v1/claims_object
     - name: KEYCLOAK_EXTRA_ARGS
       value: "-Dkeycloak.frontendUrl=http://localhost:65432/keycloak/auth -Dkeycloak.adminUrl=http://localhost:65432/keycloak/auth"
   ingress:
@@ -56,8 +54,6 @@ keycloak:
       nginx.ingress.kubernetes.io/rewrite-target: /$2
     path: /keycloak(/|$)(.*)
     hostname: localhost
-#    tls: true
-#    certManager: true
 
 postgresql:
 #  configuration https://github.com/bitnami/charts/tree/master/bitnami/postgresql/#parameters
@@ -159,7 +155,7 @@ abacus:
 attributes:
   rootPath: /attributes
   publicName: "Attribute Authority"
-  logLevel: DEBUG
+  logLevel: CRITICAL
   postgres:
     host: opentdf-postgresql
     port: 5432
@@ -188,11 +184,8 @@ attributes:
       nginx.ingress.kubernetes.io/rewrite-target: /$2
 
 claims:
-  image:
-    repository: virtru/mock-tdf-claims-service
-    tag: "b7651f6569faba693bbc33db3dca674566c12509"
   service:
-    port: 5000
+    port: 4010
   postgres:
     host: opentdf-postgresql
     port: 5432
@@ -214,7 +207,8 @@ claims:
 entitlement:
   rootPath: /entitlement
   publicName: "Entitlement"
-  logLevel: DEBUG
+  logLevel: CRITICAL
+  corsOrigins: http://localhost:65432,http://localhost:3000
   postgres:
     host: opentdf-postgresql
     port: 5432
