@@ -3,15 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@opentdf/client": "file:./opentdf-client-0.0.1.tgz",
+    "@types/jest": "^27.0.3",
+    "@types/node": "^16.11.9",
+    "@types/react": "^17.0.36",
+    "@types/react-dom": "^17.0.11",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "@opentdf/client": "file:./opentdf-client-0.0.1.tgz"
+    "typescript": "^4.5.2"
   },
   "devDependencies": {
-    "react-scripts": "4.0.3",
     "@testing-library/jest-dom": "^5.15.0",
     "@testing-library/react": "^11.2.7",
-    "@testing-library/user-event": "^12.8.3"
+    "@testing-library/user-event": "^12.8.3",
+    "react-scripts": "4.0.3"
   },
   "scripts": {
     "start": "react-scripts start",
