@@ -132,7 +132,7 @@ keycloak:
     # - name: KEYCLOAK_TLS_TRUSTSTORE_PASSWORD
     #   value: truststore_password
     - name: ATTRIBUTE_PROVIDER_URL
-      value: http://dcr-entitlement:4030/v1/entity/claimsobject
+      value: http://opentdf-entitlement:4030/v1/entity/claimsobject
     - name: KEYCLOAK_LOG_LEVEL
       value: DEBUG
     # - name: KEYCLOAK_EXTRA_ARGS
