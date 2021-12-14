@@ -58,14 +58,16 @@ keycloak:
       value: mykeycloakpassword
     - name: ATTRIBUTE_PROVIDER_URL
       value: http://opentdf-claims:4010/v1/claims_object
+    - name: KEYCLOAK_FRONTEND_URL
+      value: "http://localhost:65432"
     - name: KEYCLOAK_EXTRA_ARGS
-      value: "-Dkeycloak.frontendUrl=http://localhost:65432/keycloak/auth -Dkeycloak.adminUrl=http://localhost:65432/keycloak/auth"
+      value: "-Dkeycloak.frontendUrl=http://localhost:65432/auth"
   ingress:
     enabled: true
     annotations:
       kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/rewrite-target: /$2
-    path: /keycloak(/|$)(.*)
+      nginx.ingress.kubernetes.io/rewrite-target: /auth/$2
+    path: /auth(/|$)(.*)
     hostname: localhost
 #    tls: true
 #    certManager: true

@@ -10,9 +10,9 @@ bootstrap:
     pullSecret: pullcred-virtru
   istioTerminationHack: false
   attributes:
-    hostname: http://dcr-attributes:4020
+    hostname: http://opentdf-attributes:4020
   entitlement:
-    hostname: http://dcr-entitlement:4030
+    hostname: http://opentdf-entitlement:4030
     preloadedClaims:
       - id: tdf-user
         attributes:
@@ -52,11 +52,11 @@ bootstrap:
           - https://example.com/attr/Classification/value/C
           - https://example.com/attr/COI/value/PRF
   keycloak:
-    hostname: http://dcr-keycloak:80
+    hostname: http://opentdf-keycloak:80
     clientId: tdf-client
     clientSecret: 123-456
-    username: technoking
-    password: elon-musk-is-a-dork
+    username: keycloakadmin
+    password: mykeycloakpassword
     realm: tdf
 
 # DCR - override KAS
@@ -70,13 +70,14 @@ key-access:
 # DCR - override Abacus
 abacus:
   config:
-    keycloakHost: "http://localhost/auth"
-    keycloakClientId: "dcr-test"
-    keycloakRealm: "tdf"
-    attributesHost: "http://localhost/attributes"
+    keycloakHost: "http://localhost:65432/auth"
+    keycloakClientId: "abacus-web"
+    keycloakRealm: "master"
+    attributesHost: "http://localhost:65432/attributes"
+    serviceRoot: "http://localhost:65432"
   image:
     repository: virtru/tdf-abacus-web
-    tag: 2.0.0-h3-rc1
+    tag: 2.0.0-hack-rc2
     pullPolicy: Always
     pullSecret: pullcred-virtru
 
@@ -94,21 +95,16 @@ attributes:
 
 # DCR - override Keycloak
 keycloak:
-  existingConfigmap: "keycloak-config"
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "250m"
   image:
     repository: virtru/keycloak-h3-poc
     tag: 0.4.1
     pullPolicy: Always
     pullSecrets:
       - pullcred-virtru
-  ingress:
-    enabled: false
-  service:
-    type: "ClusterIP"
+  # ingress:
+  #   enabled: false
+  # service:
+  #   type: "ClusterIP"
     # port: 80
     # extraPorts:
     #   - name: http-local
@@ -117,8 +113,11 @@ keycloak:
     #     protocol: TCP
   auth:
     createAdminUser: true
-    adminUser: technoking
-    adminPassword: elon-musk-is-a-dork
+    adminUser: keycloakadmin
+    adminPassword: mykeycloakpassword
+    # createAdminUser: true
+    # adminUser: technoking
+    # adminPassword: elon-musk-is-a-dork
     # TODO we can inject the trust stores this way, instead of manually mounting
     # tls:
     #   keystorePassword: keystore_password
@@ -128,38 +127,38 @@ keycloak:
     #   existingSecret: "keycloak-secrets"
     #   enabled: true
   extraEnvVars: |
-    - name: KEYCLOAK_TLS_KEYSTORE_PASSWORD
-      value: keystore_password
-    - name: KEYCLOAK_TLS_TRUSTSTORE_PASSWORD
-      value: truststore_password
+    # - name: KEYCLOAK_TLS_KEYSTORE_PASSWORD
+    #   value: keystore_password
+    # - name: KEYCLOAK_TLS_TRUSTSTORE_PASSWORD
+    #   value: truststore_password
     - name: ATTRIBUTE_PROVIDER_URL
       value: http://dcr-entitlement:4030/v1/entity/claimsobject
     - name: KEYCLOAK_LOG_LEVEL
       value: DEBUG
-    - name: KEYCLOAK_EXTRA_ARGS
-      value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
-  extraVolumeMounts: |
-    - name: keycloak-certs
-      mountPath: /opt/bitnami/keycloak/standalone/configuration/server.keystore
-      readOnly: true
-      subPath: server.keystore
-    - name: keycloak-certs
-      mountPath: /opt/bitnami/keycloak/standalone/configuration/server.truststore
-      subPath: server.truststore
-    - name: keycloak-certs
-      mountPath: /opt/bitnami/keycloak/standalone/configuration/server.cer
-      subPath: server.cer
-  extraVolumes: |
-    - name: keycloak-certs
-      secret:
-        secretName: keycloak-secrets
-        items:
-        - key: dcr-keycloak.crt
-          path: server.cer
-          mode: 0644
-        - key: server.keystore
-          path: server.keystore
-          mode: 0644
-        - key: server.truststore
-          path: server.truststore
-          mode: 0644
+    # - name: KEYCLOAK_EXTRA_ARGS
+    #   value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
+  # extraVolumeMounts: |
+  #   - name: keycloak-certs
+  #     mountPath: /opt/bitnami/keycloak/standalone/configuration/server.keystore
+  #     readOnly: true
+  #     subPath: server.keystore
+  #   - name: keycloak-certs
+  #     mountPath: /opt/bitnami/keycloak/standalone/configuration/server.truststore
+  #     subPath: server.truststore
+  #   - name: keycloak-certs
+  #     mountPath: /opt/bitnami/keycloak/standalone/configuration/server.cer
+  #     subPath: server.cer
+  # extraVolumes: |
+  #   - name: keycloak-certs
+  #     secret:
+  #       secretName: keycloak-secrets
+  #       items:
+  #       - key: dcr-keycloak.crt
+  #         path: server.cer
+  #         mode: 0644
+  #       - key: server.keystore
+  #         path: server.keystore
+  #         mode: 0644
+  #       - key: server.truststore
+  #         path: server.truststore
+  #         mode: 0644
