@@ -2,17 +2,28 @@ global:
   postgresql:
     postgresqlUsername: postgres
     postgresqlPassword: mydbapassword
+  certs:
+    eas_private_key: ''
+    eas_cert: ''
+    kas_ec_cert: ''
+    kas_ec_private_key: ''
+    kas_cert: ''
+    kas_private_key: ''
 
 bootstrap:
-  name: opentdf-bootstrap
+  image:
+    name: virtru/tdf-keycloak-bootstrap:4e93f59fd0247333bbcd4ea8aa3fab625666f944
+    pullPolicy: Always
+    pullSecret: pullcred-virtru
+  istioTerminationHack: true
   attributes:
 #    hostname: http://localhost:65432
 #    FIXME update containers.keycloak_bootstrap.bootstrap.create_client_tdf_client
-    hostname: http://localhost:65432
+    hostname: http://opentdf-attributes:4020
   entitlement:
-    hostname: http://localhost:65432
+    hostname: http://opentdf-entitlement:4030
   keycloak:
-    hostname: http://opentdf-keycloak
+    hostname: http://opentdf-keycloak:80
     clientId: tdf-client
     clientSecret: 123-456
     username: keycloakadmin
@@ -46,7 +57,7 @@ keycloak:
     - name: KEYCLOAK_PASSWORD
       value: mykeycloakpassword
     - name: ATTRIBUTE_PROVIDER_URL
-      value: http://opentdf-claims:5000
+      value: http://opentdf-claims:4010/v1/claims_object
     - name: KEYCLOAK_EXTRA_ARGS
       value: "-Dkeycloak.frontendUrl=http://localhost:65432/keycloak/auth -Dkeycloak.adminUrl=http://localhost:65432/keycloak/auth"
   ingress:
@@ -151,10 +162,11 @@ abacus:
     hosts:
       - host: localhost
         paths:
-          - path: /
+          - path: /abacus(/|$)(.*)
             pathType: Prefix
     annotations:
       kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
 
 attributes:
   rootPath: /attributes
@@ -188,11 +200,8 @@ attributes:
       nginx.ingress.kubernetes.io/rewrite-target: /$2
 
 claims:
-  image:
-    repository: virtru/mock-tdf-claims-service
-    tag: "b7651f6569faba693bbc33db3dca674566c12509"
   service:
-    port: 5000
+    port: 4010
   postgres:
     host: opentdf-postgresql
     port: 5432

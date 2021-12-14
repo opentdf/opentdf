@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "abacus.name" . }}-cm
+  labels:
+    app.kubernetes.io/name: {{ include "abacus.name" . }}-cm
+    helm.sh/chart: {{ include "abacus.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/part-of: kas
+data:
+  KEYCLOAK_HOST: {{ .Values.config.keycloakHost }}
+  KEYCLOAK_CLIENT_ID: {{ .Values.config.keycloakClientId }}
+  KEYCLOAK_REALM: {{ .Values.config.keycloakRealm }}
+  ATTRIBUTES_HOST: {{ .Values.config.attributesHost }}
+  SVC_ROOT: {{ .Values.config.serviceRoot }}

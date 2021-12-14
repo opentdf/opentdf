@@ -7,7 +7,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "attribute-provider.name" -}}
+{{- define "keycloak-bootstrap.name" -}}
 {{- default .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 

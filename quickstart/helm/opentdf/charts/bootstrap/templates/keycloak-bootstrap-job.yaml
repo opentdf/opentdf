@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .Values.name }}
+  name: {{ include "keycloak-bootstrap.fullname" . }}
   labels:
     chart: "{{ $.Chart.Name }}-{{ $.Chart.Version }}"
     release: "{{ $.Release.Name }}"
@@ -10,9 +10,25 @@ spec:
   template:
     spec:
       containers:
-        - name: {{ .Values.name }}
+        - name: {{ include "keycloak-bootstrap.fullname" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          image: {{ .Values.image.repository }}:{{ .Chart.AppVersion }}
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          {{- if .Values.istioTerminationHack }}
+          command: ["/bin/sh", "-c"]
+          # The following hack does 2 things:
+          # 1. Waits for the Istio proxy sidecar to be ready before continuing.
+          # 2. Tells the istio proxy sidecar to exit once we're done - otherwise
+          # it will keep running and the job will never complete - this is arguably not a bug,
+          # since you don't _want_ your mesh proxy to quit normally.
+          # For more details, see Istio bug: https://github.com/istio/istio/issues/11659
+          # (this arguably isn't an Istio bug, but a Kube one, since you don't WANT containers in a Pod to be able to
+          # terminate their own Pod's proxy)
+          args:
+            - |
+              trap "curl --max-time 2 -s -f -XPOST http://127.0.0.1:15000/quitquitquit" EXIT
+              while ! curl -s -f http://127.0.0.1:15020/healthz/ready; do sleep 1; done
+              /project/.venv/bin/python3 bootstrap.py
+          {{- end }}
           env:
             - name: keycloak_hostname
               value: {{ .Values.keycloak.hostname }}
@@ -20,6 +36,8 @@ spec:
               value: {{ .Values.keycloak.username }}
             - name: keycloak_admin_password
               value: {{ .Values.keycloak.password }}
+            - name: passwordUsers
+              value: {{ .Values.keycloak.passwordUsers }}
             - name: CLIENT_ID
               value: {{ .Values.keycloak.clientId }}
             - name: CLIENT_SECRET
@@ -30,10 +48,22 @@ spec:
               value: {{ .Values.attributes.hostname }}
             - name: ENTITLEMENT_HOST
               value: {{ .Values.entitlement.hostname }}
+            - name: ENTITLEMENT_CLIENT_ID
+              value: {{ .Values.entitlement.clientId }}
+            - name: ENTITLEMENT_USERNAME
+              value: {{ .Values.entitlement.username }}
+            - name: ENTITLEMENT_PASSWORD
+              value: {{ .Values.entitlement.password }}
+          volumeMounts:
+            - name: entitlements-volume
+              mountPath: /etc/virtru-config
+      volumes:
+        - name: entitlements-volume
+          configMap:
+            name: {{ include "keycloak-bootstrap.fullname" . }}-cm
       restartPolicy: Never
       {{ if .Values.image.pullSecret }}
       imagePullSecrets:
         - name: {{ .Values.image.pullSecret }}
       {{ end }}
-  backoffLimit: 6
-
+  backoffLimit: 10

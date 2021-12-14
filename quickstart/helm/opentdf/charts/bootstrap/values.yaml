@@ -1,4 +1,3 @@
-name: bootstrap
 replicaCount: 1
 image:
   repository: virtru/tdf-keycloak-bootstrap
@@ -10,7 +9,12 @@ keycloak:
   username: keycloakadmin
   password: mykeycloakpassword
   realm: tdf
+  passwordUsers: testuser@virtru.com,user1,user2
+  npeClients: null
 attributes:
   hostname: http://opentdf-attributes
 entitlement:
   hostname: http://opentdf-entitlement
+  clientId: dcr-test
+  username: user1
+  password: testuser123

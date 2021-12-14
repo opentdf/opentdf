@@ -14,6 +14,13 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+config:
+  keycloakHost: "http://localhost/auth"
+  keycloakClientId: "dcr-test"
+  keycloakRealm: "tdf"
+  attributesHost: "http://localhost/attributes"
+  serviceRoot: "http://localhost"
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
