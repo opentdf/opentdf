@@ -33,17 +33,20 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+          - configMapRef:
+              name: {{ .Chart.Name }}-cm
           ports:
             - name: http
               containerPort: 80
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /abacus
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /abacus
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

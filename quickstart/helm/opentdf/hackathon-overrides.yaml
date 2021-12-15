@@ -1,0 +1,164 @@
+# DCR - override bootstrap
+bootstrap:
+  replicaCount: 1
+  image:
+    repository: virtru/keycloak-bootstrap
+    # repository: virtru/tdf-keycloak-bootstrap
+    # tag: 425c0de00d471b66ebdb112ef7dbb258854e218f
+    tag: 0.2.3-h3
+    pullPolicy: Always
+    pullSecret: pullcred-virtru
+  istioTerminationHack: false
+  attributes:
+    hostname: http://opentdf-attributes:4020
+  entitlement:
+    hostname: http://opentdf-entitlement:4030
+    preloadedClaims:
+      - id: tdf-user
+        attributes:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRX
+      - id: tdf-client
+        attributes:
+          - https://example.com/attr/Classification/value/S
+          - https://example.com/attr/COI/value/PRX
+          - https://example.com/attr/Env/value/CleanRoom
+      - id: user1
+        attributes:
+          - https://example.com/attr/Classification/value/S
+          - https://example.com/attr/COI/value/PRX
+      - id: browsertest
+        attributes:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRA
+      - id: service-account-tdf-client
+        attributes:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRB
+      - id: bob_1234
+        attributes:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRC
+      - id: alice_1234
+        attributes:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRD
+      - id: client_x509
+        attributes:
+          - https://example.com/attr/Classification/value/S
+          - https://example.com/attr/COI/value/PRX
+      - id: dcr-test
+        attributes:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRF
+  keycloak:
+    hostname: http://opentdf-keycloak:80
+    clientId: tdf-client
+    clientSecret: 123-456
+    username: keycloakadmin
+    password: mykeycloakpassword
+    realm: tdf
+
+# DCR - override KAS
+key-access:
+  image:
+    repository: virtru/tdf-key-access-service
+    tag: c7efdc3f2f9766e2fa0aad69bf265bcb4c3023ad
+    pullPolicy: Always
+    pullSecret: pullcred-virtru
+
+# DCR - override Abacus
+abacus:
+  config:
+    keycloakHost: "http://localhost:65432/auth"
+    keycloakClientId: "abacus-web"
+    keycloakRealm: "master"
+    attributesHost: "http://localhost:65432/attributes"
+    serviceRoot: "http://localhost:65432"
+  image:
+    repository: virtru/tdf-abacus-web
+    tag: 2.0.0-hack-rc2
+    pullPolicy: Always
+    pullSecret: pullcred-virtru
+
+entitlement:
+  image:
+    repository: virtru/tdf-entitlement-service
+    tag: 0.0.1-h3-rc1
+    pullPolicy: Always
+
+attributes:
+  image:
+    repository: virtru/tdf-attribute-authority-service
+    tag: 0.0.1-h3-rc1
+    pullPolicy: Always
+
+# DCR - override Keycloak
+keycloak:
+  image:
+    repository: virtru/keycloak-h3-poc
+    tag: 0.4.1
+    pullPolicy: Always
+    pullSecrets:
+      - pullcred-virtru
+  # ingress:
+  #   enabled: false
+  # service:
+  #   type: "ClusterIP"
+    # port: 80
+    # extraPorts:
+    #   - name: http-local
+    #     port: 8080
+    #     targetPort: http
+    #     protocol: TCP
+  auth:
+    createAdminUser: true
+    adminUser: keycloakadmin
+    adminPassword: mykeycloakpassword
+    # createAdminUser: true
+    # adminUser: technoking
+    # adminPassword: elon-musk-is-a-dork
+    # TODO we can inject the trust stores this way, instead of manually mounting
+    # tls:
+    #   keystorePassword: keystore_password
+    #   keystoreFilename: "server.keystore"
+    #   truststorePassword: truststore_password
+    #   truststoreFilename: "server.truststore"
+    #   existingSecret: "keycloak-secrets"
+    #   enabled: true
+  extraEnvVars: |
+    # - name: KEYCLOAK_TLS_KEYSTORE_PASSWORD
+    #   value: keystore_password
+    # - name: KEYCLOAK_TLS_TRUSTSTORE_PASSWORD
+    #   value: truststore_password
+    - name: ATTRIBUTE_PROVIDER_URL
+      value: http://opentdf-entitlement:4030/v1/entity/claimsobject
+    - name: KEYCLOAK_LOG_LEVEL
+      value: DEBUG
+    # - name: KEYCLOAK_EXTRA_ARGS
+    #   value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
+  # extraVolumeMounts: |
+  #   - name: keycloak-certs
+  #     mountPath: /opt/bitnami/keycloak/standalone/configuration/server.keystore
+  #     readOnly: true
+  #     subPath: server.keystore
+  #   - name: keycloak-certs
+  #     mountPath: /opt/bitnami/keycloak/standalone/configuration/server.truststore
+  #     subPath: server.truststore
+  #   - name: keycloak-certs
+  #     mountPath: /opt/bitnami/keycloak/standalone/configuration/server.cer
+  #     subPath: server.cer
+  # extraVolumes: |
+  #   - name: keycloak-certs
+  #     secret:
+  #       secretName: keycloak-secrets
+  #       items:
+  #       - key: dcr-keycloak.crt
+  #         path: server.cer
+  #         mode: 0644
+  #       - key: server.keystore
+  #         path: server.keystore
+  #         mode: 0644
+  #       - key: server.truststore
+  #         path: server.truststore
+  #         mode: 0644
