@@ -20,6 +20,15 @@ k8s_resource("opentdf-ingress-nginx-controller", port_forwards = "65432:80")
 # sample web app
 k8s_yaml("kubernetes.yaml")
 
+docker_build(
+'opentdf/nanotdf-client-app-image',
+ '.',
+  live_update=[
+    # when package.json changes, we need to do a full build
+    fall_back_on(['package.json', 'package-lock.json']),
+    # Map the local source code into the container under /src
+    sync('.', '/src'),
+  ])
 k8s_resource(
 'nanotdf-client-app',
  links=link('http://localhost:65432/nanotdf-client-app'),

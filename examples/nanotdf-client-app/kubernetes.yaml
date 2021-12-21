@@ -30,8 +30,7 @@ metadata:
     service: nanotdf-client-app
 spec:
   ports:
-    - port: 80
-      targetPort: 3000
+    - port: 3000
   selector:
     app: nanotdf-client-app
 ---

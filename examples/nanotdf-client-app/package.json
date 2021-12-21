@@ -2,6 +2,7 @@
   "name": "nanotdf-client-app",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@opentdf/client": "file:./opentdf-client-0.0.1.tgz",
     "@types/jest": "^27.0.3",
