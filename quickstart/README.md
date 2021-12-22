@@ -14,7 +14,7 @@ A quick (less than 10 minutes) and easy process to protect data with TDF using t
 
 - Install [kubectl](https://kubernetes.io/docs/reference/kubectl/overview/)
 
-  - On macOs via Homebrew: `brew install kubectl`
+  - On macOS via Homebrew: `brew install kubectl`
   - On Linux or WSL2 for Windows: `curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && chmod +x kubectl && sudo mv kubectl /usr/local/bin/kubectl`
   - Others see https://kubernetes.io/docs/tasks/tools/
 
@@ -128,7 +128,7 @@ Abacus will automatically forward you to the login screen to acquire user creden
 
 ![Keycloak login screen, displaying an empty form for the 'TDF' identity realm](static/keycloak-login-empty.png)
 
-Log in using the credentials generated with the bootstray script, or using [the manual script below](#configuring-user-permissions-with-abacus). These are currently "user1" and the password is "password".
+Log in using the credentials generated with the bootstrap script, or using [the manual script below](#configuring-user-permissions-with-abacus). These are currently "user1" and the password is "password".
 
 ![Keycloak login screen, filled with a user login credentials](static/keycloak-login-filled-user1.png)
 
@@ -155,7 +155,7 @@ The bootstrap script also binds this client to a custom, opentdf attribute mappe
 
 ![Screenshot of the keycloak mappers settings for a tdf client](static/keycloak-tdfclient-mappers.png)
 
-If want to modify this sample to deploy to another domain, redirect and web origins need too be set under client > tdf-\* > settings
+If you want to modify this sample to deploy to another domain, redirect and web origins need too be set under client > tdf-\* > settings
 
 ![Screenshot of the keycloak mappers settings for a tdf client](static/keycloak-tdfclient-mappers.png)
 
