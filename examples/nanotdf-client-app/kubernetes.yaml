@@ -39,7 +39,7 @@ kind: Ingress
 metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/rewrite-target: /nanotdf-client-app/$1
   name: nanotdf-client-app-ingress
 spec:
   rules:
