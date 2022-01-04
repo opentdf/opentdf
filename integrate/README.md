@@ -58,17 +58,54 @@ helm install --version 5.1.1 --values helm/keycloak-values.yaml --namespace keyc
 
 ### Keycloak
 
+[Operator documentation](https://www.keycloak.org/docs/latest/server_installation/index.html#_operator)
+
 #### Add realm
+
 ![](../resource/keycloak-realm-add.png)
 
-#### Add client
+#### Add clients
+
+The clients are web services and applications that use this for authentication.  
+The services are `entitlements` and `attributes`.  
+The web application is `abacus`.
+
 ![](../resource/keycloak-client-add.png)
 
 #### Set audience on client
+
+The web application is `abacus` and it requires audiences of `entitlements` and `attributes`.
+
 ![](../resource/keycloak-client-audience.png)
 
-#### Add entity (person)
+#### Add abacus user
+
+This user will be able to create attributes and entitle.  
+Add user and set role for viewing clients and users.
+
+![](../resource/keycloak-grantor-add.png)
+
+![](../resource/keycloak-grantor-role.png)
+
+#### Add entity (person, PE)
+
 ![](../resource/keycloak-entity-person-add.png)
 
 #### Set password on entity (person)
+
 ![](../resource/keycloak-entity-person-password.png)
+
+#### Add entity (client, NPE)
+
+![](../resource/keycloak-client-nonperson-service.png)
+
+#### Set password on entity (client, NPE)
+
+![](../resource/keycloak-client-nonperson-secret.png)
+
+#### Set mapper to apply claims
+
+**Attribute Provider URL** is an internal service (use internal URL)  
+**Token Claim Name** must be `tdf_claims`
+
+![](../resource/keycloak-mapper-claims.png)
