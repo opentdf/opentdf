@@ -103,6 +103,12 @@ Add user and set role for viewing clients and users.
 
 ![](../resource/keycloak-client-nonperson-secret.png)
 
+#### Set OIDC User Info Signing
+
+**User Info Signed Response Algorithm** set to RS256 under **Fine Grain OpenID Connect Configuration**
+
+![](../resource/keycloak-client-nonperson-token.png)
+
 #### Set mapper to apply claims
 
 **Attribute Provider URL** is an internal service (use internal URL)  
