@@ -1,15 +1,16 @@
 import './TextBlock.scss';
 import {useEffect, useState} from "react";
 // @ts-ignore
-import {NanoTDFClient} from "@opentdf/client";
+import {AuthProviders, NanoTDFClient} from "@opentdf/client";
 import {KAS_BASE_ENDPOINT, OIDC_BASE_ENDPOINT} from "../../configs";
+import {RefreshTokenCredentials} from "@opentdf/client/dist/types/src/nanotdf/types/OIDCCredentials";
 
 
 interface TextArea {
     text: string
     updateValue: (value:string) => void
 }
-const TextArea =({text, updateValue}:TextArea) => {
+const MyTextArea =({text, updateValue}:TextArea) => {
     const [value, setValue] = useState('');
 
     useEffect(()=>{
@@ -17,9 +18,9 @@ const TextArea =({text, updateValue}:TextArea) => {
     },[text]);
 
     const onChange = (event: { target: { value: string; }; }) => {
-        const value = event.target.value;
-        setValue(value);
-        updateValue(value);
+        const targetValue = event.target.value;
+        setValue(targetValue);
+        updateValue(targetValue);
     };
 
     return (
@@ -29,31 +30,30 @@ const TextArea =({text, updateValue}:TextArea) => {
     );
 };
 
+let client: NanoTDFClient;
+
 function TextBlock() {
     const [inputText, setInputText] = useState('');
     const [outputText, setOutputText] = useState('');
-    const [client, setClient] = useState({encrypt:(val:string)=>'', decrypt:(val:string)=>''});
 
     // @ts-ignore
     useEffect(async ()=>{
-        // @ts-ignore
-        const client = new NanoTDFClient.default(
-            {
-                clientId: 'tdf-client',
-                clientSecret: '123-456',
-                organizationName: 'tdf',
-                oidcOrigin: OIDC_BASE_ENDPOINT,
-                exchange: 'client'
-            },
-            KAS_BASE_ENDPOINT
-        );
-        setClient(client);
+        const oidcCredentials: RefreshTokenCredentials = {
+            exchange: "refresh",
+            oidcRefreshToken: "FIXME",
+            clientId: 'tdf-client',
+            organizationName: 'tdf',
+            oidcOrigin: OIDC_BASE_ENDPOINT
+        }
+        const authProvider = await AuthProviders.refreshAuthProvider(oidcCredentials);
+        console.log(authProvider);
+        client = new NanoTDFClient(authProvider, KAS_BASE_ENDPOINT);
     },[]);
 
     const encrypt = async ()=> {
         const res = await client.encrypt(inputText);
         const res2 =  await client.decrypt(res);
-        setOutputText(res);
+        setOutputText(arrayBufferToString(res2));
     };
 
     const decrypt = async ()=> {
@@ -69,8 +69,8 @@ function TextBlock() {
     return (
         <div className="container">
             <div className="textBlock">
-                <TextArea text={inputText} updateValue={setInputText}/>
-                <TextArea text={outputText} updateValue={setOutputText}/>
+                <MyTextArea text={inputText} updateValue={setInputText}/>
+                <MyTextArea text={outputText} updateValue={setOutputText}/>
             </div>
             <div className="buttons">
                 <button onClick={encrypt}>Encrypt</button>
@@ -78,6 +78,16 @@ function TextBlock() {
             </div>
         </div>
     );
+}
+
+/**
+ * Converts an ArrayBuffer to a String.
+ *
+ * @param buffer - Buffer to convert.
+ * @returns String.
+ */
+export function arrayBufferToString(buffer: ArrayBuffer): string {
+    return String.fromCharCode.apply(null, Array.from(new Uint16Array(buffer)));
 }
 
 export default TextBlock;
