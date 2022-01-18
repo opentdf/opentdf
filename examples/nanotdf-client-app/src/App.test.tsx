@@ -3,6 +3,6 @@ import App from './App';
 
 test('renders learn react link', () => {
   render(<App />);
-  const linkElement = screen.getByText(/Example NanoTDF React App/i);
+  const linkElement = screen.getByText(/NanoTDF Example/i);
   expect(linkElement).toBeInTheDocument();
 });
