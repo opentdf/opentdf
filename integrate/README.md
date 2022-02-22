@@ -103,24 +103,6 @@ helm upgrade --install opentdf ../helm \
 kubectl --namespace ingress-nginx port-forward services/ingress-nginx-controller 65432:443
 ```
 
-
-#### bitnami
-
-```shell
-#kubectl create namespace keycloak
-#helm repo add bitnami https://charts.bitnami.com/bitnami
-#helm install --version 5.1.1 --values helm/keycloak-values.yaml --namespace keycloak keycloak bitnami/keycloak
-#
-#helm install --version 6.1.5 --namespace keycloak keycloak bitnami/keycloak
-#
-#helm upgrade --install keycloak bitnami/keycloak \
-#  --version 6.1.5 --values helm/keycloak-values.yaml \
-#  --namespace keycloak --create-namespace
-#
-#kubectl delete namespace keycloak
-#helm uninstall keycloak
-```
-
 ## Configure
 
 ### Keycloak
