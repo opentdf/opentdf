@@ -1,4 +1,12 @@
 abacus:
+  attributes:
+    serverUrl: https://localhost:65432/v2/attributes
+  entitlements:
+    serverUrl: https://localhost:65432/v2/entitlements
+  oidc:
+    serverUrl: https://localhost:65432/keycloak/auth/
+    clientId: localhost-abacus
+    realm: opentdf-realm
   ingress:
     enabled: true
     hosts:
@@ -20,11 +28,10 @@ attributes:
     database: tdf_database
     schema: tdf_attribute
   oidc:
-    clientId: tdf-attributes
-    clientSecret: myclientsecret
-    realm: tdf
+    clientId: localhost-attributes
+    realm: opentdf-realm
 #    trailing / is required
-    serverUrl: http://opentdf-keycloak/auth/
+    serverUrl: http:/keycloak-keycloak.keycloak.svc.cluster.local/auth/
     configurationUrl: http://opentdf-keycloak/auth/realms/tdf/.well-known/openid-configuration
     authorizationUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/auth
     tokenUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/token
@@ -70,9 +77,8 @@ entitlements:
     database: tdf_database
     schema: tdf_entitlement
   oidc:
-    clientId: tdf-entitlement
-    clientSecret: myclientsecret
-    realm: tdf
+    clientId: localhost-entitlement
+    realm: opentdf-realm
 #    trailing / is required
     serverUrl: http://opentdf-keycloak/auth/
     configurationUrl: http://opentdf-keycloak/auth/realms/tdf/.well-known/openid-configuration
