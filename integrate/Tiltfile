@@ -1,0 +1,22 @@
+# Tiltfile for integrators
+# https://docs.tilt.dev/api.html
+
+# extensions
+load('ext://namespace', 'namespace_yaml')
+
+# settings
+settings = read_json('tilt_option.json', default={})
+
+# namespace
+k8s_yaml(namespace_yaml('opentdf'))
+
+# helm charts
+# usage https://docs.tilt.dev/helm.html#helm-options
+k8s_yaml(helm('../helm', 'opentdf', namespace='opentdf', values=['helm/opentdf-values.yaml']))
+
+# builds
+docker_build(
+    "opentdf/claims",
+    context="/Users/pflynn/Projects/opentdf/backend/containers",
+    dockerfile="/Users/pflynn/Projects/opentdf/backend/containers/claims/Dockerfile",
+)

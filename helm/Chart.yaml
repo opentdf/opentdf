@@ -1,0 +1,19 @@
+apiVersion: v2
+name: opentdf
+description: A Helm chart for openTDF
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+maintainers:
+  - name: Virtru
+    url: https://www.virtru.com
+icon: https://inxmad4bw31barrx17wec71c-wpengine.netdna-ssl.com/wp-content/uploads/2018/12/o_efa1e48d0db5ebc8-4.png
+dependencies:
+  - name: attributes
+    version: 0.1.0
+  - name: entitlements
+    version: 0.1.0
+  - name: claims
+    version: 0.1.0
+  - name: access
+    version: 0.1.0

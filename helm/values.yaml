@@ -1,0 +1,7 @@
+abacus:
+  attributes:
+    serverUrl: ""
+  oidc:
+    serverUrl: ""
+    clientId: ""
+    realm: ""

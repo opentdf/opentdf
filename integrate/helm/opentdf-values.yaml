@@ -1,0 +1,106 @@
+abacus:
+  ingress:
+    enabled: true
+    hosts:
+      - host: localhost
+        paths:
+          - path: /
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+
+attributes:
+  rootPath: /attributes
+  publicName: "Attribute Authority"
+  logLevel: DEBUG
+  postgres:
+    host: postgres-postgresql.postgres.svc.cluster.local
+    port: 5432
+    user: tdf_attribute_manager
+    database: tdf_database
+    schema: tdf_attribute
+  oidc:
+    clientId: tdf-attributes
+    clientSecret: myclientsecret
+    realm: tdf
+#    trailing / is required
+    serverUrl: http://opentdf-keycloak/auth/
+    configurationUrl: http://opentdf-keycloak/auth/realms/tdf/.well-known/openid-configuration
+    authorizationUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/auth
+    tokenUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/token
+  ingress:
+    enabled: true
+    hosts:
+      - host: localhost
+        paths:
+          - path: /attributes(/|$)(.*)
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+claims:
+  service:
+    port: 5000
+  postgres:
+    host: postgres-postgresql.postgres.svc.cluster.local
+    port: 5432
+    user: tdf_entitlement_reader
+    database: tdf_database
+    schema: tdf_entitlement
+  ingress:
+    enabled: true
+    hosts:
+      - host: localhost
+        paths:
+          - path: /claims(/|$)(.*)
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+entitlements:
+  rootPath: /entitlements
+  publicName: "Entitlements"
+  logLevel: DEBUG
+  postgres:
+    host: postgres-postgresql.postgres.svc.cluster.local
+    port: 5432
+    user: tdf_entitlement_manager
+    database: tdf_database
+    schema: tdf_entitlement
+  oidc:
+    clientId: tdf-entitlement
+    clientSecret: myclientsecret
+    realm: tdf
+#    trailing / is required
+    serverUrl: http://opentdf-keycloak/auth/
+    configurationUrl: http://opentdf-keycloak/auth/realms/tdf/.well-known/openid-configuration
+    authorizationUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/auth
+    tokenUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/token
+  ingress:
+    enabled: true
+    hosts:
+      - host: localhost
+        paths:
+          - path: /entitlement(/|$)(.*)
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+
+access:
+  endpoints:
+    easHost: http://opentdf-attributes:4020
+    statsdHost: opentdf-statsd
+    oidcPubkeyEndpoint: http://opentdf-keycloak
+  ingress:
+    enabled: true
+    hosts:
+      - host: localhost
+        paths:
+          - path: /kas(/|$)(.*)
+            pathType: Prefix
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
