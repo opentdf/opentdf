@@ -1,0 +1,85 @@
+image:
+  # This is a CI env NOT a local env, so we expect the registry to be ghcr.io
+  repository: ghcr.io/opentdf/keycloak
+  tag: head
+  pullPolicy: Never # We expect Tilt to cache these
+postgresql:
+  enabled: false
+extraEnv: |
+  - name: KEYCLOAK_LOGLEVEL
+    value: DEBUG
+  - name: KEYCLOAK_USER
+    value: keycloakadmin
+  - name: KEYCLOAK_PASSWORD
+    value: mykeycloakpassword
+  - name: CLAIMS_URL
+    value: http://opentdf-claims:5000/v1/claims
+  - name: DB_VENDOR
+    value: postgres
+  - name: DB_ADDR
+    value: opentdf-postgresql
+  - name: DB_DATABASE
+    value: keycloak_database
+  - name: DB_PORT
+    value: "5432"
+  - name: KEYCLOAK_PROXY_ADDRESS_FORWARDING
+    value: "true"
+  - name: KEYCLOAK_FRONTEND_URL
+    value: "https://opentdf.local:4566/auth"
+  - name: X509_CA_BUNDLE
+    value: /etc/x509/https/ca.crt
+extraEnvFrom: |
+  - secretRef:
+      name: '{{ include "keycloak.fullname" . }}-db'
+secrets:
+  db:
+    stringData:
+      DB_USER: postgres
+      DB_PASSWORD: otdf-pgsql-admin
+ingress:
+  enabled: true
+  servicePort: https
+  rules:
+    - # Ingress host
+      host: 'opentdf.local'
+      # Paths for the host
+      paths:
+        - path: /
+          pathType: Prefix
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    ingress.kubernetes.io/affinity: cookie
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/proxy-ssl-secret: "default/x509-secret"
+    nginx.ingress.kubernetes.io/proxy-ssl-verify: "off"
+    nginx.ingress.kubernetes.io/proxy-ssl-verify-depth: "2"
+    nginx.ingress.kubernetes.io/auth-tls-secret: "default/x509-secret"
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "optional"
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "2"
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+
+  hosts:
+    - opentdf.local
+  tls:
+    - hosts:
+        - 'opentdf.local'
+      secretName: x509-secret
+
+
+extraVolumes: |
+  - name: x509
+    secret: 
+      secretName : x509-secret
+extraVolumeMounts: |
+  - name: x509
+    mountPath: /etc/x509/https
+startupScripts:
+  keycloak.cli: |
+    embed-server --server-config=standalone-ha.xml --std-out=echo
+    batch
+    /subsystem=keycloak-server/spi=x509cert-lookup:write-attribute(name=default-provider, value="nginx")            
+    /subsystem=keycloak-server/spi=x509cert-lookup/provider=default:remove
+    /subsystem=keycloak-server/spi=x509cert-lookup/provider=nginx:add(enabled=true,properties={sslClientCert => "ssl-client-cert", sslCertChainPrefix => "USELESS",     certificateChainLength => "2"})
+    run-batch
+    stop-embedded-server
