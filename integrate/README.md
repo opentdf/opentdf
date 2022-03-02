@@ -148,6 +148,9 @@ Add user and set role for viewing clients and users.
 
 #### Add entity (client, NPE)
 
+Attribute Provider URL  
+http://opentdf-claims.opentdf.svc.cluster.local:5000/claims
+
 ![](../resource/keycloak-client-nonperson-service.png)
 
 #### Set password on entity (client, NPE)
