@@ -1,3 +1,3 @@
 from opentdf import __version__
 
-print("Version: %s", __version__)
+print("Version: ", __version__)
