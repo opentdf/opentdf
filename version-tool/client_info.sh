@@ -8,12 +8,28 @@ RUN_DIR=$( pwd )
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# echo $SCRIPT_DIR
-# echo $PATH_TO_PACKAGE_DIR
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    shift
+    case "${key}" in
+        -p | --package)
+            PATH_TO_PACKAGE=$1
+            shift
+            ;;
+        -w | --wheel)
+            PYTHON_INSTALL=$1
+            shift
+            ;;
+        * ) 
+            echo "Unrecognized parameter. See --help for usage."
+            break ;;
+    esac
+done
 
-cd $RUN_DIR
-
-
+#get the directory of the package if set
+if [[ ! -z ${PATH_TO_PACKAGE+z} ]]; then
+    PATH_TO_PACKAGE_DIR="$(dirname "${PATH_TO_PACKAGE}")"
+fi
 
 #trying python
 if [[ ! -z ${PYTHON_INSTALL+z} ]]; then #user can supply path to whl or specific package name if they want
@@ -29,8 +45,8 @@ if [[ ! -z ${PYTHON_INSTALL+z} ]]; then #user can supply path to whl or specific
 else
     #otherwise see if its installed already
     if [[ $(pip3 list | grep -F opentdf) ]]; then
-    echo "PYTHON CLIENT:"
-    python3 $SCRIPT_DIR/version-files/client-py.py
+        echo "PYTHON CLIENT:"
+        python3 $SCRIPT_DIR/version-files/client-py.py
     fi
     #else not installed
 fi
@@ -57,3 +73,5 @@ if [[ ! -z ${PATH_TO_PACKAGE_DIR+z} ]]; then
     fi
 
 fi
+
+cd $RUN_DIR
