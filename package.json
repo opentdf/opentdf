@@ -1,9 +1,0 @@
-{
-    "name": "test_version_script",
-    "version": "0.0.1",
-    "dependencies": {
-        "@opentdf/client": "file:../../client-web/opentdf-client-0.1.0.tgz",
-        // "@opentdf/cli": "file:../../client-web/opentdf-cli-0.1.0.tgz",
-        "tdf3-js": "file:../../tdf3-js/tdf3-js-4.1.8.tgz"
-    }
-}
