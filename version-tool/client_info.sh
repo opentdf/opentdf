@@ -17,7 +17,19 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         -w | --wheel)
-            PYTHON_INSTALL=$1
+            PYTHON_WHEEL=$1
+            shift
+            ;;
+        -r | --requirement)
+            PYTHON_REQUIREMENT=$1
+            shift
+            ;;
+        -i | --include)
+            CPP_INCLUDE=$1
+            shift
+            ;;
+        -l | --lib)
+            CPP_LIB=$1
             shift
             ;;
         * ) 
@@ -26,26 +38,38 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+
 #get the directory of the package if set
 if [[ ! -z ${PATH_TO_PACKAGE+z} ]]; then
     PATH_TO_PACKAGE_DIR="$(dirname "${PATH_TO_PACKAGE}")"
 fi
 
 #trying python
-if [[ ! -z ${PYTHON_INSTALL+z} ]]; then #user can supply path to whl or specific package name if they want
+if [[ ! -z ${PYTHON_WHEEL+z} ]]; then #user can supply path to whl or specific package name if they want
     #install the whl in a venv
     pip3 install --upgrade virtualenv > /dev/null
     python3 -m virtualenv venv > /dev/null
     source venv/bin/activate > /dev/null
-    pip3 install $PYTHON_INSTALL > /dev/null
+    pip3 install $PYTHON_WHEEL > /dev/null
     echo "PYTHON CLIENT:"
     python3 $SCRIPT_DIR/version-files/client-py.py
     deactivate > /dev/null
     rm -rf venv > /dev/null
+    cd $RUN_DIR
+elif [[ ! -z ${PYTHON_REQUIREMENT+z} ]]; then
+    pip3 install --upgrade virtualenv > /dev/null
+    python3 -m virtualenv venv > /dev/null
+    source venv/bin/activate > /dev/null
+    pip3 install -r $PYTHON_REQUIREMENT > /dev/null
+    echo "PYTHON CLIENT:"
+    python3 $SCRIPT_DIR/version-files/client-py.py
+    deactivate > /dev/null
+    rm -rf venv > /dev/null
+    cd $RUN_DIR
 else
     #otherwise see if its installed already
     if [[ $(pip3 list | grep -F opentdf) ]]; then
-        echo "PYTHON CLIENT:"
+        echo "CLIENT-PYTHON:"
         python3 $SCRIPT_DIR/version-files/client-py.py
     fi
     #else not installed
@@ -72,6 +96,33 @@ if [[ ! -z ${PATH_TO_PACKAGE_DIR+z} ]]; then
         npx @opentdf/cli --version
     fi
 
+    cd $RUN_DIR
+
 fi
+
+if [[ ! -z ${CPP_INCLUDE+z} ]]; then
+    cp -R $CPP_INCLUDE $SCRIPT_DIR/version-files/cpp-client
+    cp -R $CPP_LIB $SCRIPT_DIR/version-files/cpp-client
+
+    cd $SCRIPT_DIR/version-files/cpp-client
+
+    cmake . > /dev/null
+
+    make > /dev/null
+
+    echo "CLIENT-CPP:"
+    ./tdf_sample
+
+    rm -rf $SCRIPT_DIR/version-files/cpp-client/include > /dev/null
+    rm -rf $SCRIPT_DIR/version-files/cpp-client/lib > /dev/null
+    rm -rf $SCRIPT_DIR/version-files/cpp-client/CMakeFiles > /dev/null
+    rm -f $SCRIPT_DIR/version-files/cpp-client/cmake_install.cmake > /dev/null
+    rm -f $SCRIPT_DIR/version-files/cpp-client/CMakeCache.txt > /dev/null
+    rm -f $SCRIPT_DIR/version-files/cpp-client/Makefile > /dev/null
+    rm -f $SCRIPT_DIR/version-files/cpp-client/tdf_sample > /dev/null
+
+    cd $RUN_DIR    
+fi
+
 
 cd $RUN_DIR
