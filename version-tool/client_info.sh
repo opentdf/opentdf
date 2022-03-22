@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-#pip3 install /Users/ehealy/Desktop/repos/virtru/tdf3-cpp/src/python-bindings/pips/dist/opentdf-0.6.0-cp38-cp38-macosx_12_0_arm64.whl
-
 echo  "-------------------------------Client Information----------------------------"
 
 RUN_DIR=$( pwd )

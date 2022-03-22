@@ -8,9 +8,4 @@ digest=$(curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json" 
               -s "https://registry-1.docker.io/v2/${repo}/manifests/${tag}" | jq -r .config.digest)
 curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
      -H "Authorization: Bearer $token" \
-     -s -L "https://registry-1.docker.io/v2/${repo}/blobs/${digest}" | jq -r .config.Labels
-# jsonResp=$(curl -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-#      -H "Authorization: Bearer $token" \
-#      -s -L "https://registry-1.docker.io/v2/${repo}/blobs/${digest}")
-# echo "${jsonResp}" | jq '[paths] | select(.[-1] | type == "string" and contains("Labels")) | join(".")'
-# #-r '.[] | try .Labels catch "null"'
+     -s -L "https://registry-1.docker.io/v2/${repo}/blobs/${digest}" | jq -r 

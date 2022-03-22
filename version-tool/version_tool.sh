@@ -85,4 +85,6 @@ fi
 
 sh $SCRIPT_DIR/client_info.sh "${args[@]}"
 
+echo "\n"
+
 sh $SCRIPT_DIR/server_info.sh $CHART
