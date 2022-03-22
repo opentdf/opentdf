@@ -61,3 +61,5 @@ ignore*
 *decrypted*
 virtru-tdf3-lib-python*
 .DS_Store
+/quickstart/sample.txt.ntdf
+/quickstart/sample_out.txt

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "abacus.name" . }}-cm
+data:
+  KEYCLOAK_HOST: {{ .Values.oidc.serverUrl }}
+  KEYCLOAK_CLIENT_ID: {{ .Values.oidc.clientId }}
+  KEYCLOAK_REALM: {{ .Values.oidc.realm }}
+  ATTRIBUTES_HOST: {{ .Values.attributes.serverUrl }}
+  ENTITLEMENTS_HOST: {{ .Values.entitlements.serverUrl }}

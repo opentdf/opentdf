@@ -25,12 +25,10 @@ try:
     f.write(plain_text)
     f.close()
 
-    client.with_data_attributes(
-        [
-            "https://example.com/attr/Classification/value/S",
-            "https://example.com/attr/COI/value/PRX",
-        ]
+    client.add_data_attribute(
+        "https://example.com/attr/Classification/value/S", KAS_URL
     )
+    client.add_data_attribute("https://example.com/attr/COI/value/PRX", KAS_URL)
     client.encrypt_file("sample.txt", "sample.txt.tdf")
     client.decrypt_file("sample.txt.tdf", "sample_out.txt")
 
@@ -53,8 +51,8 @@ try:
     # create a nano tdf client.
     nano_tdf_client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
     nano_tdf_client.enable_console_logging(LogLevel.Error)
-    nano_tdf_client.with_data_attributes(
-        ["https://example.com/attr/Classification/value/S"]
+    nano_tdf_client.add_data_attribute(
+        "https://example.com/attr/Classification/value/S", KAS_URL
     )
     nano_tdf_client.encrypt_file("sample.txt", "sample.txt.ntdf")
     nano_tdf_client.decrypt_file("sample.txt.ntdf", "sample_out.txt")

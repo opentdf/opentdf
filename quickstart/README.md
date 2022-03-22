@@ -44,7 +44,9 @@ cd documentation/quickstart
 
 ### Create cluster
 
-`kind create cluster --name opentdf`
+```
+kind create cluster --name opentdf
+```
 
 ### Start services
 

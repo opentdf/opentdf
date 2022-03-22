@@ -3,4 +3,4 @@ name: key-access
 description: TDF key access control service
 type: application
 version: 0.1.0
-appVersion: "50b30cc672bc3c50bb4ff55a65b422684146f5cd"
+appVersion: "sha-1290740"

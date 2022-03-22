@@ -19,7 +19,7 @@ dependencies:
   version: 0.1.0
 - name: keycloak
   repository: https://charts.bitnami.com/bitnami
-  version: 5.1.1
+  version: 7.1.6
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 10.9.5
@@ -28,6 +28,6 @@ dependencies:
   version: 0.1.19
 - name: ingress-nginx
   repository: https://kubernetes.github.io/ingress-nginx
-  version: 4.0.1
-digest: sha256:d8284eeb0a760cac53d0a9f4ce775f49912e2a23fc3245b1000676ae3068eeb1
-generated: "2021-10-10T20:14:50.755109-04:00"
+  version: 4.0.18
+digest: sha256:defd66a855a9efc0279040e50d806d8570ebb37e88c8d1755a14aeb7614afeef
+generated: "2022-03-22T10:22:41.843807-04:00"
