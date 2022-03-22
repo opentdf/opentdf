@@ -34,7 +34,7 @@ from opentdf import TDFClient, OIDCCredentials, LogLevel
 # KAS_URL = os.getenv("KAS_URL")
 
 KAS_URL = "http://localhost:65432/kas/"
-OIDC_ENDPOINT = "http://localhost:65432/keycloak"
+OIDC_ENDPOINT = "http://localhost:65432/auth/"
 
 if not (KAS_URL and OIDC_ENDPOINT):
     raise EnvironmentError(

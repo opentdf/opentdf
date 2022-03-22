@@ -48,15 +48,14 @@ keycloak:
     - name: CLAIMS_URL
       value: http://opentdf-claims:5000/claims
     - name: KEYCLOAK_FRONTEND_URL
-      value: "http://localhost:65432/keycloak/auth"
+      value: "http://localhost:65432/auth"
     - name: KEYCLOAK_EXTRA_ARGS
-      value: "-Dkeycloak.frontendUrl=http://localhost:65432/keycloak/auth -Dkeycloak.adminUrl=http://localhost:65432/keycloak/auth"
+      value: "-Dkeycloak.frontendUrl=http://localhost:65432/auth -Dkeycloak.adminUrl=http://localhost:65432/auth"
   ingress:
     enabled: true
     annotations:
       kubernetes.io/ingress.class: nginx
-      nginx.ingress.kubernetes.io/rewrite-target: /$2
-    path: /keycloak(/|$)(.*)
+    path: /auth
     hostname: localhost
 
 postgresql:
@@ -151,7 +150,7 @@ abacus:
   entitlements:
     serverUrl: http://localhost:65432/entitlement
   oidc:
-    serverUrl: http://localhost:65432/keycloak/auth/
+    serverUrl: http://localhost:65432/auth/
     clientId: tdf-entitlement
     realm: tdf
   ingress:
@@ -182,8 +181,8 @@ attributes:
 #    trailing / is required
     serverUrl: http://opentdf-keycloak/auth/
     configurationUrl: http://opentdf-keycloak/auth/realms/tdf/.well-known/openid-configuration
-    authorizationUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/auth
-    tokenUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/token
+    authorizationUrl: http://localhost:65432/auth/realms/tdf/protocol/openid-connect/auth
+    tokenUrl: http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token
   ingress:
     enabled: true
     hosts:
@@ -234,8 +233,8 @@ entitlement:
 #    trailing / is required
     serverUrl: http://opentdf-keycloak/auth/
     configurationUrl: http://opentdf-keycloak/auth/realms/tdf/.well-known/openid-configuration
-    authorizationUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/auth
-    tokenUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/token
+    authorizationUrl: http://localhost:65432/auth/realms/tdf/protocol/openid-connect/auth
+    tokenUrl: http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token
   ingress:
     enabled: true
     hosts:

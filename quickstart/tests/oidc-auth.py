@@ -2,7 +2,7 @@ import sys
 from opentdf import TDFClient, NanoTDFClient, OIDCCredentials, LogLevel
 
 # encrypt the file and apply the policy on tdf file and also decrypt.
-OIDC_ENDPOINT = "http://localhost:65432/keycloak"
+OIDC_ENDPOINT = "http://localhost:65432/auth"
 KAS_URL = "http://localhost:65432/kas"
 
 try:

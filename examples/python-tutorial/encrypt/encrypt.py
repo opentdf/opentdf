@@ -5,7 +5,7 @@ from opentdf import TDFClient, OIDCCredentials, LogLevel
 # Load email and appId from environment variables
 # encrypt the file and apply the policy on tdf file and also decrypt.
 
-OIDC_ENDPOINT = "http://localhost:65432/keycloak"
+OIDC_ENDPOINT = "http://localhost:65432/auth/"
 KAS_URL = "http://localhost:65432/kas/"
 # KAS_URL = os.getenv("KAS_URL")
 # OIDC_ENDPOINT = os.getenv('OIDC_ENDPOINT')
