@@ -1,7 +1,7 @@
-name: GitHub Actions Demo
+name: Quickstart workflow
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  quickstart-test:
     runs-on: ubuntu-latest
     steps:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
@@ -9,9 +9,36 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v2
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
+      - uses: yokawasa/action-setup-kube-tools@v0.7.1
+        with:
+          setup-tools: |
+            kubectl
+            helm
+            tilt
+          # This should be in sync with the minikube-deployed kube version below
+          kubectl: "1.23.3"
+          helm: "3.8.0"
+          helmv3: "3.8.0"
+          tilt: "0.25.2"
+      - run: |
+          kustomize version
+          tilt version
+      - name: Start Minikube
+        id: minikube
+        uses: medyagh/setup-minikube@latest
+        with:
+          minikube-version: 1.25.2
+          # This should be in sync with the setup-tools version above
+          kubernetes-version: 1.23.3
+      - name: Get cluster versions
+        run: |-
+          kubectl version
+          kubectl get pods -A
+      - name: Run Tiltfile
+        run: |-
+          cd quickstart
+          tilt ci
+      - name: Quick check - run/validate local deployment Tiltfile
+        run: |-
+          tilt ci
       - run: echo "🍏 This job's status is ${{ job.status }}."
