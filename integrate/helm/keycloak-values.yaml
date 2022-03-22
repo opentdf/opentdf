@@ -18,11 +18,11 @@ extraEnvVars:
   - name: ATTRIBUTE_PROVIDER_URL
     value: http://opentdf-claims
   - name: KEYCLOAK_EXTRA_ARGS
-    value: "-Dkeycloak.frontendUrl=https://localhost/keycloak/auth -Dkeycloak.adminUrl=https://localhost/keycloak/auth"
+    value: "-Dkeycloak.frontendUrl=https://localhost:65432/auth -Dkeycloak.adminUrl=https://localhost:65432/auth"
 
 ingress:
   enabled: true
   annotations:
     kubernetes.io/ingress.class: nginx
-  path: /keycloak
+  path: /auth
   hostname: localhost

@@ -147,7 +147,7 @@ From here, you can get a list of attributes or entities.
 Abacus provides a front-end that links a keycloak identity provider with a custom attribute-based access control system.
 To log in and use abacus itself, you must create and use _User_ accounts in the _tdf_ realm of the associated keycloak service.
 
-To create an abacus login, open up keyloak, which will be available at [port 65432](http://localhost:65432/keycloak/auth/).
+To create an abacus login, open up keyloak, which will be available at [port 65432](http://localhost:65432/auth/).
 
 ![Screenshot of the current Keycloak home page. 'Administration console' is a header available on the center left of the page](../examples/client-app/static/keycloak-home.png)
 
