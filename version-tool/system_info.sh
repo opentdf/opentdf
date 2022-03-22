@@ -48,5 +48,4 @@ kind version 2> /dev/null
 echo ""
 echo "-----TILT-----:"
 tilt version 2> /dev/null
-echo ""
-echo ""
+echo "\n"

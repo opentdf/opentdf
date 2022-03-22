@@ -44,7 +44,7 @@ done
 echo "-----LABELS FOR OPENTDF/VIRTRU IMAGES-----"
 for image in "${helmImages[@]}"
 do
-    if [[ "$image" == *"opentdf"* ]]; then
+    if [[ "$image" == *"opentdf"* || "$image" == *"virtru"* ]]; then
         parts=( $(echo $image | tr ":" "\n") )
         if [ "${#parts[@]}" -eq "1" ]; then
             jsonData=$( sh $SCRIPT_DIR/get_config_dockerhub.sh ${parts[0]} )
@@ -52,21 +52,16 @@ do
             jsonData=$( sh $SCRIPT_DIR/get_config_dockerhub.sh ${parts[0]} ${parts[1]} )
         fi
         printf "%s \n" "$image"
-        labels=$( jq -r 'try .config.Labels catch null' 2> /dev/null <<< "$jsonData") 
-        printf "\tCreated: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.created"' )"
-        printf "\tCommit: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.revision"' )"
-        printf "\tSource: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.source"' )"
-        printf "\tRepo: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.title"' )"
-    elif [[ "$image" == *"virtru"* ]]; then
-        parts=( $(echo $image | tr ":" "\n") )
-        if [ "${#parts[@]}" -eq "1" ]; then
-            jsonData=$( sh $SCRIPT_DIR/get_config_dockerhub.sh ${parts[0]} )
+        if [[ "$image" == *"opentdf"* ]]; then
+            labels=$( jq -r 'try .config.Labels catch null' 2> /dev/null <<< "$jsonData") 
+            printf "\tCreated: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.created"' )"
+            printf "\tCommit: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.revision"' )"
+            printf "\tSource: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.source"' )"
+            printf "\tRepo: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.title"' )"
         else
-            jsonData=$( sh $SCRIPT_DIR/get_config_dockerhub.sh ${parts[0]} ${parts[1]} )
+            labels=$( jq -r 'try .container_config.Labels catch null' 2> /dev/null <<< "$jsonData") 
+            echo "\t${labels}"
         fi
-        printf "%s: " "$image"
-        labels=$( jq -r 'try .container_config.Labels catch null' 2> /dev/null <<< "$jsonData") 
-        echo "\t${labels}"
     fi
 
 done

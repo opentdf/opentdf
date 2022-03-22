@@ -36,6 +36,18 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+start_venv(){
+    pip3 install --upgrade virtualenv > /dev/null
+    python3 -m virtualenv venv > /dev/null
+    source venv/bin/activate > /dev/null
+}
+
+exit_venv(){
+    deactivate > /dev/null
+    rm -rf venv > /dev/null
+    cd $RUN_DIR
+}
+
 
 #get the directory of the package if set
 if [[ ! -z ${PATH_TO_PACKAGE+z} ]]; then
@@ -43,27 +55,18 @@ if [[ ! -z ${PATH_TO_PACKAGE+z} ]]; then
 fi
 
 #trying python
-if [[ ! -z ${PYTHON_WHEEL+z} ]]; then #user can supply path to whl or specific package name if they want
-    #install the whl in a venv
-    pip3 install --upgrade virtualenv > /dev/null
-    python3 -m virtualenv venv > /dev/null
-    source venv/bin/activate > /dev/null
+if [[ ! -z ${PYTHON_WHEEL+z} ]]; then
+    start_venv
     pip3 install $PYTHON_WHEEL > /dev/null
     echo "PYTHON CLIENT:"
     python3 $SCRIPT_DIR/version-files/client-py.py
-    deactivate > /dev/null
-    rm -rf venv > /dev/null
-    cd $RUN_DIR
+    exit_venv
 elif [[ ! -z ${PYTHON_REQUIREMENT+z} ]]; then
-    pip3 install --upgrade virtualenv > /dev/null
-    python3 -m virtualenv venv > /dev/null
-    source venv/bin/activate > /dev/null
+    start_venv
     pip3 install -r $PYTHON_REQUIREMENT > /dev/null
     echo "PYTHON CLIENT:"
     python3 $SCRIPT_DIR/version-files/client-py.py
-    deactivate > /dev/null
-    rm -rf venv > /dev/null
-    cd $RUN_DIR
+    exit_venv
 else
     #otherwise see if its installed already
     if [[ $(pip3 list | grep -F opentdf) ]]; then
@@ -73,7 +76,7 @@ else
     #else not installed
 fi
 
-# #trying tdf3-js, client-web, and cli -- user has to provide path to pakage.json directory
+# #trying tdf3-js, client-web, and cli -- user has to provide path to pakage.json
 if [[ ! -z ${PATH_TO_PACKAGE_DIR+z} ]]; then
     cd $PATH_TO_PACKAGE_DIR > /dev/null
     npm install > /dev/null
@@ -111,13 +114,14 @@ if [[ ! -z ${CPP_INCLUDE+z} ]]; then
     echo "CLIENT-CPP:"
     ./tdf_sample
 
-    rm -rf $SCRIPT_DIR/version-files/cpp-client/include > /dev/null
-    rm -rf $SCRIPT_DIR/version-files/cpp-client/lib > /dev/null
-    rm -rf $SCRIPT_DIR/version-files/cpp-client/CMakeFiles > /dev/null
-    rm -f $SCRIPT_DIR/version-files/cpp-client/cmake_install.cmake > /dev/null
-    rm -f $SCRIPT_DIR/version-files/cpp-client/CMakeCache.txt > /dev/null
-    rm -f $SCRIPT_DIR/version-files/cpp-client/Makefile > /dev/null
-    rm -f $SCRIPT_DIR/version-files/cpp-client/tdf_sample > /dev/null
+    rm -rf $SCRIPT_DIR/version-files/cpp-client/include \
+    $SCRIPT_DIR/version-files/cpp-client/lib \
+    $SCRIPT_DIR/version-files/cpp-client/CMakeFiles > /dev/null
+
+    rm -f $SCRIPT_DIR/version-files/cpp-client/cmake_install.cmake \
+    $SCRIPT_DIR/version-files/cpp-client/CMakeCache.txt \
+    $SCRIPT_DIR/version-files/cpp-client/Makefile \
+    $SCRIPT_DIR/version-files/cpp-client/tdf_sample > /dev/null
 
     cd $RUN_DIR    
 fi
