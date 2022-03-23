@@ -5,7 +5,7 @@ Retrieve system information and both client-side and server-side version informa
 ### To Run
 
 ```shell
-sh version_tool.sh --chart PATH_TO_CHART --package PATH_TO_PACKAGE --requirement PATH_TO_REQUIREMENTS --wheel PATH_TO_WHEEL 
+sh version_tool.sh --chart PATH_TO_CHART --package PATH_TO_PACKAGE --requirement PATH_TO_REQUIREMENTS --wheel PATH_TO_WHEEL --lib PATH_TO_LIB --include PATH_TO_INCLUDE
 ```
 
 Where:
@@ -18,7 +18,7 @@ Where:
 
 `PATH_TO_WHEEL` is a path a `.whl` file if used to install python client
 
-`PATH_TO_LIB` is a path to the `include` directory of the opentdf cpp library if using cpp client
+`PATH_TO_LIB` is a path to the `lib` directory of the opentdf cpp library if using cpp client
 
 `PATH_TO_INCLUDE` is a path to the `include` directory of the opentdf cpp library if using cpp client
 <br /><br />
