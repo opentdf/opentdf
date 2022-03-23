@@ -37,4 +37,3 @@ jobs:
           cd quickstart
           tilt ci
       - run: echo "🍏 Job status is ${{ job.status }}."
-docker.io/opentdf/kas:sha-5040d9f
