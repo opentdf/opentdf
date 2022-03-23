@@ -248,6 +248,7 @@ entitlement:
       nginx.ingress.kubernetes.io/rewrite-target: /$2
 
 key-access:
+  logLevel: DEBUG
   endpoints:
     easHost: http://opentdf-attributes:4020
     statsdHost: opentdf-statsd

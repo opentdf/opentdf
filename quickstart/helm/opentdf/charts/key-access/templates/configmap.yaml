@@ -15,5 +15,5 @@ data:
   OIDC_PUBKEY_ENDPOINT: {{ .Values.endpoints.oidcPubkeyEndpoint }}
   KEYCLOAK_HOST: {{ .Values.endpoints.oidcPubkeyEndpoint }}
   USE_KEYCLOAK: "1"
-  LOGLEVEL: INFO
+  LOGLEVEL: {{ .Values.logLevel }}
   STATSD_HOST: {{ .Values.endpoints.statsdHost }}
