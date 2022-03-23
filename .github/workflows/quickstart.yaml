@@ -38,7 +38,4 @@ jobs:
         run: |-
           cd quickstart
           tilt ci
-      - name: Quick check - run/validate local deployment Tiltfile
-        run: |-
-          tilt ci
       - run: echo "🍏 Job status is ${{ job.status }}."
