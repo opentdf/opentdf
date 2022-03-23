@@ -3,10 +3,8 @@ on: [push]
 jobs:
   quickstart-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v2
       - uses: yokawasa/action-setup-kube-tools@v0.7.1
@@ -39,3 +37,4 @@ jobs:
           cd quickstart
           tilt ci
       - run: echo "🍏 Job status is ${{ job.status }}."
+docker.io/opentdf/kas:sha-5040d9f
