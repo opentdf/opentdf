@@ -41,4 +41,4 @@ jobs:
       - name: Quick check - run/validate local deployment Tiltfile
         run: |-
           tilt ci
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - run: echo "🍏 Job status is ${{ job.status }}."
