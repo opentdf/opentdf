@@ -1,0 +1,16 @@
+endpoints:
+  easHost: http://attributes:4020
+  oidcPubkeyEndpoint: http://keycloak-http
+image:
+  image: ghcr.io/opentdf/kas:main
+imagePullSecrets:
+  - name: ghcr-registry-key
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  hosts:
+    localhost:
+      "/api/kas(/|$)(.*)":
+        pathType: Prefix

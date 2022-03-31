@@ -1,0 +1,31 @@
+rootPath: /attributes
+publicName: "Attribute Authority"
+logLevel: DEBUG
+image:
+  image: ghcr.io/opentdf/attributes:main
+imagePullSecrets:
+  - name: ghcr-registry-key
+postgres:
+  host: postgresql
+  port: 5432
+  user: tdf_attribute_manager
+  database: tdf_database
+  schema: tdf_attribute
+oidc:
+  clientId: tdf-attributes
+  clientSecret: myclientsecret
+  realm: tdf
+#    trailing / is required
+  serverUrl: http://opentdf-keycloak/auth/
+  configurationUrl: http://opentdf-keycloak/auth/realms/tdf/.well-known/openid-configuration
+  authorizationUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/auth
+  tokenUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/token
+ingress:
+  enabled: true
+  hosts:
+    localhost:
+      "/api/attributes(/|$)(.*)":
+        pathType: Prefix
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2

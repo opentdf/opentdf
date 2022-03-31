@@ -1,6 +1,0 @@
-apiVersion: v2
-name: entitlement
-description: TDF entitlement service
-type: application
-version: 0.1.0
-appVersion: "c4d3050f227ceae9e638d5a88ee08a038437c750"

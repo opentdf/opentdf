@@ -1,0 +1,41 @@
+image:
+  repository: ghcr.io/opentdf/keycloak
+  tag: main
+imagePullSecrets:
+  - name: ghcr-registry-key
+auth:
+  createAdminUser: true
+  adminUser: keycloakadmin
+  adminPassword: mykeycloakpassword
+postgresql:
+  enabled: false
+  postgresqlUsername: postgres
+  postgresqlPassword: mydbapassword
+  postgresqlDatabase: keycloak_database
+externalDatabase:
+  host: opentdf-postgresql
+  user: postgres
+  password: mydbapassword
+  database: keycloak_database
+extraEnvVars:
+#    - name: KEYCLOAK_LOG_LEVEL
+#      value: DEBUG
+  - name: KEYCLOAK_USER
+    value: keycloakadmin
+  - name: KEYCLOAK_PASSWORD
+    value: mykeycloakpassword
+  - name: ATTRIBUTE_PROVIDER_URL
+    value: http://claims:5000
+  - name: CLAIMS_URL
+    value: http://claims:5000/claims
+  - name: KEYCLOAK_FRONTEND_URL
+    value: "http://localhost:65432/auth"
+  - name: KEYCLOAK_EXTRA_ARGS
+    value: "-Dkeycloak.frontendUrl=http://localhost:65432/auth -Dkeycloak.adminUrl=http://localhost:65432/auth"
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  path: /keycloak(/|$)(.*)
+  hostname: localhost

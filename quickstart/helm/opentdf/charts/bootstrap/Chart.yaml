@@ -1,6 +1,0 @@
-apiVersion: v2
-name: bootstrap
-description: TDF bootstrap job
-type: application
-version: 0.1.0
-appVersion: "596f654b2cc22590adae9eea3c22596941e2a537"

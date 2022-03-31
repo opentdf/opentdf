@@ -1,0 +1,15 @@
+name: keycloak-bootstrap
+attributes:
+  hostname: http://attributes:4020
+entitlements:
+  hostname: http://entitlements:4030
+image:
+  image: ghcr.io/opentdf/claims:main
+  pullSecret: ghcr-registry-key
+keycloak:
+  hostname: http://keycloak-http
+  clientId: tdf-client
+  clientSecret: 123-456
+  username: keycloakadmin
+  password: mykeycloakpassword
+  realm: tdf

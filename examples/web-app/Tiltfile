@@ -8,7 +8,7 @@ k8s_yaml(helm("../../quickstart/helm/opentdf", "opentdf"))
 # resource dependencies
 k8s_resource("opentdf-abacus", links = link("http://localhost:65432"))
 k8s_resource("opentdf-attributes", resource_deps = ["opentdf-postgresql"], links = link("http://localhost:65432/attributes/docs"))
-k8s_resource("opentdf-entitlement", resource_deps = ["opentdf-postgresql"], links = link("http://localhost:65432/entitlement/docs"))
+k8s_resource("opentdf-entitlements", resource_deps = ["opentdf-postgresql"], links = link("http://localhost:65432/entitlements/docs"))
 k8s_resource("opentdf-claims", resource_deps = ["opentdf-postgresql"], links = link("http://localhost:65432/claims/docs"))
 k8s_resource("opentdf-keycloak", resource_deps = ["opentdf-postgresql"], port_forwards = "8443:443", links = link("http://localhost:65432/keycloak/auth/"))
 k8s_resource("opentdf-bootstrap", resource_deps = ["opentdf-keycloak"])

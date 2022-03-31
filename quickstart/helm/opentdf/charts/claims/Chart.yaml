@@ -1,6 +1,0 @@
-apiVersion: v2
-name: claims
-description: TDF claims service
-type: application
-version: 0.1.0
-appVersion: "sha-1290740"
