@@ -93,7 +93,7 @@ Nano TDF Encrypt/Decrypt is successful!!
 ```
 
 See the TDF files under `documentation/quickstart/tests`  
-Report errors to <MAILTO:openstack-team@virtru.com>
+Report errors to <MAILTO:support@OpenTDF.io>
 
 ### Clean up
 
