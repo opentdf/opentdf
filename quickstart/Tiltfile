@@ -121,6 +121,19 @@ helm_resource(
 if os.environ.get("CI"):
     local_resource(
         "validation-test",
-        "python3 tests/oidc-auth.py",
+        """
+            for i in {1..5}; do
+                python3 tests/oidc-auth.py
+                if python3 tests/oidc-auth.py; then
+                    return 0
+                fi
+                if [[ $i == 10 ]]; then
+                    break
+                fi
+                sleep_for=$((10 + i * i * 2))
+                echo "[INFO] retrying in ${sleep_for} seconds... ( ${i} / 5 ) ..."
+                sleep ${sleep_for}
+            done
+        """,
         resource_deps=["kas", "keycloak-bootstrap"],
     )
