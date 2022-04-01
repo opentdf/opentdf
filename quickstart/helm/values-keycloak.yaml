@@ -3,10 +3,6 @@ image:
   tag: main
 imagePullSecrets:
   - name: ghcr-registry-key
-auth:
-  createAdminUser: true
-  adminUser: keycloakadmin
-  adminPassword: mykeycloakpassword
 postgresql:
   enabled: false
   postgresqlUsername: postgres
@@ -17,25 +13,37 @@ externalDatabase:
   user: postgres
   password: mydbapassword
   database: keycloak_database
-extraEnvVars:
-#    - name: KEYCLOAK_LOG_LEVEL
-#      value: DEBUG
-  - name: KEYCLOAK_USER
-    value: keycloakadmin
-  - name: KEYCLOAK_PASSWORD
-    value: mykeycloakpassword
-  - name: ATTRIBUTE_PROVIDER_URL
-    value: http://claims:5000
+extraEnv: |
   - name: CLAIMS_URL
     value: http://claims:5000/claims
-  - name: KEYCLOAK_FRONTEND_URL
-    value: "http://localhost:65432/auth"
-  - name: KEYCLOAK_EXTRA_ARGS
-    value: "-Dkeycloak.frontendUrl=http://localhost:65432/auth -Dkeycloak.adminUrl=http://localhost:65432/auth"
+# - name: DB_VENDOR
+#   value: postgres
+# - name: DB_ADDR
+#   value: postgresql
+# - name: DB_DATABASE
+#   value: keycloak_database
+# - name: DB_PORT
+#   value: "5432"
+# - name: KEYCLOAK_PROXY_ADDRESS_FORWARDING
+#   value: "true"
+# - name: KEYCLOAK_FRONTEND_URL
+#   value: "http://localhost:65432/auth"
+# - name: KEYCLOAK_LOG_LEVEL
+#   value: DEBUG
+extraEnvFrom: |
+  - secretRef:
+      name: 'keycloak-secrets'
 ingress:
   enabled: true
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-  path: /keycloak(/|$)(.*)
-  hostname: localhost
+  ingressClassName: nginx
+  rules:
+    - host: localhost
+      paths:
+        - path: /auth(/|$)(.*)
+          pathType: Prefix
+    - host: host.docker.internal
+      paths:
+        - path: /auth(/|$)(.*)
+          pathType: Prefix
+  tls: null
+
