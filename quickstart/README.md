@@ -174,9 +174,9 @@ If you want to modify this sample to deploy to another domain, redirect and web 
 
 ![Screenshot of the keycloak mappers settings for a tdf client](static/keycloak-tdfclient-mappers.png)
 
-Abacus users are keycloak users that have aud: `tdf-entitlements`. Unique for public access with standard flow, you need this or you will see an error saying ‘audience is not correct’.
+Abacus users are keycloak users that have aud: `tdf-entitlement`. Unique for public access with standard flow, you need this or you will see an error saying ‘audience is not correct’.
 
-![A decoded jwt, which has the audience tdf-entitlements](static/jwt-aud.png)
+![A decoded jwt, which has the audience `tdf-entitlement`](static/jwt-aud.png)
 
 In the users panel, to grant a user access to abacus to view and edit attributes, they must be associated with the realm role, `default-tdf-role`. To grant them access to list and view entities, required to assign attributes to a user, you must also grant them the `realm-management` roles `view-events` and `view-users`.
 

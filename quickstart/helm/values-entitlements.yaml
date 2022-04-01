@@ -13,7 +13,7 @@ postgres:
   database: tdf_database
   schema: tdf_entitlement
 oidc:
-  clientId: tdf-entitlements
+  clientId: tdf-entitlement
   clientSecret: myclientsecret
   realm: tdf
 #    trailing / is required
