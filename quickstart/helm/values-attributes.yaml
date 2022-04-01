@@ -22,10 +22,11 @@ oidc:
   tokenUrl: http://localhost:65432/keycloak/auth/realms/tdf/protocol/openid-connect/token
 ingress:
   enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  className: nginx
   hosts:
-    localhost:
+    localhost: &paths
       "/api/attributes(/|$)(.*)":
         pathType: Prefix
-  annotations:
-    kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    host.docker.internal: *paths
