@@ -6,7 +6,7 @@ if not os.environ.get("CR_PAT"):
     fail("UNSET CR_PAT")
 
 local("echo $CR_PAT | docker login ghcr.io -u $CR_USER --password-stdin")
-local("echo $CR_PAT | helm registry login ghcr.io -u dmihalcik-virtru --password-stdin")
+local("echo $CR_PAT | helm registry login ghcr.io -u $CR_USER --password-stdin")
 
 helm_resource(
     "secrets",
