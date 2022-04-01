@@ -5,8 +5,8 @@ if not os.environ.get("CR_USER"):
 if not os.environ.get("CR_PAT"):
     fail("UNSET CR_PAT")
 
-# TODO: guard this so we aren't constantly logging in
 local("echo $CR_PAT | docker login ghcr.io -u $CR_USER --password-stdin")
+local("echo $CR_PAT | helm registry login ghcr.io -u dmihalcik-virtru --password-stdin")
 
 helm_resource(
     "secrets",
