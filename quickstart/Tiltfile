@@ -10,7 +10,7 @@ local("echo $CR_PAT | docker login ghcr.io -u $CR_USER --password-stdin")
 
 helm_resource(
     "secrets",
-    "helm/secrets",
+    "./helm/secrets",
     flags=[
         "--set",
         "imageCredentials.email={}".format(str(os.environ.get("CR_EMAIL", ""))),
@@ -110,7 +110,7 @@ helm_resource(
 
 helm_resource(
     "abacus",
-    "helm/abacus",
+    "./helm/abacus",
     flags=["-f", "helm/values-abacus.yaml"],
     labels="frontend",
 )
