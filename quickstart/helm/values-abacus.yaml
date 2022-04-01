@@ -8,10 +8,9 @@ oidc:
   realm: tdf
 ingress:
   enabled: true
+  className: nginx
   hosts:
     - host: localhost
       paths:
         - path: /
           pathType: Prefix
-  annotations:
-    kubernetes.io/ingress.class: nginx
