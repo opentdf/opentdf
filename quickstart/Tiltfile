@@ -46,6 +46,8 @@ helm_resource(
         "4.0.16",
         "--set",
         "controller.config.large-client-header-buffers=20 32k",
+        "--set",
+        "controller.admissionWebhooks.enabled=false",
     ],
     labels="third-party",
     port_forwards="65432:80",
