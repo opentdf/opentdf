@@ -1,7 +1,9 @@
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
-if not os.environ.get("CR_EMAIL", ""):
-    fail("UNSET CR_EMAIL")
+if not os.environ.get("CR_USER"):
+    fail("UNSET CR_USER")
+if not os.environ.get("CR_PAT"):
+    fail("UNSET CR_PAT")
 
 # TODO: guard this so we aren't constantly logging in
 local("echo $CR_PAT | docker login ghcr.io -u $CR_USER --password-stdin")
@@ -17,31 +19,52 @@ helm_resource(
         "--set",
         "imageCredentials.username={}".format(str(os.environ.get("CR_USER", ""))),
     ],
+    labels="utility",
 )
 
 # k8s_yaml("ingress-class.yaml")
 
-helm_repo("bitnami", "https://charts.bitnami.com/bitnami")
-helm_repo("codecentric", "https://codecentric.github.io/helm-charts")
-helm_repo("k8s-in", "https://kubernetes.github.io/ingress-nginx")
+helm_repo(
+    "bitnami",
+    "https://charts.bitnami.com/bitnami",
+    labels="utility",
+)
+helm_repo(
+    "codecentric",
+    "https://codecentric.github.io/helm-charts",
+    labels="utility",
+)
+helm_repo(
+    "k8s-in",
+    "https://kubernetes.github.io/ingress-nginx",
+    labels="utility",
+)
 
 helm_resource(
-  "ingress-nginx",
-  "k8s-in/ingress-nginx",
-  flags=["--version", "4.0.16", "--set", "controller.config.large-client-header-buffers=20 32k"],
-  port_forwards="65432:80",
+    "ingress-nginx",
+    "k8s-in/ingress-nginx",
+    flags=[
+        "--version",
+        "4.0.16",
+        "--set",
+        "controller.config.large-client-header-buffers=20 32k",
+    ],
+    labels="third-party",
+    port_forwards="65432:80",
 )
 
 helm_resource(
     "postgresql",
     "bitnami/postgresql",
     flags=["--version", "10.16.2", "-f", "helm/values-postgresql.yaml"],
+    labels="third-party",
 )
 
 helm_resource(
     "attributes",
     "oci://ghcr.io/opentdf/charts/attributes",
     flags=["--version", "0.0.1", "-f", "helm/values-attributes.yaml"],
+    labels="backend",
     resource_deps=["postgresql"],
 )
 
@@ -49,6 +72,7 @@ helm_resource(
     "claims",
     "oci://ghcr.io/opentdf/charts/claims",
     flags=["--version", "0.0.1", "-f", "helm/values-claims.yaml"],
+    labels="backend",
     resource_deps=["postgresql"],
 )
 
@@ -56,6 +80,7 @@ helm_resource(
     "entitlements",
     "oci://ghcr.io/opentdf/charts/entitlements",
     flags=["--version", "0.0.1", "-f", "helm/values-entitlements.yaml"],
+    labels="backend",
     resource_deps=["postgresql"],
 )
 
@@ -63,6 +88,7 @@ helm_resource(
     "keycloak",
     "codecentric/keycloak",
     flags=["--version", "17.0.1", "-f", "helm/values-keycloak.yaml"],
+    labels="third-party",
     resource_deps=["claims"],
 )
 
@@ -70,6 +96,7 @@ helm_resource(
     "kas",
     "oci://ghcr.io/opentdf/charts/kas",
     flags=["--version", "0.0.1", "-f", "helm/values-kas.yaml"],
+    labels="backend",
     resource_deps=["attributes", "keycloak"],
 )
 
@@ -77,6 +104,7 @@ helm_resource(
     "keycloak-bootstrap",
     "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
     flags=["--version", "0.4.2", "-f", "helm/values-bootstrap.yaml"],
+    labels="utility",
     resource_deps=["attributes", "keycloak"],
 )
 
@@ -84,5 +112,12 @@ helm_resource(
     "abacus",
     "helm/abacus",
     flags=["-f", "helm/values-abacus.yaml"],
+    labels="frontend",
 )
 
+if os.environ.get("CI"):
+    local_resource(
+        "validation-test",
+        "python3 tests/oidc-auth.py",
+        resource_deps=["kas", "keycloak-bootstrap"],
+    )
