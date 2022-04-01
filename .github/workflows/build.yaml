@@ -18,9 +18,9 @@ jobs:
             tilt
           # This should be in sync with the minikube-deployed kube version below
           kubectl: "1.23.3"
-          helm: "3.8.0"
-          helmv3: "3.8.0"
-          tilt: "0.25.2"
+          helm: "3.8.1"
+          helmv3: "3.8.1"
+          tilt: "0.26.3"
       - run: |
           kustomize version
           tilt version
