@@ -51,6 +51,7 @@ helm_resource(
     ],
     labels="third-party",
     port_forwards="65432:80",
+    resource_deps=["k8s-in"],
 )
 
 helm_resource(
@@ -58,6 +59,7 @@ helm_resource(
     "bitnami/postgresql",
     flags=["--version", "10.16.2", "-f", "helm/values-postgresql.yaml"],
     labels="third-party",
+    resource_deps=["bitnami"],
 )
 
 helm_resource(
@@ -89,7 +91,7 @@ helm_resource(
     "codecentric/keycloak",
     flags=["--version", "17.0.1", "-f", "helm/values-keycloak.yaml"],
     labels="third-party",
-    resource_deps=["claims"],
+    resource_deps=["claims", "codecentric"],
 )
 
 helm_resource(
