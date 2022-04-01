@@ -1,10 +1,10 @@
-# opentdf Quick Start: Writing a Web App
-*Using FastAPI to Access the opentdf backend*
+# OpenTDF Quick Start: Writing a Web App
+*Using FastAPI to Access the OpenTDF backend*
 > Author: Dave M
 > <br>Created: 2021-10-01
 > <br>Last Updated: 2021-10-05
 
-Let's make a single-page web app that allows a user to quickly encrypt and decrypt files with opentdf!
+Let's make a single-page web app that allows a user to quickly encrypt and decrypt files with OpenTDF!
 
 > Note: This tutorial sequence will be in several parts. First, we will get a local environment up and running with an app that encrypts using its own credentials. Next, we will demonstrate allowing an application to encrypt with the user's credentials. Finally, we discuss how we can extend this to enable client side encryption to allow the server to host only encrypted key and policy information.
 
@@ -132,7 +132,7 @@ async def create_upload_file(file: bytes = File(...)):
 
 #### Running in a local cluster
 
-To work well with a local cluster, we will be leveraging the existing opentdf backend quickstart, which builds a working opentdf fleet of microservices into a local kubernetes cluster, using [kind] for the cluster management and [tilt] with [docker] for the build mechanism. So we will first build a container for our application.
+To work well with a local cluster, we will be leveraging the existing OpenTDF backend quickstart, which builds a working OpenTDF fleet of microservices into a local kubernetes cluster, using [kind] for the cluster management and [tilt] with [docker] for the build mechanism. So we will first build a container for our application.
 
 ```Dockerfile
 FROM python:3.8-slim

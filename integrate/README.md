@@ -1,4 +1,4 @@
-# openTDF Integrate
+# OpenTDF Integrate
 
 **_Not for production_**
 
@@ -6,7 +6,7 @@ For local development
 
 ## Overview
 
-[OpenID Connect](https://openid.net/connect/) (OIDC) is used by openTDF.
+[OpenID Connect](https://openid.net/connect/) (OIDC) is used by OpenTDF.
 
 [Keycloak](https://www.keycloak.org/) is used for identity management.
 

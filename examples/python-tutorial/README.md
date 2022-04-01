@@ -1,10 +1,10 @@
-# opentdf for python: A Tutorial
+# OpenTDF for Python: A Tutorial
 
 This repository provides the sample code used in the Python Quick start tutorial.
 
 ## Requirements
 
-* Install the opentdf SDK with `pip install opentdf`.
+* Install the OpenTDF SDK with `pip install opentdf`.
 * Start up a local cluster with `cd ../quickstart && tilt up`.
 * To port forward keycloak:
   * `export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=keycloak,app.kubernetes.io/instance=keycloak" -o name)`

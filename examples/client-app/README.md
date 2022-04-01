@@ -1,4 +1,4 @@
-# Using opentdf from Python
+# Using OpenTDF from Python
 
 This example demonstrates:
 

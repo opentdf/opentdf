@@ -1,8 +1,8 @@
-# opentdf
+# OpenTDF
 
 ## Quickstart
 ***Not for production***  
-A quick (less than 10 minutes) and easy process to protect data with TDF using the opentdf stack. 
+A quick (less than 10 minutes) and easy process to protect data with TDF using the OpenTDF stack. 
 
 ### Prerequisites
 
@@ -92,19 +92,19 @@ pip3 uninstall opentdf
 
 ### Client
 
-See [opentdf/client](https://github.com/opentdf/client) page.
+See [opentdf/client-cpp](https://github.com/opentdf/client-cpp) page.
 
 ### Services
 
-#### attributes
+#### Attributes
 
 Manage attributes with rules used in ABAC  
-OpenAPI http://localhost:4020/docs
+OpenAPI http://localhost:65432/attributes/docs
 
 #### entitlement
 
 Manage assignment of attributes to entities  
-OpenAPI http://localhost:4030/docs
+OpenAPI http://localhost:65432/entitlement/docs
 
 #### claims
 

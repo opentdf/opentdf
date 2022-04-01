@@ -1,8 +1,8 @@
-# openTDF Documentation
+# OpenTDF Documentation
 
 ## Evaluate
 
-Do you want a quick demonstration of openTDF? See [Quickstart](quickstart)
+Do you want a quick demonstration of OpenTDF? See [Quickstart](quickstart)
 
 ## Integrate
 
