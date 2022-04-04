@@ -31,3 +31,5 @@ ingress:
       "/api/entitlements(/|$)(.*)":
         pathType: Prefix
     host.docker.internal: *paths
+secretRef:
+ name: entitlements-secrets

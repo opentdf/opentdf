@@ -25,3 +25,5 @@ postgres:
   user: tdf_attribute_manager
   database: tdf_database
   schema: tdf_attribute
+secretRef:
+ name: attributes-secrets

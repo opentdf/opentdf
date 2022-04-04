@@ -16,7 +16,7 @@ try:
     )
 
     client = TDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
-    client.enable_console_logging(LogLevel.Error)
+    client.enable_console_logging(LogLevel.Debug)
     plain_text = "Hello world!!"
     #################################################
     # TDF3 - File API

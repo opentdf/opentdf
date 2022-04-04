@@ -15,3 +15,5 @@ ingress:
       "/api/kas(/|$)(.*)":
         pathType: Prefix
     host.docker.internal: *paths
+secretRef:
+ name: kas-secrets
