@@ -67,7 +67,7 @@ helm_resource(
     "oci://ghcr.io/opentdf/charts/attributes",
     flags=["--version", "0.0.1", "-f", "helm/values-attributes.yaml"],
     labels="backend",
-    resource_deps=["postgresql", "claims"],
+    resource_deps=["postgresql"],
 )
 
 helm_resource(
@@ -83,7 +83,7 @@ helm_resource(
     "oci://ghcr.io/opentdf/charts/entitlements",
     flags=["--version", "0.0.1", "-f", "helm/values-entitlements.yaml"],
     labels="backend",
-    resource_deps=["postgresql", "attributes"],
+    resource_deps=["postgresql"],
 )
 
 helm_resource(
@@ -91,7 +91,7 @@ helm_resource(
     "codecentric/keycloak",
     flags=["--version", "17.0.1", "-f", "helm/values-keycloak.yaml"],
     labels="third-party",
-    resource_deps=["claims", "codecentric", "entitlements"],
+    resource_deps=["claims", "codecentric"],
 )
 
 helm_resource(
@@ -107,7 +107,7 @@ helm_resource(
     "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
     flags=["--version", "0.4.2", "-f", "helm/values-bootstrap.yaml"],
     labels="utility",
-    resource_deps=["attributes", "keycloak", "kas"],
+    resource_deps=["attributes", "keycloak"],
 )
 
 helm_resource(
