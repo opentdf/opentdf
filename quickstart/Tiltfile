@@ -8,19 +8,6 @@ if not os.environ.get("CR_PAT"):
 local("echo $CR_PAT | docker login ghcr.io -u $CR_USER --password-stdin")
 local("echo $CR_PAT | helm registry login ghcr.io -u $CR_USER --password-stdin")
 
-# helm_resource(
-#     "secrets",
-#     "./helm/secrets",
-#     flags=[
-#         "--set",
-#         "imageCredentials.email={}".format(str(os.environ.get("CR_EMAIL", ""))),
-#         "--set",
-#         "imageCredentials.password={}".format(str(os.environ.get("CR_PAT", ""))),
-#         "--set",
-#         "imageCredentials.username={}".format(str(os.environ.get("CR_USER", ""))),
-#     ],
-#     labels="utility",
-# )
 k8s_yaml(
     helm(
         "./helm/secrets",
