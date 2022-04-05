@@ -8,18 +8,28 @@ if not os.environ.get("CR_PAT"):
 local("echo $CR_PAT | docker login ghcr.io -u $CR_USER --password-stdin")
 local("echo $CR_PAT | helm registry login ghcr.io -u $CR_USER --password-stdin")
 
-helm_resource(
-    "secrets",
-    "./helm/secrets",
-    flags=[
-        "--set",
-        "imageCredentials.email={}".format(str(os.environ.get("CR_EMAIL", ""))),
-        "--set",
-        "imageCredentials.password={}".format(str(os.environ.get("CR_PAT", ""))),
-        "--set",
-        "imageCredentials.username={}".format(str(os.environ.get("CR_USER", ""))),
-    ],
-    labels="utility",
+# helm_resource(
+#     "secrets",
+#     "./helm/secrets",
+#     flags=[
+#         "--set",
+#         "imageCredentials.email={}".format(str(os.environ.get("CR_EMAIL", ""))),
+#         "--set",
+#         "imageCredentials.password={}".format(str(os.environ.get("CR_PAT", ""))),
+#         "--set",
+#         "imageCredentials.username={}".format(str(os.environ.get("CR_USER", ""))),
+#     ],
+#     labels="utility",
+# )
+k8s_yaml(
+    helm(
+        "./helm/secrets",
+        set=[
+            "imageCredentials.email={}".format(str(os.environ.get("CR_EMAIL", ""))),
+            "imageCredentials.password={}".format(str(os.environ.get("CR_PAT", ""))),
+            "imageCredentials.username={}".format(str(os.environ.get("CR_USER", ""))),
+        ],
+    ),
 )
 
 helm_repo(
@@ -107,7 +117,7 @@ helm_resource(
     "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
     flags=["--version", "0.4.2", "-f", "helm/values-bootstrap.yaml"],
     labels="utility",
-    resource_deps=["attributes", "keycloak"],
+    resource_deps=["attributes", "entitlements", "keycloak"],
 )
 
 helm_resource(
@@ -122,5 +132,5 @@ if os.environ.get("CI"):
     local_resource(
         "validation-test",
         "tests/wait-and-test.sh",
-        resource_deps=["kas", "keycloak-bootstrap"],
+        resource_deps=["ingress-nginx", "kas", "keycloak-bootstrap"],
     )
