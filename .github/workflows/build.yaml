@@ -5,7 +5,7 @@ on:
     branches:
       - main
 jobs:
-  integration-test:
+  integration-test-quickstart:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -48,3 +48,8 @@ jobs:
           CR_USER: ${{ github.repository_owner }}
         run: tilt ci
         working-directory: quickstart
+      - run: >
+          ./main.py &&
+          diff sample.txt sample_out.txt &&
+          [[ 339 == $(wc -c sample.txt.ntdf | awk '{print $1}') ]]
+        working-directory: examples/client-app
