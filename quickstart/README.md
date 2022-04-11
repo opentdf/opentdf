@@ -101,11 +101,11 @@ python3 tests/oidc-auth.py
 See success message
 
 ```text
-TDF3 Encrypt/Decrypt is successful!!
+TDF Encrypt/Decrypt is successful!!
 Nano TDF Encrypt/Decrypt is successful!!
 ```
 
-See the TDF files under `documentation/quickstart/tests`  
+See the TDF files under `documentation/quickstart` (the directory from which the `oidc-auth.py` was run)  
 Report errors to <MAILTO:support@OpenTDF.io>
 
 ### Clean up

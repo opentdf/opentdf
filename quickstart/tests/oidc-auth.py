@@ -19,7 +19,7 @@ try:
     client.enable_console_logging(LogLevel.Debug)
     plain_text = "Hello world!!"
     #################################################
-    # TDF3 - File API
+    # TDF - File API
     ################################################
     f = open("sample.txt", "w")
     f.write(plain_text)
@@ -33,16 +33,16 @@ try:
     client.decrypt_file("sample.txt.tdf", "sample_out.txt")
 
     #################################################
-    # TDF3 - Data API
+    # TDF - Data API
     #################################################
 
     tdf_data = client.encrypt_string(plain_text)
     decrypted_plain_text = client.decrypt_string(tdf_data)
 
     if plain_text == decrypted_plain_text:
-        print("TDF3 Encrypt/Decrypt is successful!!")
+        print("TDF Encrypt/Decrypt is successful!!")
     else:
-        print("Error: TDF3 Encrypt/Decrypt failed!!")
+        print("Error: TDF Encrypt/Decrypt failed!!")
 
     #################################################
     # Nano TDF - File API

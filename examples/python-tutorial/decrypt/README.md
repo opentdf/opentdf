@@ -1,4 +1,4 @@
-# TDF3SDK decrypt python tutorial
+# OpenTDF decrypt python tutorial
 
 Well Alice, the good news is, your first encrypted file is so safe, only you can decrypt it. Let’s confirm that with your protected file. Then, we’ll grant access to someone you trust.
 

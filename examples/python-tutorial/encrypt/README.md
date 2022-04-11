@@ -1,6 +1,6 @@
-# TDF3SDK encrypt python tutorial
+# OpenTDF encrypt python tutorial
 
-Now that the tdf3 SDK knows you’re Alice, you can protect your first piece of data.
+Now that OpenTDF knows you’re Alice, you can protect your first piece of data.
 
 ## Encryption Basics
 

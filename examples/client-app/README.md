@@ -3,11 +3,11 @@
 This example demonstrates:
 
  - Connecting to an OIDC backend via client credentials
- - Encrypting a file with a TDF3 container and assigning a data attribute
+ - Encrypting a file with a TDF container and assigning a data attribute
  - Decrypting the file
 
 For more details, refer to the
-[Client Source repository](https://github.com/opentdf/client).
+[Client Source repository](https://github.com/opentdf/client-cpp).
 
 ### Start services
 
@@ -42,7 +42,7 @@ python3 main.py
 
 See success message
 ```text
-TDF3 Encrypt/Decrypt is successful!!
+TDF Encrypt/Decrypt is successful!!
 Nano TDF Encrypt/Decrypt is successful!!
 ```
 
@@ -56,11 +56,11 @@ From there, log in to the `Administration Console`.
 
 ![Screenshot of a keycloak home page, showing a link to the 'Administration Console' in the left column, and other documentation and links to the center and right](static/keycloak-home.png)
 
-Log in with the test credentials found in [the helm values file](../../quickstart/helm/opentdf/values.yaml#L13). This will bring you to the realm, configured with the bootstrap job.
+Log in with the test credentials found in [the helm values file](../../quickstart/helm/secrets/templates/secrets.yaml#L64-L65). This will bring you to the realm, configured with the bootstrap job.
 
 ![Screenshot of the keycloak admin console, focusing on the tdf sample realm](static/keycloak-admin.png)
 
-To create a new client, from the `Clients` panel, click the new client button. The new client must be confidential with only service accounts enabled. This will let you generate a client authentication token pair. When you save this, it will enable a 'Credentials' tab.
+To create a new client, from the `Clients` panel, click the new client button. The new client must be confidential with only service accounts enabled. To reveal this configuration, first set the **Access Type** to **Confidential**. Then toggle the **Service Accounts Enabled** ON. This will let you generate a client authentication token pair. When you save this, it will enable a 'Credentials' tab.
 
 ![Screenshot of sample client settings](static/keycloak-sample-client-settings.png)
 
