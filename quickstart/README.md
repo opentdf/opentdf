@@ -48,19 +48,6 @@ cd documentation/quickstart
 kind create cluster --name opentdf
 ```
 
-### CONFIGURE CREDENTIALS FOR GHCR.IO
-
-> TO REMOVE AFTER MARKING REPOS AS PUBLIC
-
-- create a PAT that is capable of checking out ghcr.io packages
-- export the following:
-
-```
-export CR_PAT=[YOUR PAT]
-export CR_USER=[YOUR GITHUB USERNAME]
-export CR_EMAIL=[SOME MAILBOX ASSOCIATED WITH YOUR GH PROFILE]
-```
-
 ### Start services
 
 ```shell
@@ -185,7 +172,7 @@ In the users panel, to grant a user access to abacus to view and edit attributes
 #### entitlements
 
 Manage assignment of attributes to entities  
-OpenAPI http://localhost:65432/entitlement/docs
+OpenAPI http://localhost:65432/entitlements/docs
 
 #### claims
 
