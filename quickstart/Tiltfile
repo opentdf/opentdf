@@ -1,24 +1,5 @@
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
-if not os.environ.get("CR_USER"):
-    fail("UNSET CR_USER")
-if not os.environ.get("CR_PAT"):
-    fail("UNSET CR_PAT")
-
-local("echo $CR_PAT | docker login ghcr.io -u $CR_USER --password-stdin")
-local("echo $CR_PAT | helm registry login ghcr.io -u $CR_USER --password-stdin")
-
-k8s_yaml(
-    helm(
-        "./helm/secrets",
-        set=[
-            "imageCredentials.email={}".format(str(os.environ.get("CR_EMAIL", ""))),
-            "imageCredentials.password={}".format(str(os.environ.get("CR_PAT", ""))),
-            "imageCredentials.username={}".format(str(os.environ.get("CR_USER", ""))),
-        ],
-    ),
-)
-
 helm_repo(
     "bitnami",
     "https://charts.bitnami.com/bitnami",
