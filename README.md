@@ -1,6 +1,6 @@
 # OpenTDF 
 
-![OpenTDF Protects Data with Entitlements used to Authorize Entities](resource/opentdf-overview.png)
+![](resource/opentdf_overview.png)
 
 OpenTDF is an open source project that provides developers with the tools to build data protections natively within their applications using the Trusted Data Format (TDF). 
 TDF is a data object wrapper that allows data owners to cryptographically protect their data and easily dictate data access controls. It can protect virtually any electronic data type.
