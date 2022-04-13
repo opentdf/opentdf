@@ -3,8 +3,6 @@ publicName: "Entitlement"
 logLevel: DEBUG
 image:
   image: ghcr.io/opentdf/entitlements:main
-imagePullSecrets:
-  - name: ghcr-registry-key
 postgres:
   host: postgresql
   port: 5432

@@ -3,8 +3,6 @@ endpoints:
   oidcPubkeyEndpoint: http://keycloak-http
 image:
   image: ghcr.io/opentdf/kas:main
-imagePullSecrets:
-  - name: ghcr-registry-key
 ingress:
   enabled: true
   annotations:

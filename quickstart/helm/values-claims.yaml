@@ -1,7 +1,5 @@
 image:
   image: ghcr.io/opentdf/claims:main
-imagePullSecrets:
-  - name: ghcr-registry-key
 secretRef:
  name: claims-secrets
 service:

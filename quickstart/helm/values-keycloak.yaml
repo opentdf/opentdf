@@ -1,8 +1,6 @@
 image:
   repository: ghcr.io/opentdf/keycloak
   tag: main
-imagePullSecrets:
-  - name: ghcr-registry-key
 postgresql:
   enabled: false
   postgresqlUsername: postgres

@@ -38,7 +38,6 @@ entitlements:
       - https://example.com/attr/COI/value/PRX
 image:
   image: ghcr.io/opentdf/keycloak-bootstrap:main
-  pullSecret: ghcr-registry-key
 keycloak:
   hostname: http://keycloak-http
   clientId: tdf-client

@@ -1,21 +1,8 @@
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
-if not os.environ.get("CR_USER"):
-    fail("UNSET CR_USER")
-if not os.environ.get("CR_PAT"):
-    fail("UNSET CR_PAT")
-
-local("echo $CR_PAT | docker login ghcr.io -u $CR_USER --password-stdin")
-local("echo $CR_PAT | helm registry login ghcr.io -u $CR_USER --password-stdin")
-
 k8s_yaml(
     helm(
         "./helm/secrets",
-        set=[
-            "imageCredentials.email={}".format(str(os.environ.get("CR_EMAIL", ""))),
-            "imageCredentials.password={}".format(str(os.environ.get("CR_PAT", ""))),
-            "imageCredentials.username={}".format(str(os.environ.get("CR_USER", ""))),
-        ],
     ),
 )
 
@@ -62,7 +49,7 @@ helm_resource(
 helm_resource(
     "attributes",
     "oci://ghcr.io/opentdf/charts/attributes",
-    flags=["--version", "0.0.1", "-f", "helm/values-attributes.yaml"],
+    flags=["--version", "0.0.1", "-f", "helm/values-attributes.yaml", "--debug"],
     labels="backend",
     resource_deps=["postgresql"],
 )
@@ -70,7 +57,7 @@ helm_resource(
 helm_resource(
     "claims",
     "oci://ghcr.io/opentdf/charts/claims",
-    flags=["--version", "0.0.1", "-f", "helm/values-claims.yaml"],
+    flags=["--version", "0.0.1", "-f", "helm/values-claims.yaml", "--debug"],
     labels="backend",
     resource_deps=["postgresql"],
 )
@@ -78,7 +65,7 @@ helm_resource(
 helm_resource(
     "entitlements",
     "oci://ghcr.io/opentdf/charts/entitlements",
-    flags=["--version", "0.0.1", "-f", "helm/values-entitlements.yaml"],
+    flags=["--version", "0.0.1", "-f", "helm/values-entitlements.yaml", "--debug"],
     labels="backend",
     resource_deps=["postgresql"],
 )
@@ -86,7 +73,7 @@ helm_resource(
 helm_resource(
     "keycloak",
     "codecentric/keycloak",
-    flags=["--version", "17.0.1", "-f", "helm/values-keycloak.yaml"],
+    flags=["--version", "17.0.1", "-f", "helm/values-keycloak.yaml", "--debug"],
     labels="third-party",
     resource_deps=["claims", "codecentric"],
 )
@@ -121,3 +108,5 @@ if os.environ.get("CI"):
         "tests/wait-and-test.sh",
         resource_deps=["ingress-nginx", "kas", "keycloak-bootstrap"],
     )
+
+
