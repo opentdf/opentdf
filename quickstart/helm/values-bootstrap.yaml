@@ -1,8 +1,8 @@
 name: keycloak-bootstrap
 attributes:
-  hostname: http://attributes:4020
+  hostname: http://localhost:65432
 entitlements:
-  hostname: http://entitlements:4030
+  hostname: http://localhost:65432
   clientId: dcr-test
   username: user1
   password: testuser123

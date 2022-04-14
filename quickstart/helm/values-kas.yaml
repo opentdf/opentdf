@@ -1,5 +1,5 @@
 endpoints:
-  easHost: http://attributes:4020
+  easHost: http://localhost:65432/api/attributes
   oidcPubkeyEndpoint: http://keycloak-http
 image:
   image: ghcr.io/opentdf/kas:main
