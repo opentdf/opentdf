@@ -116,7 +116,7 @@ See [the OpenTDF Client base repo](https://github.com/opentdf/client-cpp) for de
 #### Attributes
 
 Manage attributes with rules used in ABAC  
-OpenAPI http://localhost:65432/attributes/docs
+OpenAPI http://localhost:65432/api/attributes/docs
 
 #### Abacus
 
@@ -130,7 +130,7 @@ Abacus will automatically forward you to the login screen to acquire user creden
 
 ![Keycloak login screen, displaying an empty form for the 'TDF' identity realm](static/keycloak-login-empty.png)
 
-Log in using the credentials generated with the bootstrap script (supplied via Helm [here](helm/opentdf/charts/bootstrap/values.yaml#L10-L11)), or with the default credentials, which are currently "user1" and the password is "password".
+Log in using the credentials generated with the bootstrap script (supplied via Helm [here](helm/opentdf/charts/bootstrap/values.yaml#L10-L11)), or with the default credentials, which are currently "user1" and the password is "testuser123".
 
 ![Keycloak login screen, filled with a user login credentials](static/keycloak-login-filled-user1.png)
 
@@ -147,7 +147,7 @@ From here, you can get a list of attributes or entities.
 Abacus provides a front-end that links a keycloak identity provider with a custom attribute-based access control system.
 To log in and use abacus itself, you must create and use _User_ accounts in the _tdf_ realm of the associated keycloak service.
 
-To create an abacus login, open up keyloak, which will be available at [port 65432](http://localhost:65432/keycloak/auth/).
+To create an abacus login, open up keyloak, which will be available at [port 65432](http://localhost:65432/auth/).
 
 ![Screenshot of the current Keycloak home page. 'Administration console' is a header available on the center left of the page](../examples/client-app/static/keycloak-home.png)
 
@@ -172,7 +172,7 @@ In the users panel, to grant a user access to abacus to view and edit attributes
 #### entitlements
 
 Manage assignment of attributes to entities  
-OpenAPI http://localhost:65432/entitlements/docs
+OpenAPI http://localhost:65432/api/entitlements/docs
 
 #### claims
 
@@ -181,7 +181,7 @@ Read the attributes that have been assigned to an entity
 #### key-access
 
 Access control of the key using ABAC  
-Swagger http://localhost:65432/kas/ui/ (update `/kas/openapi.json`)
+Swagger http://localhost:65432/api/kas/ui/ (update `/kas/openapi.json`)
 
 ## Solutions
 

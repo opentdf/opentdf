@@ -1,7 +1,7 @@
 attributes:
-  serverUrl: http://localhost:65432/api/attributes
+  serverUrl: http://attributes:4020
 entitlements:
-  serverUrl: http://localhost:65432/api/entitlements
+  serverUrl: http://entitlements:4030
 oidc:
   serverUrl: http://localhost:65432/auth/
   clientId: tdf-entitlement
