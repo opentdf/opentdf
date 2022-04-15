@@ -13,7 +13,7 @@ try:
     # backends and services.
     # To Update this value, navigate to the `Clients` settings
     # in your keycloak configuration for the `tdf` realm.
-    oidc_creds.set_client_credentials(
+    oidc_creds.set_client_credentials_client_secret(
         client_id="tdf-client",
         client_secret="123-456",
         organization_name="tdf",

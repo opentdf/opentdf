@@ -16,7 +16,7 @@ if not (KAS_URL and OIDC_ENDPOINT):
 
 # Authenticate
 oidc_creds = OIDCCredentials()
-oidc_creds.set_client_credentials(
+oidc_creds.set_client_credentials_client_secret(
     client_id="tdf-client",
     client_secret="123-456",
     organization_name="tdf",
