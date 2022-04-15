@@ -35,7 +35,7 @@ async def encrypt_file(file: bytes = File(...)):
         logger.warning("Wrote file as [%s]", plaintext_path)
 
         oidc_creds = OIDCCredentials()
-        oidc_creds.set_client_credentials(
+        oidc_creds.set_client_credentials_client_secret(
             client_id="tdf-client",
             client_secret="123-456",
             organization_name="tdf",
@@ -73,7 +73,7 @@ async def decrypt_file(file: bytes = File(...)):
 
         logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPOINT, KAS_URL)
         oidc_creds = OIDCCredentials()
-        oidc_creds.set_client_credentials(
+        oidc_creds.set_client_credentials_client_secret(
             client_id="tdf-client",
             client_secret="123-456",
             organization_name="tdf",
@@ -98,7 +98,7 @@ async def decrypt_file(file: bytes = File(...)):
 async def oidc_test():
     logger.warning("Logging in at [%s] for [%s]", OIDC_ENDPOINT, KAS_URL)
     oidc_creds = OIDCCredentials()
-    oidc_creds.set_client_credentials(
+    oidc_creds.set_client_credentials_client_secret(
         client_id="tdf-client",
         client_secret="123-456",
         organization_name="tdf",
