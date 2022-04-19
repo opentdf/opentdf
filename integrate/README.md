@@ -38,7 +38,7 @@ For local development
 
 - Install [Tilt](https://tilt.dev/)
   - On macOS via Homebrew: `brew install tilt-dev/tap/tilt`
-  - On Linux or WSL2 for Windows: `curl -fsSL https://github.com/tilt-dev/tilt/releases/download/v0.22.9/tilt.0.22.9.linux.x86_64.tar.gz | tar -xzv tilt && sudo mv tilt /usr/local/bin/tilt
+  - On Linux or WSL2 for Windows: `curl -fsSL https://github.com/tilt-dev/tilt/releases/download/v0.27.2/tilt.0.27.2.linux.x86_64.tar.gz | tar -xzv tilt && sudo mv tilt /usr/local/bin/tilt
   - Others see https://docs.tilt.dev/install.html
 
 ## Start
