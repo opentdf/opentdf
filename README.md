@@ -34,7 +34,9 @@ Review examples to see how to integrate. See [Examples](examples)
 
 ## Deploy
 
-Ready to deploy to production? Review our Helm chart install and configuration
+:construction: Production-ready deployment documentation is under construction. :construction:
+
+Please see [Cloud Deployment Demo](deploy) for a **non-production-ready** demonstration of OpenTDF deployed via AWS EKS. 
 
 ## Contribute
 
