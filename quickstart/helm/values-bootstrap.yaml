@@ -6,7 +6,6 @@ entitlements:
   clientId: dcr-test
   username: user1
   password: testuser123
-  preloadedClaims: null
   preloadedClaims:
     alice_1234:
       - https://example.com/attr/Classification/value/C
