@@ -10,7 +10,7 @@ while [[ $# -gt 0 ]]; do
     case "${key}" in
         -h | --help)
             echo "Usage: get version information for client and server
-                -c --chart  path to parent helm chart.yaml for backend services (required)
+                -c --chart  path to parent helm chart.yaml for backend services (if used)
                 -p --package  path to package.json if using tdf3-js or client-web
                 -w --wheel  path to .whl if installing client-python with whl
                 -r --requirement  path to requirements.txt if using to install client-python
@@ -48,11 +48,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [ -z ${CHART+x} ]; then
-    echo "Must provide path to parent helm chart.yaml"
-    exit 1
-fi
-
 sh $SCRIPT_DIR/system_info.sh
 
 args=("$@")
@@ -87,4 +82,8 @@ sh $SCRIPT_DIR/client_info.sh "${args[@]}"
 
 echo "\n"
 
-sh $SCRIPT_DIR/server_info.sh $CHART
+if [ -z ${CHART+x} ]; then
+    sh $SCRIPT_DIR/server_info.sh
+else
+    sh $SCRIPT_DIR/server_info.sh $CHART
+fi

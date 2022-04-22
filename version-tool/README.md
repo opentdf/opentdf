@@ -10,8 +10,6 @@ sh version_tool.sh --chart PATH_TO_CHART --package PATH_TO_PACKAGE --requirement
 
 Where:
 
-`PATH_TO_CHART` (required) is a path to the parent helm `Chart.yaml`
-
 `PATH_TO_PACKAGE` is a path to a `package.json` if using node/web/cli client
 
 `PATH_TO_REQUIREMENTS` is a path to `requirements.txt` if used to install python client
@@ -21,6 +19,8 @@ Where:
 `PATH_TO_LIB` is a path to the `lib` directory of the opentdf cpp library if using cpp client
 
 `PATH_TO_INCLUDE` is a path to the `include` directory of the opentdf cpp library if using cpp client
+
+`PATH_TO_CHART` is a path to the parent helm `Chart.yaml` if used
 <br /><br />
 
 For more information run 
@@ -100,92 +100,128 @@ CLIENT-CPP:
 
 
 -------------------------------Server Information----------------------------
------HELM DEPENDENCIES-----
-NAME        	VERSION	REPOSITORY	STATUS  
-attributes  	0.1.0  	          	unpacked
-entitlements	0.1.0  	          	unpacked
-claims      	0.1.0  	          	unpacked
-access      	0.1.0  	          	unpacked
+-----HELM LIST-----
+NAME              	NAMESPACE	REVISION	UPDATED                             	STATUS  	CHART                   	APP VERSION
+abacus            	default  	1       	2022-04-21 07:41:56.101688 -0400 EDT	deployed	abacus-0.1.0            	0.3.1      
+attributes        	default  	1       	2022-04-21 07:41:06.199801 -0400 EDT	deployed	attributes-0.0.1        	0.0.1      
+claims            	default  	1       	2022-04-21 07:40:57.814474 -0400 EDT	deployed	claims-0.0.1            	0.1.0      
+entitlements      	default  	1       	2022-04-21 07:40:57.098717 -0400 EDT	deployed	entitlements-0.0.1      	0.0.1      
+ingress-nginx     	default  	1       	2022-04-21 07:38:59.421522 -0400 EDT	deployed	ingress-nginx-4.0.16    	1.1.1      
+kas               	default  	1       	2022-04-21 07:41:44.364691 -0400 EDT	deployed	kas-0.0.1               	0.6.3a0    
+keycloak          	default  	1       	2022-04-21 07:41:03.576945 -0400 EDT	deployed	keycloak-17.0.1         	16.1.1     
+keycloak-bootstrap	default  	1       	2022-04-21 07:41:43.03611 -0400 EDT 	deployed	keycloak-bootstrap-0.4.2	0.4.2      
+postgresql        	default  	1       	2022-04-21 07:40:40.562598 -0400 EDT	deployed	postgresql-10.16.2      	11.14.0    
 
-WARNING: "../helm/charts/abacus" is not in Chart.yaml.
-
------DOCKER IMAGES FROM HELM-----
-opentdf/abacus:0.4.0
-opentdf/attributes:head
-opentdf/claims:head
-opentdf/entitlements:head
-opentdf/kas:head
+-----K8s PODS-----
+NAMESPACE            NAME                                            READY   STATUS      RESTARTS   AGE
+default              abacus-79dc495588-f6vxp                         1/1     Running     0          24h
+default              attributes-b7dbbc5cb-zlj5v                      1/1     Running     0          24h
+default              claims-578587c9-zd26f                           1/1     Running     0          24h
+default              entitlements-869d6d876f-5mtxv                   1/1     Running     0          24h
+default              ingress-nginx-controller-7f8dc5d54-tgzmr        1/1     Running     0          24h
+default              kas-59d9465bd4-v2jvj                            1/1     Running     0          24h
+default              keycloak-0                                      1/1     Running     0          24h
+default              keycloak-bootstrap-vfmpk                        0/1     Completed   0          24h
+default              postgresql-postgresql-0                         1/1     Running     0          24h
+kube-system          coredns-64897985d-llpn8                         1/1     Running     0          2d17h
+kube-system          coredns-64897985d-r25qx                         1/1     Running     0          2d17h
+kube-system          etcd-opentdf-control-plane                      1/1     Running     0          2d17h
+kube-system          kindnet-8qnr9                                   1/1     Running     0          2d17h
+kube-system          kube-apiserver-opentdf-control-plane            1/1     Running     0          2d17h
+kube-system          kube-controller-manager-opentdf-control-plane   1/1     Running     0          2d17h
+kube-system          kube-proxy-jrz2d                                1/1     Running     0          2d17h
+kube-system          kube-scheduler-opentdf-control-plane            1/1     Running     0          2d17h
+local-path-storage   local-path-provisioner-5ddd94ff66-89ghj         1/1     Running     0          2d17h
 
 -----DOCKER IMAGES FROM KUBECTL-----
-Image: sha256:19cf70651d3e2cc683f9b439b733fda47f20ba73e295db53aa13d638dc89c6cc
-ImageID: k8s.gcr.io/ingress-nginx/controller@sha256:28b11ce69e57843de44e3db6413e98d09de0f6688e33d4bd384002a44f78405c
+Image: docker.io/opentdf/abacus:0.3.1
+ImageID: docker.io/opentdf/abacus@sha256:b49b3176604e2c5b65845ab9853f190d15e86db76e104bc0dfbb3f3e544f2539
 
-Image: k8s.gcr.io/coredns/coredns:v1.8.0
-ImageID: sha256:1a1f05a2cd7c2fbfa7b45b21128c8a4880c003ca482460081dc12d76bfa863e8
+Image: ghcr.io/opentdf/attributes:main
+ImageID: ghcr.io/opentdf/attributes@sha256:6e1c7a6d62bd3b3dbb477701b4353032dfd40bf525d4d3d82f3741f76d6b2cee
 
-Image: k8s.gcr.io/coredns/coredns:v1.8.0
-ImageID: sha256:1a1f05a2cd7c2fbfa7b45b21128c8a4880c003ca482460081dc12d76bfa863e8
+Image: ghcr.io/opentdf/claims:main
+ImageID: ghcr.io/opentdf/claims@sha256:085e5b472ee034ebc7b6775d9a14cd7cd868f54d5424383e69d3a3f482305980
 
-Image: k8s.gcr.io/etcd:3.4.13-0
-ImageID: sha256:05b738aa1bc6355db8a2ee8639f3631b908286e43f584a3d2ee0c472de033c28
+Image: ghcr.io/opentdf/entitlements:main
+ImageID: ghcr.io/opentdf/entitlements@sha256:b9b94603ad6724f0ba092e91d97116a3a24c5f07745c2b8c670b59048c1de1d8
 
-Image: docker.io/kindest/kindnetd:v20210326-1e038dc5
-ImageID: sha256:f37b7c809e5dcc2090371f933f7acb726bb1bffd5652980d2e1d7e2eff5cd301
+Image: sha256:fcd5f7d32d480b3df6590af5a5153829999099eed276675e78ed11f3bd6957df
+ImageID: k8s.gcr.io/ingress-nginx/controller@sha256:0bc88eb15f9e7f84e8e56c14fa5735aaa488b840983f87bd79b1054190e660de
 
-Image: k8s.gcr.io/kube-apiserver:v1.21.1
-ImageID: sha256:18e61c783b41758dd391ab901366ec3546b26fae00eef7e223d1f94da808e02f
+Image: ghcr.io/opentdf/kas:main
+ImageID: ghcr.io/opentdf/kas@sha256:9cc4285d27ea88e76eefc1bb22747b22b802ed1955e93b8914c781e762af8dcc
 
-Image: k8s.gcr.io/kube-controller-manager:v1.21.1
-ImageID: sha256:0c6dccae49de8003ee4fa06db04a9f13bb46cbaad03977e6baa21174f2dba2fc
+Image: ghcr.io/opentdf/keycloak:main
+ImageID: ghcr.io/opentdf/keycloak@sha256:79e34b4ebfaa6a8218fa152e58e9a4e79e541bf234a6150b8e61b8c0a902090a
 
-Image: k8s.gcr.io/kube-proxy:v1.21.1
-ImageID: sha256:4bbef4ca108cdc3b99fe23d487fa4fca933a62c4fc720626a3706df9cef63b21
+Image: ghcr.io/opentdf/keycloak-bootstrap:main
+ImageID: ghcr.io/opentdf/keycloak-bootstrap@sha256:31961e6d37f1228438da7c0bcf8db99cbac6cc5cac5eaa8785e173f976714eb3
 
-Image: k8s.gcr.io/kube-scheduler:v1.21.1
-ImageID: sha256:8c783dd2520887cc8e7908489ffc9f356c82436ba0411d554237a0b9632c9b87
+Image: docker.io/bitnami/postgresql:11.14.0-debian-10-r28
+ImageID: docker.io/bitnami/postgresql@sha256:522b02d183e01d30fedc81ebd842f66bb5d1a46e2ee33a85b5d90fbbe20718c3
+
+Image: k8s.gcr.io/coredns/coredns:v1.8.6
+ImageID: sha256:edaa71f2aee883484133da046954ad70fd6bf1fa42e5aec3f7dae199c626299c
+
+Image: k8s.gcr.io/coredns/coredns:v1.8.6
+ImageID: sha256:edaa71f2aee883484133da046954ad70fd6bf1fa42e5aec3f7dae199c626299c
+
+Image: k8s.gcr.io/etcd:3.5.1-0
+ImageID: sha256:1040f7790951c9d14469b9c1fb94f8e6212b17ad124055e4a5c8456ee8ef5d7e
+
+Image: docker.io/kindest/kindnetd:v20211122-a2c10462
+ImageID: sha256:ae1c622332ee60e894e68977e4b007577678b193cba45fb49203225bb3ef8b05
+
+Image: k8s.gcr.io/kube-apiserver:v1.23.4
+ImageID: sha256:33b93b125ebd40f8948749fa119f70437af6ed989a2c27817e3cb3bd1ee8d993
+
+Image: k8s.gcr.io/kube-controller-manager:v1.23.4
+ImageID: sha256:72f8c918f90d70316225f7adbd93669b727443bc71da259bee6d2d20c58995b0
+
+Image: k8s.gcr.io/kube-proxy:v1.23.4
+ImageID: sha256:2c33211109395f3e239a95cf537f7ee354d83ff38fd9efc948d508a24ee19dfe
+
+Image: k8s.gcr.io/kube-scheduler:v1.23.4
+ImageID: sha256:a2067c4dfb6a6bf120bae65748953a44f4ad8a8f5b67759f832f64a3ee8a6a46
 
 Image: docker.io/rancher/local-path-provisioner:v0.0.14
 ImageID: sha256:2b703ea309660ea944a48f41bb7a55716d84427cf5e04b8078bcdc44fa4ab2eb
 
-Image: docker.io/opentdf/abacus:0.4.0
-ImageID: docker.io/opentdf/abacus@sha256:7d82b5d5875234dffe49097f8db908b820e3b2185aafd7656392c366f2aa4b01
-
-Image: docker.io/opentdf/kas:head
-ImageID: docker.io/opentdf/kas@sha256:5bb0a5bf8c7213a1364ac272d1dbffea7fa0aa6a540cb68defab1cc73b8c94e2
-
-Image: docker.io/opentdf/attributes:head
-ImageID: docker.io/opentdf/attributes@sha256:b7c28a5a101ab0de28ff2b60e312eb969253372aab4e1fac38566445f18345ad
-
-Image: docker.io/opentdf/claims:head
-ImageID: docker.io/opentdf/claims@sha256:10077939e0792bb3cce045c17d85117b2eaa478bfbe96e6d356bfeae5add1d7a
-
-Image: docker.io/opentdf/entitlements:head
-ImageID: docker.io/opentdf/entitlements@sha256:279ca2db50f062a2583ae360c9a3fb3a086a40a81012eb7e788ee5784d42d18a
-
 -----LABELS FOR OPENTDF/VIRTRU IMAGES-----
-opentdf/abacus:0.4.0 
+docker.io/opentdf/abacus@sha256:b49b3176604e2c5b65845ab9853f190d15e86db76e104bc0dfbb3f3e544f2539 
 	Created: null
 	Commit: null
 	Source: null
 	Repo: null
-opentdf/attributes:head 
-	Created: 2022-01-14T15:57:41.189Z
-	Commit: e94217f01a3c32fa4966aab0157f341141982ead
+ghcr.io/opentdf/attributes@sha256:6e1c7a6d62bd3b3dbb477701b4353032dfd40bf525d4d3d82f3741f76d6b2cee 
+	Created: 2022-04-19T17:19:18.622Z
+	Commit: 42501002d5ec00ead7252a913da00a03275ce677
 	Source: https://github.com/opentdf/backend
 	Repo: backend
-opentdf/claims:head 
-	Created: 2022-01-14T15:57:42.999Z
-	Commit: e94217f01a3c32fa4966aab0157f341141982ead
+ghcr.io/opentdf/claims@sha256:085e5b472ee034ebc7b6775d9a14cd7cd868f54d5424383e69d3a3f482305980 
+	Created: 2022-04-19T17:19:19.990Z
+	Commit: 42501002d5ec00ead7252a913da00a03275ce677
 	Source: https://github.com/opentdf/backend
 	Repo: backend
-opentdf/entitlements:head 
-	Created: 2022-01-14T15:57:41.708Z
-	Commit: e94217f01a3c32fa4966aab0157f341141982ead
+ghcr.io/opentdf/entitlements@sha256:b9b94603ad6724f0ba092e91d97116a3a24c5f07745c2b8c670b59048c1de1d8 
+	Created: 2022-04-19T17:19:18.254Z
+	Commit: 42501002d5ec00ead7252a913da00a03275ce677
 	Source: https://github.com/opentdf/backend
 	Repo: backend
-opentdf/kas:head 
-	Created: 2022-01-14T15:57:42.164Z
-	Commit: e94217f01a3c32fa4966aab0157f341141982ead
+ghcr.io/opentdf/kas@sha256:9cc4285d27ea88e76eefc1bb22747b22b802ed1955e93b8914c781e762af8dcc 
+	Created: 2022-04-19T17:19:23.365Z
+	Commit: 42501002d5ec00ead7252a913da00a03275ce677
+	Source: https://github.com/opentdf/backend
+	Repo: backend
+ghcr.io/opentdf/keycloak@sha256:79e34b4ebfaa6a8218fa152e58e9a4e79e541bf234a6150b8e61b8c0a902090a 
+	Created: 2022-03-08T13:06:16.389850
+	Commit: 42501002d5ec00ead7252a913da00a03275ce677
+	Source: https://access.redhat.com/containers/#/registry.access.redhat.com/ubi8-minimal/images/8.5-240
+	Repo: backend
+ghcr.io/opentdf/keycloak-bootstrap@sha256:31961e6d37f1228438da7c0bcf8db99cbac6cc5cac5eaa8785e173f976714eb3 
+	Created: 2022-04-20T14:01:00.958Z
+	Commit: 7860b10688ed3ee1e1922440f156370194407bff
 	Source: https://github.com/opentdf/backend
 	Repo: backend
 ```

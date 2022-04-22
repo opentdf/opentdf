@@ -9,5 +9,5 @@
 #include "version.h"
 
 int main() {
-    std::cout << opentdf_VERSION << std::endl;
+    std::cout << "Version: " << opentdf_VERSION << std::endl;
 }

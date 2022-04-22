@@ -6,27 +6,38 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 echo  "-------------------------------Server Information----------------------------"
 
-echo "-----HELM DEPENDENCIES-----"
 
-if [[ -z "$1" ]]; then
-    echo "No chart supplied"
-    exit 1
+if [[ ! -z "$1" ]]; then
+    PATH_TO_CHART_DIR="$(dirname "$1")"
+
+    echo "--------HELM CHART INFO--------"
+
+    echo "-----HELM CHART DEPENDENCIES-----"
+
+    helm dependency list $PATH_TO_CHART_DIR
+
+    echo ""
+
+    echo "-----DOCKER IMAGES FROM HELM CHART-----"
+
+    helmImages=( $(helm template $PATH_TO_CHART_DIR \
+        | perl -ne 'print "$1\n" if /image: (.+)/' \
+        | tr -d '"' \
+        | sort -u) )
+    printf '%s\n' "${helmImages[@]}"
+
+    echo "--------END HELM CHART INFO--------"
+
+    echo ""
 fi
 
-PATH_TO_CHART_DIR="$(dirname "$1")"
-
-
-helm dependency list $PATH_TO_CHART_DIR
+echo "-----HELM LIST-----"
+helm list --all-namespaces
 
 echo ""
 
-echo "-----DOCKER IMAGES FROM HELM-----"
-
-helmImages=( $(helm template $PATH_TO_CHART_DIR \
-    | perl -ne 'print "$1\n" if /image: (.+)/' \
-    | tr -d '"' \
-    | sort -u) )
-printf '%s\n' "${helmImages[@]}"
+echo "-----K8s PODS-----"
+kubectl get pods --all-namespaces
 
 echo ""
 
@@ -42,25 +53,32 @@ done
 
 
 echo "-----LABELS FOR OPENTDF/VIRTRU IMAGES-----"
-for image in "${helmImages[@]}"
+for image in "${imageIDs[@]}"
 do
     if [[ "$image" == *"opentdf"* || "$image" == *"virtru"* ]]; then
-        parts=( $(echo $image | tr ":" "\n") )
-        if [ "${#parts[@]}" -eq "1" ]; then
-            jsonData=$( sh $SCRIPT_DIR/get_config_dockerhub.sh ${parts[0]} )
-        else
-            jsonData=$( sh $SCRIPT_DIR/get_config_dockerhub.sh ${parts[0]} ${parts[1]} )
-        fi
+        docker pull $image > /dev/null
+        jsonData=$( docker inspect $image | jq -r '.[0]')
+        docker rmi $image > /dev/null
         printf "%s \n" "$image"
         if [[ "$image" == *"opentdf"* ]]; then
-            labels=$( jq -r 'try .config.Labels catch null' 2> /dev/null <<< "$jsonData") 
-            printf "\tCreated: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.created"' )"
-            printf "\tCommit: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.revision"' )"
-            printf "\tSource: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.source"' )"
-            printf "\tRepo: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.title"' )"
+            labels=$( jq -r 'try .Config.Labels catch null' 2> /dev/null <<< "$jsonData") 
+            if [[ "$image" == *"keycloak"* && "$image" != *"bootstrap"* ]]; then
+                printf "\tCreated: %s\n" "$( echo ${labels} | jq -r '."build-date"' )"
+                printf "\tCommit: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.revision"' )"
+                printf "\tSource: %s\n" "$( echo ${labels} | jq -r '."url"' )"
+                printf "\tRepo: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.title"' )"
+            else
+                printf "\tCreated: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.created"' )"
+                printf "\tCommit: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.revision"' )"
+                printf "\tSource: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.source"' )"
+                printf "\tRepo: %s\n" "$( echo ${labels} | jq -r '."org.opencontainers.image.title"' )"
+            fi 
         else
             labels=$( jq -r 'try .container_config.Labels catch null' 2> /dev/null <<< "$jsonData") 
-            echo "\t${labels}"
+            printf "\tCreated: %s\n" "$( echo ${labels} | jq -r '."created"' )"
+            printf "\tCommit: %s\n" "$( echo ${labels} | jq -r '."revision"' )"
+            printf "\tSource: %s\n" "$( echo ${labels} | jq -r '."source"' )"
+            printf "\tRepo: %s\n" "$( echo ${labels} | jq -r '."title"' )"
         fi
     fi
 
