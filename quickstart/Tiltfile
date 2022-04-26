@@ -109,7 +109,7 @@ helm_resource(
 # ability to pass in custom test script with path to script as env var
 if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
     local_resource(
-        "test-script",
+        "passed-in-test-script",
         os.environ.get("TEST_SCRIPT"),
         labels="tests",
         resource_deps=["ingress-nginx", "kas", "keycloak-bootstrap"],
