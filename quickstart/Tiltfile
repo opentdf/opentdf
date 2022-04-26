@@ -106,6 +106,7 @@ helm_resource(
     resource_deps=["keycloak-bootstrap"],
 )
 
+# ability to pass in custom test script with path to script as env var
 if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
     local_resource(
         "test-script",
