@@ -46,5 +46,6 @@ jobs:
       - env:
           CR_PAT: ${{ secrets.GITHUB_TOKEN }}
           CR_USER: ${{ github.repository_owner }}
+          TEST_SCRIPT: tests/wait-and-test.sh
         run: tilt ci
         working-directory: quickstart

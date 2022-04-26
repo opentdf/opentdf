@@ -106,17 +106,9 @@ helm_resource(
     resource_deps=["keycloak-bootstrap"],
 )
 
-if os.environ.get("CI"):
+if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
     local_resource(
-        "validation-test",
-        "tests/wait-and-test.sh",
-        labels="tests",
-        resource_deps=["ingress-nginx", "kas", "keycloak-bootstrap"],
-    )
-
-if "TEST_SCRIPT" in os.environ:
-    local_resource(
-        "custom-test-script",
+        "test-script",
         os.environ.get("TEST_SCRIPT"),
         labels="tests",
         resource_deps=["ingress-nginx", "kas", "keycloak-bootstrap"],
