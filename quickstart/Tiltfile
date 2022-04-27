@@ -93,7 +93,7 @@ helm_resource(
 helm_resource(
     "keycloak-bootstrap",
     "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
-    flags=["--version", "0.4.2", "-f", "helm/values-bootstrap.yaml"],
+    flags=["--version", "0.4.3", "-f", "helm/values-bootstrap.yaml"],
     labels="utility",
     resource_deps=["attributes", "entitlements", "keycloak"],
 )
