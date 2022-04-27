@@ -1,6 +1,0 @@
-aiofiles
-fastapi
-jinja2
-python-multipart
-opentdf
-uvicorn[standard]
