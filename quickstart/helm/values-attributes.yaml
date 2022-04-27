@@ -1,8 +1,6 @@
 logLevel: DEBUG
 serverRootPath: /attributes
 serverPublicName: "Attribute Authority"
-image:
-  image: ghcr.io/opentdf/attributes:main
 oidc:
   clientId: tdf-attributes
   externalHost: http://localhost:65432/auth

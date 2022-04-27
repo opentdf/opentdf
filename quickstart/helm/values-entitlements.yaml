@@ -1,8 +1,6 @@
 rootPath: /entitlements
 publicName: "Entitlement"
 logLevel: DEBUG
-image:
-  image: ghcr.io/opentdf/entitlements:main
 postgres:
   host: postgresql
   port: 5432

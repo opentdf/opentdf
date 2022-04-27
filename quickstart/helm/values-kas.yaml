@@ -1,8 +1,6 @@
 endpoints:
   easHost: http://attributes:4020
   oidcPubkeyEndpoint: http://keycloak-http
-image:
-  image: ghcr.io/opentdf/kas:main
 ingress:
   enabled: true
   annotations:

@@ -36,8 +36,6 @@ entitlements:
     user1:
       - https://example.com/attr/Classification/value/S
       - https://example.com/attr/COI/value/PRX
-image:
-  image: ghcr.io/opentdf/keycloak-bootstrap:main
 keycloak:
   hostname: http://keycloak-http
   clientId: tdf-client

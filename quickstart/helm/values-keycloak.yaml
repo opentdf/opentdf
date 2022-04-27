@@ -1,6 +1,3 @@
-image:
-  repository: ghcr.io/opentdf/keycloak
-  tag: main
 postgresql:
   enabled: false
   postgresqlUsername: postgres
