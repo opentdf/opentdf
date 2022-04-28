@@ -1,6 +1,7 @@
 image:
   repository: ghcr.io/opentdf/keycloak
-  tag: 0.0.0-sha-0b804dd
+  # Keycloak is a non-OpenTDF chart, but with an OpenTDF image
+  tag: sha-0b804dd
 postgresql:
   enabled: false
   postgresqlUsername: postgres
