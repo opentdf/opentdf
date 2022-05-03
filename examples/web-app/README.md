@@ -218,6 +218,8 @@ tilt up
 This will initialize all backend services, and start a keycloak with an example configuration via the quickstart `keycloak-bootstrap` job. Depending on your computer configuration and network connectivity, this could take 10 minutes to an hour to complete. Notably, then the `opentdf-key-access`, `opentdf-keycloak-bootstrap`, and `web-app` itself are all green, you should be able to `encrypt` a file. (The upper green chevron in a Tilt resource label indicates a service with a `ready` status.)
 
 
+For a more complete example, with Services and Ingress, refer to the accompanying files in this directory.
+
 [docker]: https://docs.docker.com/get-started/overview/
 [FastAPI]: https://fastapi.tiangolo.com/ "FastAPI Documentation Home Page"
 [FastAPI images]: https://github.com/tiangolo/uvicorn-gunicorn-fastapi-docker 
