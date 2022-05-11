@@ -1,3 +1,9 @@
+# Frontend Quickstart
+
+1. cd ./examples/abacship-app
+2. npm i 
+3. npm run start
+4. open in browser http://localhost:3000/ 
 # Keycloak authentic
 
 # KC Admin (needed for setup)
