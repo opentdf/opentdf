@@ -17,7 +17,7 @@ e() {
   exit $rval
 }
 
-: "${SERVICE_IMAGE_TAG:="head"}"
+: "${SERVICE_IMAGE_TAG:="offline"}"
 LOAD_IMAGES=1
 LOAD_SECRETS=1
 START_CLUSTER=1
@@ -71,47 +71,6 @@ if [[ $START_CLUSTER ]]; then
   local_start || e "Failed to start local k8s tool [${LOCAL_TOOL}]"
 fi
 
-if [[ $RUN_OFFLINE ]];
-  suffix="$(<BUNDLE_TAG)"
-  if [[ ! ${suffix} ]]; then
-    monolog ERROR "Bundle is missing required label metadata"
-    exit 1
-  fi
-
-  monolog TRACE "docker load -i [containers/opentdf-service-images-${suffix}.tar]"
-  if ! docker load -i "containers/opentdf-service-images-${suffix}.tar"; then
-    monolog ERROR "offline bundle failed to load"
-    exit 1
-  fi
-
-
-  for third in kind postgresql; do
-    prefix="containers/third-party-image-${third}-${suffix}"
-    monolog TRACE "docker load kind from [${prefix}.tar]"
-    if ! docker load -i "${prefix}.tar" ; then
-      monolog ERROR "offline bundle for [${third}] failed to load"
-      exit 1
-    fi
-    meta=$(<"${prefix}.meta")
-    abstag=${meta%% *}
-    reponame=${meta%%:*}
-    # Tag image with tag we are matching in the pull
-    # meta has two values so we want it to split into two parameters
-    # shellcheck disable=SC2086
-    if ! docker tag $meta; then
-      monolog ERROR "3rd party bundle [${third}] failed: [docker tag ${meta}]"
-      exit 1
-    fi
-
-    # Tag image with `offline`. The percent below strips everything
-    # after (and including) the first colon
-    if ! docker tag "$abstag" "$reponame:offline"; then
-      monolog ERROR "3rd party bundle [${third}] failed to [docker tag $abstag $reponame:offline]"
-      exit 1
-    fi
-  done
-fi
-
 maybe_load() {
   if [[ $LOAD_IMAGES ]]; then
     local_load $1 || e "Unable to load service image [${1}]"
@@ -119,12 +78,14 @@ maybe_load() {
 }
 
 if [[ $LOAD_IMAGES ]]; then
-  monolog INFO "Caching locally-built development opentdf/backend images in dev cluster"
-  if [[ $RUN_OFFLINE ]]; then
+  if [[ $RUN_OFFLINE ]];
+    docker-load-and-tag-exports || e "Unable to load images"
   fi
+
+  monolog INFO "Caching locally-built development opentdf/backend images in dev cluster"
   # Cache locally-built `latest` images, bypassing registry.
   # If this fails, try running 'docker-compose build' in the repo root
-  for s in attributes bootstrap claims entitlements kas; do
+  for s in attributes claims entitlements kas; do
     maybe_load opentdf/$s:${SERVICE_IMAGE_TAG}
   done
 else
@@ -154,20 +115,23 @@ fi
 # Only do this if we were told to disable Keycloak
 # This should be removed eventually, as Keycloak isn't going away
 if [[ $USE_KEYCLOAK ]]; then
-  monolog INFO "Caching locally-built development opentdf Keycloak in dev cluster"
-  for s in claim-test-webservice keycloak keycloak-bootstrap; do
-    maybe_load opentdf/$s:${SERVICE_IMAGE_TAG}
-  done
+  if [[ $LOAD_IMAGES ]]; then
+    monolog INFO "Caching locally-built development opentdf Keycloak in dev cluster"
+    for s in claims keycloak keycloak-bootstrap; do
+      maybe_load opentdf/$s:${SERVICE_IMAGE_TAG}
+    done
+  fi
 
   monolog INFO --- "Installing Virtru-ified Keycloak"
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install keycloak "${CHART_ROOT}"/keycloak-15.0.1.tgz -f "${DEPLOYMENT_DIR}/values-virtru-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG:-head} || e "Unable to helm upgrade keycloak"
+    helm upgrade --install keycloak "${CHART_ROOT}"/keycloak-17.0.1.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG:-main} || e "Unable to helm upgrade keycloak"
   else
-    helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloak -f "${DEPLOYMENT_DIR}/values-virtru-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG:-head} || e "Unable to helm upgrade keycloak"
+    helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloak -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG:-main} || e "Unable to helm upgrade keycloak"
   fi
   monolog INFO "Waiting until Keycloak server is ready"
 
   while [[ $(kubectl get pods keycloak-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+    echo "waiting for keycloak..."
     sleep 5
   done
 fi
@@ -175,23 +139,32 @@ fi
 if [[ $INIT_POSTGRES ]]; then
   monolog INFO --- "Installing Postgresql for opentdf backend"
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.12.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql-tdf.yaml" --set image.tag=${SERVICE_IMAGE_TAG:-offline} || e "Unable to helm upgrade postgresql"
+    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG:-offline} || e "Unable to helm upgrade postgresql"
   else
-    helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql-tdf.yaml" || e "Unable to helm upgrade postgresql"
+    helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" || e "Unable to helm upgrade postgresql"
   fi
   monolog INFO "Waiting until postgresql is ready"
 
   while [[ $(kubectl get pods postgresql-postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+    echo "waiting for postgres..."
     sleep 5
   done
 fi
 
-monolog INFO --- "Umbrella chart"
-val_file="${DEPLOYMENT_DIR}/values-all-in-one.yaml"
-if [[ $RUN_OFFLINE ]]; then
-  helm upgrade --install etheria "${CHART_ROOT}"/etheria -f "${val_file}" || e "Unable to install composite chart"
-else
-  helm repo add virtru https://charts.production.virtru.com || true #Might fail if you've already done this, and that's OK
-  helm dependency update "$CHART_ROOT/etheria" || e "Unable to update composite chart"
-  helm upgrade --install etheria "$CHART_ROOT/etheria" -f "${val_file}" || e "Unable to install composite chart"
-fi
+monolog INFO --- "OpenTDF charts"
+for s in attributes claims entitlements kas; do
+  val_file="${DEPLOYMENT_DIR}/values-${s}.yaml"
+  if [[ $RUN_OFFLINE ]]; then
+    helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" || e "Unable to install chart for ${s}"
+  else
+    helm upgrade --version "0.0.0-sha-0b804dd" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
+  fi
+done
+for s in abacus; do
+  val_file="${DEPLOYMENT_DIR}/values-${s}.yaml"
+  if [[ $RUN_OFFLINE ]]; then
+    helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" || e "Unable to install chart for ${s}"
+  else
+    helm upgrade --version "0.0.0-sha-fe676f4" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
+  fi
+done

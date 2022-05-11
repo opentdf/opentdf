@@ -21,6 +21,8 @@ if ! cd "${PROJECT_ROOT}"; then
   exit 1
 fi
 
+mkdir -p "$CERTS_DIR"
+
 if [ -f "$CERTS_DIR/kas-ec.key" ]; then
   monolog DEBUG "keyfile found"
 else
