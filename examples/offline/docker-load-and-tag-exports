@@ -6,11 +6,19 @@
 #    * TK Helm installs into a kind cluster and runs KUTTL test
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
-export PATH="$PATH:$APP_DIR/scripts"
 
-monolog TRACE "Running [$0${1+ }$*]"
+# Are we running in offline mode (from a build/export/bundle)?
+if [ -f ${APP_DIR}/monolog ]; then
+  offline=1
+  : "${EXPORT_ROOT:="$(cd "${APP_DIR}/../" >/dev/null && pwd)"}"
+else
+  : "${EXPORT_ROOT:="$(git rev-parse --show-toplevel)/build/export/bundle"}"
+fi
 
-: "${EXPORT_ROOT:="$(git rev-parse --show-toplevel)/build/export/bundle"}"
+export PATH="$PATH:$EXPORT_ROOT/scripts"
+
+monolog TRACE "Running [$0${1+ }$*] within EXPORT_ROOT=[${EXPORT_ROOT}]"
+
 : "${CONTAINERS_DIR:="${EXPORT_ROOT}/containers"}"
 : "${LOCAL_TOOL:="kind"}"
 
