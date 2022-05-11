@@ -99,8 +99,6 @@ if [[ $LOAD_SECRETS ]]; then
 
   printf "\nCreating 'kas-secrets'..."
   kubectl create secret generic kas-secrets \
-    "--from-file=EAS_PRIVATE_KEY=${CERTS_ROOT}/eas-private.pem" \
-    "--from-file=EAS_CERTIFICATE=${CERTS_ROOT}/eas-public.pem" \
     "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
     "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
     "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
@@ -109,9 +107,6 @@ if [[ $LOAD_SECRETS ]]; then
 
   kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
   kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
-  kubectl create secret generic tdf-storage-secrets \
-    --from-literal=AWS_ACCESS_KEY_ID=myAccessKeyId \
-    --from-literal=AWS_SECRET_ACCESS_KEY=mySecretAccessKey || e "create tdf-storage-secrets failed"
 fi
 
 # Only do this if we were told to disable Keycloak
