@@ -1,12 +1,17 @@
-# database
-POSTGRES_HOST = "localhost"
-POSTGRES_PORT = "5432"
-POSTGRES_USER = "tdf_storage_manager"
-POSTGRES_PASSWORD = "myPostgresPassword"
-POSTGRES_DATABASE = "tdf_database"
-POSTGRES_SCHEMA = "tdf_storage"
 
-DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DATABASE}"
-database = databases.Database(DATABASE_URL)
+KEYCLOAK_URL = "http://localhost:65432/auth/"
+KC_ADMIN_USER="keycloakadmin"
+KC_ADMIN_PASSWORD="mykeycloakpassword"
+REALM="tdf"
+OIDC_CLIENTID="dcr-test"
 
+ENTITLEMENTS_URL = "http://localhost:65432/api/entitlements"
+ATTRIBUTES_URL = "http://localhost:65432/api/attributes"
 
+AUTH_NAMESPACE = "http://battleship.fun"
+
+SAMPLE_USER = "user1"
+SAMPLE_PASSWORD = "password"
+
+BACKEND_CLIENTID = "abacship"
+BACKEND_CLIENT_SECRET = "123-456"

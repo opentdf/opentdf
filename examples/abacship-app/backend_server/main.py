@@ -34,6 +34,9 @@ from pydantic.main import BaseModel
 from sqlalchemy import and_
 from sqlalchemy.orm import Session, sessionmaker, declarative_base
 
+from game import Status, Player, Row, SingleBoard, WholeBoard, Game, valid_board
+from services import *
+
 
 logging.basicConfig(
     stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "CRITICAL").upper()
@@ -74,13 +77,18 @@ async def add_response_headers(request: Request, call_next):
 
 @app.on_event("startup")
 async def startup():
-    # await database.connect()
+    # load all the attributes (if not already there)
+    # create a backend client (if not already created)
+    # assign the client the proper attributes
     pass
 
 
 @app.on_event("shutdown")
 async def shutdown():
-    # await database.disconnect()
+    # delete all the added attributes from the users
+    # delete the attributes from the backend client
+    # delete attributes from the DB
+    # delete the backend client
     pass
 
 
@@ -98,16 +106,6 @@ async def read_liveness(probe: ProbeType = ProbeType.liveness):
     #     await database.execute("SELECT 1")
     pass
 
-class Status(int, Enum):
-    setup = 1
-    p1_turn = 2
-    p2_turn = 3
-    p1_request_attr_from_p2 = 4
-    p2_request_attr_from_p2 = 5
-    p1_victory = 6
-    p2_victory = 7
-    backend_processing = 0
-
 @app.get(
     "/status",
     responses={
@@ -120,14 +118,8 @@ async def get_status():
     Returns the current game status
     (See Status enum -- possibly restructuring)
     """
+    #just return the current stored status
     pass
-    
-
-class Player(BaseModel):
-    name: Literal['player1', 'player2']
-    refresh_token: Optional[str] = None
-    access_token: Optional[str] = None
-    username: Optional[str] = None #ex user1 -- wont need if i have access token
 
 
 @app.post(
@@ -143,17 +135,9 @@ async def grant_attribute(player: Player):
     Grants an attribute to opposing player
     Returns game status
     """
+    # change game status back to opposing players turn?
+    # return new status
     pass
-
-class Row(BaseModel):
-    __root__: conlist(str, min_items=10, max_items=10)
-
-class SingleBoard(BaseModel):
-    __root__: conlist(Row, min_items=10, max_items=10)
-
-class WholeBoard(BaseModel):
-    player1: SingleBoard
-    player2: SingleBoard
     
 
 
@@ -180,11 +164,12 @@ async def get_board():
     Returns 2D array board representation for each player (with encrypted strings)
     (or nothing if the board is not set yet)
     """
+    #return the stored board
     pass
 
 
 @app.post(
-    "/submit/board",
+    "/board",
     responses={
         200: {"content": {"application/json": {"example":{
             "player_info": {
@@ -221,6 +206,12 @@ async def submit_board(access_token: str, refresh_token: str, board: SingleBoard
     -- i will need the username (ex user1) in order to assign attributes, which i can
     get from the access_token, or can just change it to pass in the username instead)
     """
+    # some sort of board verification -- raise error if invalid
+    # store the player information in the game (user name [get from access token], current access token and refresh token?)
+    # encrypt each tile with correct attributes
+    # store the board in the game
+    # await other players board -- do not reutrn until game has both boards stored (some boolean)
+    # return player information and full board and game status
     pass
 
 
@@ -262,6 +253,9 @@ async def check_square(player: Player, row: int, col: int):
     returns updated board
     returns new status
     """
+    # check if square already checked -- if so tell them?
+    # change status to p1 request p2 or whatever
+    # 
     pass
 
 ###https://editor.swagger.io/#/
