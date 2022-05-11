@@ -25,7 +25,7 @@ if [[ $# -gt 0 ]]; then
     shift
 
     case "$item" in
-      docker | helm | kind | kuttl | minikube | tilt)
+      curl | docker | helm | minikube | tilt)
         stuff+=("$item")
         ;;
       *)
@@ -34,17 +34,29 @@ if [[ $# -gt 0 ]]; then
     esac
   done
 else
-  stuff=(docker helm kuttl minikube)
+  stuff=(curl docker helm kuttl minikube)
 fi
 
-i_docker() (
-  monolog INFO "********** Docker info"
+i_curl() {
+  monolog INFO "Installing curl"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
-  docker info || e "Docker not available"
+  if ! which curl; then
+    apt-get update && apt install -y curl || e "Unable to install curl"
+  fi
+  curl --version || e "Bad curl install"
+}
+
+i_docker() (
+  monolog INFO "Installing Docker"
+  cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
+  if ! which docker; then
+    apt-get update && apt install -y docker.io || e "Unable to install docker"
+  fi
+  docker --version || e "Bad docker install"
 )
 
 i_helm() (
-  monolog INFO "********** Installing Helm binary version ${HELM_VERSION?helm version required}"
+  monolog INFO "Installing Helm binary version ${HELM_VERSION?helm version required}"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
   rm -rf helm
   mkdir helm || e "Unable to make ${BUILD_DIR}/helm"
@@ -56,7 +68,7 @@ i_helm() (
 )
 
 i_kind() (
-  monolog INFO "********** Installing kind ${KIND_VERSION?kind version required}"
+  monolog INFO "Installing kind ${KIND_VERSION?kind version required}"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
   rm -rf kind
   mkdir kind || e "Unable to make ${BUILD_DIR}/kind"
@@ -67,7 +79,7 @@ i_kind() (
 )
 
 i_kuttl() (
-  monolog INFO "********** Installing KUTTL binary version ${KUTTL_VERSION?kuttl version required}"
+  monolog INFO "Installing KUTTL binary version ${KUTTL_VERSION?kuttl version required}"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
   rm -rf kuttl
   mkdir kuttl || e "Unable to make ${BUILD_DIR}/kuttl"
@@ -78,7 +90,7 @@ i_kuttl() (
 )
 
 i_minikube() (
-  monolog INFO "********** Installing Minikube binary"
+  monolog INFO "Installing Minikube binary"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
   rm -rf minikube
   mkdir minikube || e "mkdir minikube fail"
@@ -87,7 +99,7 @@ i_minikube() (
   chmod +x minikube-linux-amd64 || e "minikube is not executableable"
   mv minikube-linux-amd64 "${BUILD_BIN}/minikube" || e "minikube mv fail"
 
-  monolog INFO "********** Cleaning up any previous minikube cluster"
+  monolog INFO "Cleaning up any previous minikube cluster"
   minikube delete || e "Unable to minikube delete"
 
   docker network prune -f
@@ -95,18 +107,21 @@ i_minikube() (
 )
 
 i_tilt() (
-  monolog INFO "********** Installing Tilt binary ${TILT_VERSION?tilt version required}"
+  monolog INFO "Installing Tilt binary ${TILT_VERSION?tilt version required}"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
   rm -rf tilt
   mkdir tilt || e "mkdir tilt fail"
   cd tilt || e "no tilt build folder"
-  curl -fsSL "https://github.com/tilt-dev/tilt/releases/download/v$VERSION/tilt.$VERSION.linux.x86_64.tar.gz" | tar -xzv tilt || e "tilt download and unzip failure"
+  curl -fsSL "https://github.com/tilt-dev/tilt/releases/download/v$TILT_VERSION/tilt.$TILT_VERSION.linux.x86_64.tar.gz" | tar -xzv tilt || e "tilt download and unzip failure"
   chmod +x tilt || e "tilt is not executableable"
   mv tilt "$BUILD_BIN/" || e "tilt is not mvable"
 )
 
 for item in "${stuff[@]}"; do
   case "$item" in
+    curl)
+      i_curl
+      ;;
     docker)
       i_docker
       ;;
@@ -119,8 +134,13 @@ for item in "${stuff[@]}"; do
     minikube)
       i_minikube
       ;;
+    tilt)
+      i_tilt
+      ;;
     *)
       e "Unrecognized options: [$*]"
       ;;
   esac
 done
+
+cp "${BUILD_BIN}/*" /bin || e "Unable to install binaries"

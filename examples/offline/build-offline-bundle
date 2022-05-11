@@ -20,6 +20,29 @@ export PATH="$PATH:$APP_DIR:$PROJECT_ROOT/scripts"
 
 monolog TRACE "Running [$0${1+ }$*]"
 
+clean_first=
+build_total_image=
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  shift
+
+  case "$key" in
+    --clean)
+      monolog TRACE "--clean"
+      clean_first=1
+      ;;
+    --all)
+      monolog TRACE "--all"
+      build_total_image=1
+      ;;
+    *)
+      e "Unrecognized options: $*"
+      exit 1
+      ;;
+  esac
+done
+
 if ! cd "$PROJECT_ROOT"; then
   monolog ERROR "Unable to find project root [${PROJECT_ROOT}] from APP_DIR=[${APP_DIR}]"
   exit 1
@@ -40,6 +63,17 @@ suffix="${today}-${digest}"
 : "${FRONTEND_CHART_TAG:="0.9.1"}"
 
 OUT_DIR="${OUTPUT_DIRECTORY}/bundle"
+
+if [[ $clean_first ]]; then
+  monolog INFO "Cleaning old bundle folder, [${OUT_DIR}]"
+  if [ ! -d "${OUT_DIR}" ]; then
+    monolog INFO "Directory not found (already clean): [${OUT_DIR}]"
+    exit 1
+  elif [ ! rm -r "${OUT_DIR}" ]; then
+    monolog ERROR "Failure when deleting [${OUT_DIR}]"
+    exit 1
+  fi
+fi
 
 mkdir -p "${OUT_DIR}/charts"
 mkdir -p "${OUT_DIR}/lib"
@@ -144,13 +178,13 @@ done
 # done
 
 # Include an example deployment
-if ! rsync -lmr --safe-links --executability --force quickstart "${OUT_DIR}/quickstart"; then
+if ! rsync -lmr --safe-links --executability --force quickstart "${OUT_DIR}"; then
   monolog ERROR "Unable to update quickstart"
   exit 1
 fi
 
 # Include scripts for helping with things
-if ! rsync -lmr --safe-links --executability --force scripts ${OUT_DIR}/scripts; then
+if ! rsync -lmr --safe-links --executability --force scripts ${OUT_DIR}; then
   monolog ERROR "Unable to update scripts folder"
   exit 1
 fi
@@ -231,3 +265,7 @@ fi
 
 echo "${suffix}" >${OUT_DIR}/COMPLETED_TAG
 monolog DEBUG "Saved stuff as ${OUTPUT_DIRECTORY}/${fname}"
+
+if [[ $build_total_image ]]; then
+  docker buildx build -t opentdf/offline-demo:${suffix} -f examples/offline/Dockerfile "${OUT_DIR}"
+fi
