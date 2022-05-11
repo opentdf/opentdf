@@ -78,7 +78,7 @@ maybe_load() {
 }
 
 if [[ $LOAD_IMAGES ]]; then
-  if [[ $RUN_OFFLINE ]];
+  if [[ $RUN_OFFLINE ]]; then
     docker-load-and-tag-exports || e "Unable to load images"
   fi
 
