@@ -34,7 +34,7 @@ if [[ $# -gt 0 ]]; then
     esac
   done
 else
-  stuff=(curl docker helm kuttl minikube)
+  stuff=(curl docker helm kubectl kuttl minikube)
 fi
 
 i_curl() {
@@ -136,6 +136,9 @@ for item in "${stuff[@]}"; do
       ;;
     helm)
       i_helm
+      ;;
+    kubectl)
+      i_kubectl
       ;;
     kuttl)
       i_kuttl
