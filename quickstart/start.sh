@@ -71,6 +71,7 @@ if [[ $START_CLUSTER ]]; then
   local_start || e "Failed to start local k8s tool [${LOCAL_TOOL}]"
 fi
 
+# Copy images from local registry into k8s registry
 maybe_load() {
   if [[ $LOAD_IMAGES ]]; then
     local_load $1 || e "Unable to load service image [${1}]"
@@ -79,6 +80,7 @@ maybe_load() {
 
 if [[ $LOAD_IMAGES ]]; then
   if [[ $RUN_OFFLINE ]]; then
+    # Copy images from local tar files into local docker registry
     docker-load-and-tag-exports || e "Unable to load images"
   fi
 
@@ -86,7 +88,7 @@ if [[ $LOAD_IMAGES ]]; then
   # Cache locally-built `latest` images, bypassing registry.
   # If this fails, try running 'docker-compose build' in the repo root
   for s in attributes claims entitlements kas; do
-    maybe_load opentdf/$s:${SERVICE_IMAGE_TAG}
+    maybe_load ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}
   done
 else
   monolog DEBUG "Skipping loading of locally built service images"
