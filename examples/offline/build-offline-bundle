@@ -58,9 +58,8 @@ suffix="${today}-${digest}"
 
 : "${BACKEND_IMAGE_TAG:="main"}"
 : "${BACKEND_CHART_TAG:="0.9.1"}"
-# TODO: abacus tags
 : "${FRONTEND_IMAGE_TAG:="main"}"
-: "${FRONTEND_CHART_TAG:="0.9.1"}"
+: "${FRONTEND_CHART_TAG:="0.0.0-sha-fe676f4"}"
 
 OUT_DIR="${OUTPUT_DIRECTORY}/bundle"
 
@@ -69,7 +68,7 @@ if [[ $clean_first ]]; then
   if [ ! -d "${OUT_DIR}" ]; then
     monolog INFO "Directory not found (already clean): [${OUT_DIR}]"
     exit 1
-  elif [ ! rm -r "${OUT_DIR}" ]; then
+  elif ! rm -r "${OUT_DIR}"; then
     monolog ERROR "Failure when deleting [${OUT_DIR}]"
     exit 1
   fi
@@ -83,31 +82,43 @@ export BACKEND_IMAGE_TAG
 
 echo "${suffix}" > "$OUT_DIR/BUNDLE_TAG"
 
+# first party images
+save-first-party() {
+  local short_name="$1"
+  local name_tag="$2"
+  local image="ghcr.io/opentdf/${short_name}:${name_tag}"
+  local path="${OUT_DIR}/containers/opentdf-${short_name}-${suffix}"
+  local tar_path="${path}.tar"
+  local version="$(docker inspect --format='{{index .RepoDigests 0}}' ${image})"
+  monolog TRACE "Save docker images as [${tar_path}] from [${image}]"
+  if ! docker save -o "${tar_path}" "${image}"; then
+    monolog ERROR "Failed to save docker image [${image}] as [${tar_path}]"
+    exit 1
+  fi
+  # Required information for tagging image locally
+  if ! echo "$version" "$image" >"${path}.meta"; then
+    monolog ERROR "Failed to save tag metadata for docker image [${image}] to [${path}.meta]"
+    exit 1
+  fi
+}
+
 # TODO(PLAT-1417) add 'storage' once published to ghcr.io
-to_save=()
 for x in attributes claims entitlements kas keycloak keycloak-bootstrap; do
   i="ghcr.io/opentdf/${x}:${BACKEND_IMAGE_TAG}"
   if ! docker pull "$i"; then
     monolog ERROR "Failed to pull docker image ${i}"
     exit 1
   fi
-  to_save+=( "$i" )
+  save-first-party "${x}" "${BACKEND_IMAGE_TAG}"
 done
-# TODO(PLAT-1417) add 'abacus'
-# for x in abacus; do
-#   i="ghcr.io/opentdf/${x}:${FRONTEND_IMAGE_TAG}"
-#   if ! docker pull "$i"; then
-#     monolog ERROR "Failed to pull docker image ${i}"
-#     exit 1
-#   fi
-#   to_save+=( "$i" )
-# done
-
-monolog TRACE "Save docker images as [${OUT_DIR}/containers/opentdf-service-images-${suffix}.tar] from [${to_save[*]}]"
-if ! docker save -o "${OUT_DIR}/containers/opentdf-service-images-${suffix}.tar" "${to_save[@]}"; then
-  monolog ERROR "Failed to save docker images ${to_save[*]}"
-  exit 1
-fi
+for x in abacus; do
+  i="ghcr.io/opentdf/${x}:${FRONTEND_IMAGE_TAG}"
+  if ! docker pull "$i"; then
+    monolog ERROR "Failed to pull docker image ${i}"
+    exit 1
+  fi
+  save-first-party "${x}" "${FRONTEND_IMAGE_TAG}"
+done
 
 # third party items
 save-third-party() {
@@ -127,7 +138,7 @@ save-third-party() {
     exit 1
   fi
   # Required information for tagging image locally
-  if ! echo "$version" "$name_tag" >"${path}.meta"; then
+  if ! echo "$version" "$image" >"${path}.meta"; then
     monolog ERROR "Failed to save tag metadata for docker image [${version}] to [${path}.meta]"
     exit 1
   fi
@@ -168,14 +179,13 @@ for x in attributes claims entitlements kas keycloak-bootstrap; do
     exit 1
   fi
 done
-# TODO(PLAT-1417) add 'abacus'
-# for x in abacus; do
-#   i="oci://ghcr.io/opentdf/charts/${x}"
-#   if ! helm pull "${i}" --version "${FRONTEND_CHART_TAG}" --destination "${OUT_DIR}/charts"; then
-#     monolog ERROR "Failed to [helm pull ${i} --version $FRONTEND_CHART_TAG]"
-#     exit 1
-#   fi
-# done
+for x in abacus; do
+  i="oci://ghcr.io/opentdf/charts/${x}"
+  if ! helm pull "${i}" --version "${FRONTEND_CHART_TAG}" --destination "${OUT_DIR}/charts"; then
+    monolog ERROR "Failed to [helm pull ${i} --version $FRONTEND_CHART_TAG]"
+    exit 1
+  fi
+done
 
 # Include an example deployment
 if ! rsync -lmr --safe-links --executability --force quickstart "${OUT_DIR}"; then
@@ -186,6 +196,11 @@ fi
 # Include scripts for helping with things
 if ! rsync -lmr --safe-links --executability --force scripts ${OUT_DIR}; then
   monolog ERROR "Unable to update scripts folder"
+  exit 1
+fi
+
+if ! cp examples/offline/docker-load-and-tag-exports ${OUT_DIR}; then
+  monolog ERROR "Unable to update image load script"
   exit 1
 fi
 

@@ -6,7 +6,7 @@
 #    * TK Helm installs into a kind cluster and runs KUTTL test
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
-export PATH="$PATH:$APP_DIR/scripts"
+export PATH="$PATH:$APP_DIR/../../scripts"
 
 monolog TRACE "Running [$0${1+ }$*]"
 
@@ -54,45 +54,10 @@ export LIB_DIR
 export QUICKSTART_DIR
 export TOOLS_DIR
 
-
-suffix="$(<BUNDLE_TAG)"
-if [[ ! ${suffix} ]]; then
-  monolog ERROR "Bundle is missing required label metadata"
+if ! "${APP_DIR}/docker-load-and-tag-exports"; then
+  monolog ERROR "Images failed to load"
   exit 1
 fi
-
-monolog TRACE "docker load -i [containers/opentdf-service-images-${suffix}.tar]"
-if ! docker load -i "containers/opentdf-service-images-${suffix}.tar"; then
-  monolog ERROR "offline bundle failed to load"
-  exit 1
-fi
-
-
-for third in kind postgresql; do
-  prefix="containers/third-party-image-${third}-${suffix}"
-  monolog TRACE "docker load kind from [${prefix}.tar]"
-  if ! docker load -i "${prefix}.tar" ; then
-    monolog ERROR "offline bundle for [${third}] failed to load"
-    exit 1
-  fi
-  meta=$(<"${prefix}.meta")
-  abstag=${meta%% *}
-  reponame=${meta%%:*}
-  # Tag image with tag we are matching in the pull
-  # meta has two values so we want it to split into two parameters
-  # shellcheck disable=SC2086
-  if ! docker tag $meta; then
-    monolog ERROR "3rd party bundle [${third}] failed: [docker tag ${meta}]"
-    exit 1
-  fi
-
-  # Tag image with `offline`. The percent below strips everything
-  # after (and including) the first colon
-  if ! docker tag "$abstag" "$reponame:offline"; then
-    monolog ERROR "3rd party bundle [${third}] failed to [docker tag $abstag $reponame:offline]"
-    exit 1
-  fi
-done
 
 if ! quickstart/start.sh --offline; then
   monolog ERROR "offline services failed to install"
