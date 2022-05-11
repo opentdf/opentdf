@@ -1,0 +1,233 @@
+#!/usr/bin/env bash
+# Generate `offline-bundle` zipfile.
+#
+# This bundle contains:
+#   * opentdf-service-images.tar, containing all microservices
+#   * third-party-images.tar, useful third party images
+#   * Client libraries and scripts
+#   * TK Helm charts for deploying the servicesin a k8s cluster
+#
+# Parameters:
+#    MONOLOG_LEVEL: 0 = Debug logging
+#    BACKEND_IMAGE_TAG: tag to apply to all backend images (kas, attribute and entity services)
+#    BACKEND_CHART_TAG: tag to apply to all backend charts 
+#    FRONTEND_IMAGE_TAG: tag to apply to all frontend images (abacus)
+#    FRONTEND_CHART_TAG: tag to apply to all backend charts
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+export PATH="$PATH:$APP_DIR:$PROJECT_ROOT/scripts"
+
+monolog TRACE "Running [$0${1+ }$*]"
+
+if ! cd "$PROJECT_ROOT"; then
+  monolog ERROR "Unable to find project root [${PROJECT_ROOT}] from APP_DIR=[${APP_DIR}]"
+  exit 1
+fi
+
+
+today="$(date +%Y-%m-%d)"
+digest="$(git rev-parse --short HEAD)"
+suffix="${today}-${digest}"
+: "${SERVICE_CHART_TAG:="0.0.0-sha-${digest}"}"
+: "${OUTPUT_DIRECTORY:="${PROJECT_ROOT}/build/export"}"
+
+
+: "${BACKEND_IMAGE_TAG:="main"}"
+: "${BACKEND_CHART_TAG:="0.9.1"}"
+# TODO: abacus tags
+: "${FRONTEND_IMAGE_TAG:="main"}"
+: "${FRONTEND_CHART_TAG:="0.9.1"}"
+
+OUT_DIR="${OUTPUT_DIRECTORY}/bundle"
+
+mkdir -p "${OUT_DIR}/charts"
+mkdir -p "${OUT_DIR}/lib"
+mkdir -p "${OUT_DIR}/containers"
+
+export BACKEND_IMAGE_TAG
+
+echo "${suffix}" > "$OUT_DIR/BUNDLE_TAG"
+
+# TODO(PLAT-1417) add 'storage' once published to ghcr.io
+to_save=()
+for x in attributes claims entitlements kas keycloak keycloak-bootstrap; do
+  i="ghcr.io/opentdf/${x}:${BACKEND_IMAGE_TAG}"
+  if ! docker pull "$i"; then
+    monolog ERROR "Failed to pull docker image ${i}"
+    exit 1
+  fi
+  to_save+=( "$i" )
+done
+# TODO(PLAT-1417) add 'abacus'
+# for x in abacus; do
+#   i="ghcr.io/opentdf/${x}:${FRONTEND_IMAGE_TAG}"
+#   if ! docker pull "$i"; then
+#     monolog ERROR "Failed to pull docker image ${i}"
+#     exit 1
+#   fi
+#   to_save+=( "$i" )
+# done
+
+monolog TRACE "Save docker images as [${OUT_DIR}/containers/opentdf-service-images-${suffix}.tar] from [${to_save[*]}]"
+if ! docker save -o "${OUT_DIR}/containers/opentdf-service-images-${suffix}.tar" "${to_save[@]}"; then
+  monolog ERROR "Failed to save docker images ${to_save[*]}"
+  exit 1
+fi
+
+# third party items
+save-third-party() {
+  local short_name="$1"
+  local name_tag="$2"
+  local sha="$3"
+  local version="${name_tag}@sha256:${sha}"
+  local path="${OUT_DIR}/containers/third-party-image-${short_name}-${suffix}"
+  local tar_path="${path}.tar"
+  monolog TRACE "Save docker images as [${tar_path}] from [${version}]"
+  if ! docker pull "${version}"; then
+    monolog ERROR "Failed to pull docker image [${version}]"
+    exit 1
+  fi
+  if ! docker save -o "${tar_path}" "${version}"; then
+    monolog ERROR "Failed to save docker image [${version}] as [${tar_path}]"
+    exit 1
+  fi
+  # Required information for tagging image locally
+  if ! echo "$version" "$name_tag" >"${path}.meta"; then
+    monolog ERROR "Failed to save tag metadata for docker image [${version}] to [${path}.meta]"
+    exit 1
+  fi
+}
+
+# NOTE: Configure third party bundles to use the latest version manually.
+# To do this, search for the version you want of each of the following pacakges
+# on Docker Hub
+
+# KIND: https://kind.sigs.k8s.io/docs/user/working-offline/
+# Update URI: https://hub.docker.com/r/kindest/node/tags
+save-third-party kind kindest/node:v1.23.5 69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6
+
+# postgresql
+# Update URI: https://hub.docker.com/r/bitnami/postgresql/tags
+save-third-party postgresql bitnami/postgresql:v12.8.0 ff0644fea98b51f111cff32c0a4eea49cafe644087d723544c2d2a955eea7a69
+# Keycloak: Since we are bulding a custom image, we don't include that in thirdparty but in primary bundle
+
+# Third party helm charts
+if ! helm pull --repo https://kubernetes.github.io/ingress-nginx --version 4.0.16 --destination "${OUT_DIR}/charts" ingress-nginx; then
+  monolog ERROR "Unable to helm pull ingress-nginx"
+  exit 1
+fi
+if ! helm pull --repo https://codecentric.github.io/helm-charts --version 17.0.1 --destination "${OUT_DIR}/charts" keycloak; then
+  monolog ERROR "Unable to helm pull keycloak"
+  exit 1
+fi
+if ! helm pull --repo https://charts.bitnami.com/bitnami --version 10.16.2 --destination "${OUT_DIR}/charts" postgresql; then
+  monolog ERROR "Unable to helm pull postgresql"
+  exit 1
+fi
+
+# First party helm charts
+for x in attributes claims entitlements kas keycloak-bootstrap; do
+  i="oci://ghcr.io/opentdf/charts/${x}"
+  if ! helm pull "${i}" --version "${BACKEND_CHART_TAG}" --destination "${OUT_DIR}/charts"; then
+    monolog ERROR "Failed to [helm pull ${i} --version $BACKEND_CHART_TAG]"
+    exit 1
+  fi
+done
+# TODO(PLAT-1417) add 'abacus'
+# for x in abacus; do
+#   i="oci://ghcr.io/opentdf/charts/${x}"
+#   if ! helm pull "${i}" --version "${FRONTEND_CHART_TAG}" --destination "${OUT_DIR}/charts"; then
+#     monolog ERROR "Failed to [helm pull ${i} --version $FRONTEND_CHART_TAG]"
+#     exit 1
+#   fi
+# done
+
+# Include an example deployment
+if ! rsync -lmr --safe-links --executability --force quickstart "${OUT_DIR}/quickstart"; then
+  monolog ERROR "Unable to update quickstart"
+  exit 1
+fi
+
+# Include scripts for helping with things
+if ! rsync -lmr --safe-links --executability --force scripts ${OUT_DIR}/scripts; then
+  monolog ERROR "Unable to update scripts folder"
+  exit 1
+fi
+
+
+maybe-exit() {
+  local err="$?"
+  if [[ ! $err ]]; then
+    monolog ERROR "$1; err=$err"
+    exit 1
+  fi
+}
+
+
+# # # DOWNLOAD SOME SDKS
+# TODO(PLAT-1417) Get @opentdf/client from npm
+npm-latest() {
+  local project
+  project="$1"
+  shift
+
+  local NPM_LATEST
+  NPM_LATEST=$(curl -s http://registry.npmjs.org/${project}/latest/ | sed 's/.*"tarball":"\([^"]*\).*/\1/')
+
+  local NPM_TGZ
+  NPM_TGZ=$(echo "$NPM_LATEST" | sed 's/.*-\/\(.*\.tgz\)$/\1/')
+  curl -s "https://registry.npmjs.org/${project}/-/$NPM_TGZ" --output "${OUT_DIR}/lib/sdk-$NPM_TGZ"
+  maybe-exit "Failed to get latest of ${project} (${NPM_LATEST}) from NPM, expected at [${NPM_TGZ}]"
+}
+# # TODO: Release client to npm
+# npm-latest @opentdf/client
+
+pip-latest() {
+  local project
+  project="$1"
+  shift
+
+  local deets
+  deets="$(curl -s "https://pypi.org/pypi/${project}/json")"
+  maybe-exit "Getting details of [${project}] failed with $?"
+
+  local version
+  version="$(jq -r '.info.version' <<<"${deets}")"
+  maybe-exit "Getting latest version of [${project}] failed"
+
+  local variants
+  variants=$(jq -r --arg version "$version" '.releases[$version]' <<<"${deets}")
+  maybe-exit "Getting latest version of [${project}] failed"
+
+  local len
+  len=$(jq -r 'length' <<<"$variants")
+  maybe-exit "Surprising variants object"
+  [[ $len ]]
+  maybe-exit "len=[$len]"
+  monolog INFO "Found $len variants of $project $version"
+
+  local filename
+  local url
+  for ((i = 0; i < len; i++)); do
+    filename=$(jq -r --argjson i "$i" '.[$i].filename' <<<"${variants}")
+    url=$(jq -r --argjson i "$i" '.[$i].url' <<<"${variants}")
+    [[ $filename && $url ]]
+    maybe-exit "filename=[$filename] url=[$url]"
+    monolog INFO "Downloading $filename from $url"
+    curl -s "${url}" >"${OUT_DIR}/lib/${filename}"
+    maybe-exit "Failed downloading [$url]"
+  done
+}
+
+pip-latest opentdf
+
+# BUNDLE THAT STUFF UP
+fname="offline-bundle-${suffix}.zip"
+if ! ( cd ${OUTPUT_DIRECTORY} && zip -r "${fname}" bundle ); then
+  monolog ERROR "Failed to export as zip file"
+  exit 1
+fi
+
+echo "${suffix}" >${OUT_DIR}/COMPLETED_TAG
+monolog DEBUG "Saved stuff as ${OUTPUT_DIRECTORY}/${fname}"
