@@ -25,7 +25,7 @@ if [[ $# -gt 0 ]]; then
     shift
 
     case "$item" in
-      curl | docker | helm | minikube | tilt)
+      curl | docker | helm | kubectl | minikube | tilt)
         stuff+=("$item")
         ;;
       *)
@@ -77,6 +77,15 @@ i_kind() (
   chmod +x kind || e "kind is not executableable"
   mv kind "$BUILD_BIN/" || e "kind is not mvable"
 )
+
+i_kubectl() {
+  monolog INFO "Installing kubectl"
+  cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
+  if ! which kubectl; then
+    apt-get update && apt install -y kubectl || e "Unable to install kubectl"
+  fi
+  kubectl version || e "Bad kubectl install"
+}
 
 i_kuttl() (
   monolog INFO "Installing KUTTL binary version ${KUTTL_VERSION?kuttl version required}"

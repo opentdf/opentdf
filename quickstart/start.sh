@@ -3,13 +3,12 @@
 # with 'standard' kubectl operator controls.
 
 WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
-PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${WORK_DIR}/../../" >/dev/null && pwd)}"
+PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${WORK_DIR}/../" >/dev/null && pwd)}"
 
-CERTS_ROOT="${CERTS_ROOT:-$PROJECT_ROOT/containers/python_base/certs}"
+CERTS_ROOT="${CERTS_ROOT:-$PROJECT_ROOT/certs}"
 CHART_ROOT="${CHART_ROOT:-$PROJECT_ROOT/charts}"
-DEPLOYMENT_DIR="${DEPLOYMENT_DIR:-$PROJECT_ROOT/deployments/local}"
-EXPORT_ROOT="${EXPORT_ROOT:-$PROJECT_ROOT/build/export}"
-TOOLS_ROOT="${TOOLS_ROOT:-$PROJECT_ROOT/containers/python_base/scripts}"
+DEPLOYMENT_DIR="${DEPLOYMENT_DIR:-$PROJECT_ROOT/quickstart/helm}"
+TOOLS_ROOT="${TOOLS_ROOT:-$PROJECT_ROOT/scripts}"
 export PATH="$TOOLS_ROOT:$PATH"
 
 e() {
@@ -72,6 +71,47 @@ if [[ $START_CLUSTER ]]; then
   local_start || e "Failed to start local k8s tool [${LOCAL_TOOL}]"
 fi
 
+if [[ $RUN_OFFLINE ]];
+  suffix="$(<BUNDLE_TAG)"
+  if [[ ! ${suffix} ]]; then
+    monolog ERROR "Bundle is missing required label metadata"
+    exit 1
+  fi
+
+  monolog TRACE "docker load -i [containers/opentdf-service-images-${suffix}.tar]"
+  if ! docker load -i "containers/opentdf-service-images-${suffix}.tar"; then
+    monolog ERROR "offline bundle failed to load"
+    exit 1
+  fi
+
+
+  for third in kind postgresql; do
+    prefix="containers/third-party-image-${third}-${suffix}"
+    monolog TRACE "docker load kind from [${prefix}.tar]"
+    if ! docker load -i "${prefix}.tar" ; then
+      monolog ERROR "offline bundle for [${third}] failed to load"
+      exit 1
+    fi
+    meta=$(<"${prefix}.meta")
+    abstag=${meta%% *}
+    reponame=${meta%%:*}
+    # Tag image with tag we are matching in the pull
+    # meta has two values so we want it to split into two parameters
+    # shellcheck disable=SC2086
+    if ! docker tag $meta; then
+      monolog ERROR "3rd party bundle [${third}] failed: [docker tag ${meta}]"
+      exit 1
+    fi
+
+    # Tag image with `offline`. The percent below strips everything
+    # after (and including) the first colon
+    if ! docker tag "$abstag" "$reponame:offline"; then
+      monolog ERROR "3rd party bundle [${third}] failed to [docker tag $abstag $reponame:offline]"
+      exit 1
+    fi
+  done
+fi
+
 maybe_load() {
   if [[ $LOAD_IMAGES ]]; then
     local_load $1 || e "Unable to load service image [${1}]"
@@ -80,9 +120,11 @@ maybe_load() {
 
 if [[ $LOAD_IMAGES ]]; then
   monolog INFO "Caching locally-built development opentdf/backend images in dev cluster"
+  if [[ $RUN_OFFLINE ]]; then
+  fi
   # Cache locally-built `latest` images, bypassing registry.
   # If this fails, try running 'docker-compose build' in the repo root
-  for s in entity-attribute-service kas entitlements storage-service attributes-service; do
+  for s in attributes bootstrap claims entitlements kas; do
     maybe_load opentdf/$s:${SERVICE_IMAGE_TAG}
   done
 else
