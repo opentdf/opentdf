@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "abacus.name" . }}-cm
+data:
+{{/*  OIDC_CLIENT_ID: {{ .Values.oidc.clientId }}*/}}
+{{/*  OIDC_CLIENT_SECRET: {{ .Values.oidc.clientSecret }}*/}}
+{{/*  OIDC_SERVER_URL: {{ .Values.oidc.serverUrl }}*/}}
+{{/*  OIDC_AUTHORIZATION_URL: {{ .Values.oidc.authorizationUrl }}*/}}
+{{/*  OIDC_TOKEN_URL: {{ .Values.oidc.tokenUrl }}*/}}
+{{/*  OIDC_CONFIGURATION_URL: {{ .Values.oidc.configurationUrl }}*/}}
+{{/*  OIDC_REALM: {{ .Values.oidc.realm }}*/}}
+
+  KEYCLOAK_HOST: {{ .Values.oidc.serverUrl }}
+  KEYCLOAK_CLIENT_ID: {{ .Values.oidc.clientId }}
+  KEYCLOAK_REALM: {{ .Values.oidc.realm }}
+  ATTRIBUTES_HOST: {{ .Values.attributes.serverUrl }}
+  ENTITLEMENTS_HOST: {{ .Values.entitlements.serverUrl }}

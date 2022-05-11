@@ -45,13 +45,62 @@ For local development
 
 ### Create cluster
 
-`kind create cluster --name opentdf-integrate`
+```shell
+ctlptl create cluster kind --registry=ctlptl-registry --name kind-opentdf-integrate
+# to cleanup or retry
+ctlptl delete cluster kind-opentdf-integrate
+```
+
+### Ingress controller
+
+```shell
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
+```
+
+### Postgres
+
+```shell
+helm upgrade --install postgres bitnami/postgresql \
+  --version 10.16.2 --values helm/postgres-values.yaml \
+  --namespace postgres --create-namespace
+```
 
 ### Keycloak
 
 ```shell
-kubectl create namespace keycloak
-helm install --version 5.1.1 --values helm/keycloak-values.yaml --namespace keycloak keycloak bitnami/keycloak
+helm upgrade --install keycloak keycloak/keycloak \
+  --version 17.0.2 --values helm/keycloak-values.yaml \
+  --namespace keycloak --create-namespace
+```
+
+### openTDF
+
+#### Namespace
+```shell
+kubectl create namespace opentdf
+```
+
+#### Secrets
+
+```shell
+kubectl apply --filename helm/opentdf-secrets.yaml \
+ --namespace opentdf
+```
+
+#### Services
+
+```shell
+helm upgrade --install opentdf ../helm \
+  --values helm/opentdf-values.yaml \
+  --namespace opentdf --create-namespace
+```
+
+### Port forward
+
+```shell
+kubectl --namespace ingress-nginx port-forward services/ingress-nginx-controller 65432:443
 ```
 
 ## Configure
@@ -59,6 +108,8 @@ helm install --version 5.1.1 --values helm/keycloak-values.yaml --namespace keyc
 ### Keycloak
 
 [Operator documentation](https://www.keycloak.org/docs/latest/server_installation/index.html#_operator)
+
+Go to https://localhost:65432/keycloak/auth/ and login with `keycloakadmin` / `mykeycloakpassword`
 
 #### Add realm
 
@@ -96,6 +147,9 @@ Add user and set role for viewing clients and users.
 ![](../resource/keycloak-entity-person-password.png)
 
 #### Add entity (client, NPE)
+
+Attribute Provider URL  
+http://opentdf-claims.opentdf.svc.cluster.local:5000/claims
 
 ![](../resource/keycloak-client-nonperson-service.png)
 
