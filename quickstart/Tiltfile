@@ -101,7 +101,7 @@ helm_resource(
 helm_resource(
     "abacus",
     "oci://ghcr.io/opentdf/charts/abacus",
-    flags=["--version", "0.0.0-sha-35319c7", ["-f", "helm/values-abacus.yaml"],
+    flags=["--version", "0.0.0-sha-35319c7", "-f", "helm/values-abacus.yaml"],
     labels="frontend",
     resource_deps=["keycloak-bootstrap"],
 )
