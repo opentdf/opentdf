@@ -125,7 +125,9 @@ if [[ $LOAD_SECRETS ]]; then
 fi
 
 if [[ $INGRESS_HOSTNAME ]]; then
-  sed -i "s/offline.demo.internal/${INGRESS_HOSTNAME}/g" "${DEPLOYMENT_DIR}/values-*.yaml"
+  for x in "${DEPLOYMENT_DIR}"/values-*.yaml; do
+    sed -i s/offline.demo.internal/"${INGRESS_HOSTNAME}"/g "$x"
+  done
 fi
 
 # Only do this if we were told to disable Keycloak
