@@ -138,7 +138,7 @@ save-third-party() {
     exit 1
   fi
   # Required information for tagging image locally
-  if ! echo "$version" "$image" >"${path}.meta"; then
+  if ! echo "$version" "$name_tag" >"${path}.meta"; then
     monolog ERROR "Failed to save tag metadata for docker image [${version}] to [${path}.meta]"
     exit 1
   fi

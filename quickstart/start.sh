@@ -126,9 +126,9 @@ if [[ $USE_KEYCLOAK ]]; then
 
   monolog INFO --- "Installing Virtru-ified Keycloak"
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install keycloak "${CHART_ROOT}"/keycloak-17.0.1.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG:-main} || e "Unable to helm upgrade keycloak"
+    helm upgrade --install keycloak "${CHART_ROOT}"/keycloak-17.0.1.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade keycloak"
   else
-    helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloak -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG:-main} || e "Unable to helm upgrade keycloak"
+    helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloak -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade keycloak"
   fi
   monolog INFO "Waiting until Keycloak server is ready"
 
@@ -140,8 +140,12 @@ fi
 
 if [[ $INIT_POSTGRES ]]; then
   monolog INFO --- "Installing Postgresql for opentdf backend"
+  if [[ $LOAD_IMAGES ]]; then
+    monolog INFO "Caching postgresql image"
+    maybe_load bitnami/postgresql:${SERVICE_IMAGE_TAG}
+  fi
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG:-offline} || e "Unable to helm upgrade postgresql"
+    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade postgresql"
   else
     helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" || e "Unable to helm upgrade postgresql"
   fi

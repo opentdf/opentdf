@@ -61,15 +61,10 @@ for third in kind postgresql; do
   # Tag image with tag we are matching in the pull
   # meta has two values so we want it to split into two parameters
   # shellcheck disable=SC2086
-  if ! docker tag "$abstag" "$reponame"; then
-    monolog ERROR "3rd party bundle [${third}] failed: [docker tag ${meta}]"
-    exit 1
-  fi
-
-  # Tag image with `offline`. The percent below strips everything
-  # after (and including) the first colon
-  if ! docker tag "$abstag" "$reponame:offline"; then
-    monolog ERROR "3rd party bundle [${third}] failed to [docker tag $abstag $reponame:offline]"
-    exit 1
-  fi
+  for n in "$reponame" "$reponame:offline" "docker.io/$reponame:offline"; do
+    if ! docker tag "$abstag" "$n"; then
+      monolog ERROR "3rd party bundle [${third}] failed: [docker tag ${reponame} ${n}]"
+      exit 1
+    fi
+  done
 done
