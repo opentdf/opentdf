@@ -67,6 +67,11 @@ local_info || e "Local cluster manager [${LOCAL_TOOL}] is not available"
 kubectl version --client | monolog DEBUG || e "kubectl is not available"
 helm version | monolog DEBUG || e "helm is not available"
 
+if [[ $LOAD_IMAGES && $RUN_OFFLINE ]]; then
+  # Copy images from local tar files into local docker registry
+  docker-load-and-tag-exports || e "Unable to load images"
+fi
+
 if [[ $START_CLUSTER ]]; then
   local_start || e "Failed to start local k8s tool [${LOCAL_TOOL}]"
 fi
@@ -79,11 +84,6 @@ maybe_load() {
 }
 
 if [[ $LOAD_IMAGES ]]; then
-  if [[ $RUN_OFFLINE ]]; then
-    # Copy images from local tar files into local docker registry
-    docker-load-and-tag-exports || e "Unable to load images"
-  fi
-
   monolog INFO "Caching locally-built development opentdf/backend images in dev cluster"
   # Cache locally-built `latest` images, bypassing registry.
   # If this fails, try running 'docker-compose build' in the repo root
