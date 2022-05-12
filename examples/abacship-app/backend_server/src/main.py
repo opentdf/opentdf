@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 import requests
+import asyncio
 from enum import Enum
 from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
 from urllib.parse import urlparse
@@ -34,8 +35,23 @@ from pydantic.main import BaseModel
 from sqlalchemy import and_
 from sqlalchemy.orm import Session, sessionmaker, declarative_base
 
-from game import Status, Player, Row, SingleBoard, WholeBoard, Game, valid_board
-from services import *
+from game import (
+    Status,
+    Player,
+    Row,
+    SingleBoard,
+    WholeBoard,
+    Game,
+    validBoard
+)
+from services import (
+    setupKeycloak,
+    setupAttributes,
+    setupEntitlements,
+    teardownEntitlements,
+    teardownAttributes,
+    teardownKeycloak,
+)
 
 
 logging.basicConfig(
@@ -54,6 +70,9 @@ app = FastAPI(
     root_path=os.getenv("SERVER_ROOT_PATH", ""),
     servers=[{"url": settings.base_path}],
 )
+
+#create the game
+abacship = Game()
 
 
 def get_retryable_request():
@@ -80,7 +99,9 @@ async def startup():
     # load all the attributes (if not already there)
     # create a backend client (if not already created)
     # assign the client the proper attributes
-    pass
+    setupKeycloak()
+    setupAttributes()
+    setupEntitlements()
 
 
 @app.on_event("shutdown")
@@ -89,7 +110,9 @@ async def shutdown():
     # delete the attributes from the backend client
     # delete attributes from the DB
     # delete the backend client
-    pass
+    teardownEntitlements(abacship.player1.username, abacship.player2.username)
+    teardownAttributes()
+    teardownKeycloak()
 
 
 @app.get("/", include_in_schema=False)
@@ -118,8 +141,7 @@ async def get_status():
     Returns the current game status
     (See Status enum -- possibly restructuring)
     """
-    #just return the current stored status
-    pass
+    return abacship.status
 
 
 @app.post(
@@ -135,9 +157,12 @@ async def grant_attribute(player: Player):
     Grants an attribute to opposing player
     Returns game status
     """
-    # change game status back to opposing players turn?
-    # return new status
-    pass
+    if player.name == "player1" and abacship.status == Status.p2_request_attr_from_p1:
+        abacship.status = Status.p1_grants_attr_to_p2
+    elif player.name == "player2" and abacship.status == Status.p1_request_attr_from_p2:
+        abacship.status = Status.p2_grants_attr_to_p1
+
+    return {"status": abacship.status}
     
 
 
@@ -164,8 +189,7 @@ async def get_board():
     Returns 2D array board representation for each player (with encrypted strings)
     (or nothing if the board is not set yet)
     """
-    #return the stored board
-    pass
+    return abacship.getWholeBoard()
 
 
 @app.post(
@@ -207,13 +231,48 @@ async def submit_board(access_token: str, refresh_token: str, board: SingleBoard
     get from the access_token, or can just change it to pass in the username instead)
     """
     # some sort of board verification -- raise error if invalid
+    if not validBoard(board):
+        raise HTTPException( #could add some more reasoning here -- valid board could return why invalid
+            status_code=BAD_REQUEST,
+            detail="Invalid board",
+        )
     # store the player information in the game (user name [get from access token], current access token and refresh token?)
-    # encrypt each tile with correct attributes
-    # store the board in the game
+    player_name, username = abacship.setupPlayer(access_token, board)
+    # assign the attributes to this player
+    setupUserEntitlements(username, player_name)
+    # encrypt this board
+    if player_name == "player1": 
+        abacship.player1.encryptBoard(abacship.opentdf_oidccreds)
+    else:
+        abacship.player2.encryptBoard(abacship.opentdf_oidccreds)
     # await other players board -- do not reutrn until game has both boards stored (some boolean)
+    while not (abacship.player1 is not None and abacship.player2 is not None and abacship.player1.ready and abacship.player2.ready):
+        await asyncio.sleep(1)
+    # set status to p1 turn
+    if abacship.status = Status.setup:
+        abacship.status = Status.p1_turn
     # return player information and full board and game status
-    pass
-
+    if player_name == "player1":
+        payload = {
+            "player_info": {
+            "name": player_name,
+            "refresh_token": player1.player.refresh_token,
+            "access_token": player1.player.access_token,
+            },
+            "full_board": abacship.getWholeBoard(),
+            "status": abacship.status
+            }
+    else:
+        payload = {
+            "player_info": {
+            "name": player_name,
+            "refresh_token": player2.player.refresh_token,
+            "access_token": player2.player.access_token,
+            },
+            "full_board": abacship.getWholeBoard(),
+            "status": abacship.status
+        }
+    return payload
 
 
 @app.post(
@@ -254,8 +313,62 @@ async def check_square(player: Player, row: int, col: int):
     returns new status
     """
     # check if square already checked -- if so tell them?
-    # change status to p1 request p2 or whatever
-    # 
-    pass
+    if player.name == "player1":
+        if str(row)+str(col) in abacship.player1.guesses:
+            raise HTTPException( #could add some more reasoning here -- valid board could return why invalid
+            status_code=BAD_REQUEST,
+            detail="Has already been guessed",
+        )
+        abacship.status = Status.p1_request_attr_from_p2
+        # await grant access
+        while not (abacship.status==p2_grants_attr_to_p1):
+            await asyncio.sleep(1)
+        # actually grant the access
+        abacship.player1.makeGuess(row, col)
+        # refresh tokens?
+        abacship.player1.refreshPlayerTokens()
+        # set new status
+        victory = abacship.victoryCheck()
+        if not victory:
+            abacship.status = p2_turn
+        #construct payload
+        payload = {
+            "player_info": {
+            "name": player.name,
+            "refresh_token": abacship.player1.player.refresh_token,
+            "access_token": abacship.player1.player.access_token,
+            },
+            "full_board": abacship.getWholeBoard(),
+            "status": abacship.status
+        }
+    else:
+        if str(row)+str(col) in abacship.player2.guesses:
+            raise HTTPException( #could add some more reasoning here -- valid board could return why invalid
+            status_code=BAD_REQUEST,
+            detail="Has already been guessed",
+        )
+        abacship.status = Status.p2_request_attr_from_p1
+        # await grant access
+        while not (abacship.status==p1_grants_attr_to_p2):
+            await asyncio.sleep(1)
+        # actually grant the access
+        abacship.player2.makeGuess(row, col)
+        # refresh tokens?
+        abacship.player2.refreshPlayerTokens()
+        # set new status
+        victory = abacship.victoryCheck()
+        if not victory:
+            abacship.status = p1_turn
+        #construct payload
+        payload = {
+            "player_info": {
+            "name": player.name,
+            "refresh_token": abacship.player2.player.refresh_token,
+            "access_token": abacship.player2.player.access_token,
+            },
+            "full_board": abacship.getWholeBoard(),
+            "status": abacship.status
+        }
+    return payload
 
 ###https://editor.swagger.io/#/
