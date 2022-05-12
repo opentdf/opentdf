@@ -199,7 +199,7 @@ if ! rsync -lmr --safe-links --executability --force scripts ${OUT_DIR}; then
   exit 1
 fi
 
-if ! cp examples/offline/docker-load-and-tag-exports ${OUT_DIR}; then
+if ! cp examples/offline/docker-load-and-tag-exports ${OUT_DIR}/scripts; then
   monolog ERROR "Unable to update image load script"
   exit 1
 fi
