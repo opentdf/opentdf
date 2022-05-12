@@ -107,6 +107,11 @@ if [[ $LOAD_SECRETS ]]; then
 
   kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
   kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
+  kubectl create secret generic keycloak-secrets \
+      --from-literal=DB_USER=postgres \
+      --from-literal=DB_PASSWORD=myPostgresPassword \
+      --from-literal=KEYCLOAK_USER=keycloakadmin \
+      --from-literal=KEYCLOAK_PASSWORD=mykeycloakpassword
 fi
 
 # Only do this if we were told to disable Keycloak
@@ -115,7 +120,7 @@ if [[ $USE_KEYCLOAK ]]; then
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching locally-built development opentdf Keycloak in dev cluster"
     for s in claims keycloak keycloak-bootstrap; do
-      maybe_load opentdf/$s:${SERVICE_IMAGE_TAG}
+      maybe_load ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}
     done
   fi
 
