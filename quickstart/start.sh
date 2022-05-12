@@ -24,6 +24,7 @@ START_CLUSTER=1
 export RUN_OFFLINE=
 USE_KEYCLOAK=1
 INIT_POSTGRES=1
+INIT_OPENTDF=1
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -41,6 +42,10 @@ while [[ $# -gt 0 ]]; do
     --no-load-images)
       monolog TRACE "--no-load-images"
       LOAD_IMAGES=
+      ;;
+    --no-opentdf)
+      monolog TRACE "--no-opentdf"
+      INIT_OPENTDF=
       ;;
     --no-secrets)
       monolog TRACE "--no-secrets"
@@ -151,26 +156,28 @@ if [[ $INIT_POSTGRES ]]; then
   fi
   monolog INFO "Waiting until postgresql is ready"
 
-  while [[ $(kubectl get pods postgresql-postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+  while [[ $(kubectl get pods postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
     echo "waiting for postgres..."
     sleep 5
   done
 fi
 
-monolog INFO --- "OpenTDF charts"
-for s in attributes claims entitlements kas; do
-  val_file="${DEPLOYMENT_DIR}/values-${s}.yaml"
-  if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" || e "Unable to install chart for ${s}"
-  else
-    helm upgrade --version "0.0.0-sha-0b804dd" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
-  fi
-done
-for s in abacus; do
-  val_file="${DEPLOYMENT_DIR}/values-${s}.yaml"
-  if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" || e "Unable to install chart for ${s}"
-  else
-    helm upgrade --version "0.0.0-sha-fe676f4" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
-  fi
-done
+if [[ $INIT_OPENTDF ]]; then
+  monolog INFO --- "OpenTDF charts"
+  for s in attributes claims entitlements kas; do
+    val_file="${DEPLOYMENT_DIR}/values-${s}.yaml"
+    if [[ $RUN_OFFLINE ]]; then
+      helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" || e "Unable to install chart for ${s}"
+    else
+      helm upgrade --version "0.0.0-sha-0b804dd" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
+    fi
+  done
+  for s in abacus; do
+    val_file="${DEPLOYMENT_DIR}/values-${s}.yaml"
+    if [[ $RUN_OFFLINE ]]; then
+      helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" || e "Unable to install chart for ${s}"
+    else
+      helm upgrade --version "0.0.0-sha-fe676f4" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
+    fi
+  done
+fi
