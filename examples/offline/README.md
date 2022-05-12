@@ -38,8 +38,53 @@ The offline bundle includes:
 
 - Images
 - Charts
+- Sample 'quickstart' deployment
+- Utility scripts
+- Optional docker image with everything inside
 
-## Install images locally
+### 1. First unzip the bundle
+
+> `unzip offline-bundle-*.zip && cd bundle`
+
+Unzip the bundle and go into the folder.
+The below samples all assume you are running from the `bundle` root folder.
+
+### 2. Install pre-reqs
+
+> `scripts/pre-reqs`
+
+The included `pre-reqs` script will try to install a variety of tools and applications
+that the quickstart and image installer scripts will use. You can also install
+these manually.
+They include, but are not limited to:
+
+- for installation and testing: curl
+- for image registry management: docker
+- for kubernetes control: kubectl, helm, and tilt
+- for local demos: minikube or kind
+
+If the pre-reqs fails for you, please let us know.
+
+### 3. Use the quickstart test environment
+
+> `quickstart/start.sh --offline`
+
+This will create a local kubernetes cluster with minikube or kind,
+and install the opentdf and its required services within it, and launch with
+some sample data.
+
+### 4. Exposing the sample environment
+
+#### 4.A. Connecting to a local host or container
+
+
+#### 4.B. Connecting to a Remote Host
+
+If you are connecting to a computer from 
+
+> `ssh -L 80:
+
+## Advanced Install
 
 The images are installed in separate files from the bundle's `containers` folder.
 `opentdf-service-images-[tag].tar` includes all the opentdf custom microservices.
