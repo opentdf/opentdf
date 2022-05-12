@@ -18,6 +18,7 @@ e() {
 }
 
 : "${SERVICE_IMAGE_TAG:="offline"}"
+: "${INGRESS_HOSTNAME:=$(hostname)}"
 LOAD_IMAGES=1
 LOAD_SECRETS=1
 START_CLUSTER=1
@@ -42,6 +43,10 @@ while [[ $# -gt 0 ]]; do
     --no-load-images)
       monolog TRACE "--no-load-images"
       LOAD_IMAGES=
+      ;;
+    --no-host-update)
+      monolog TRACE "--no-host-update"
+      INGRESS_HOSTNAME=
       ;;
     --no-opentdf)
       monolog TRACE "--no-opentdf"
@@ -117,6 +122,10 @@ if [[ $LOAD_SECRETS ]]; then
       --from-literal=DB_PASSWORD=myPostgresPassword \
       --from-literal=KEYCLOAK_USER=keycloakadmin \
       --from-literal=KEYCLOAK_PASSWORD=mykeycloakpassword
+fi
+
+if [[ $INGRESS_HOSTNAME ]]; then
+  sed -i "s/offline.demo.internal/${INGRESS_HOSTNAME}/g" "${DEPLOYMENT_DIR}/values-*.yaml"
 fi
 
 # Only do this if we were told to disable Keycloak

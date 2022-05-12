@@ -27,5 +27,7 @@ ingress:
       "/api/entitlements(/|$)(.*)":
         pathType: Prefix
     host.docker.internal: *paths
+    offline.demo.internal: *paths
+    opentdf.local: *paths
 secretRef:
  name: entitlements-secrets

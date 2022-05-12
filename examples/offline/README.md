@@ -81,7 +81,7 @@ We will also need to generate and use a custom postgres password.
 
 ```sh
 POSTGRES_PW=$(openssl rand -base64 40)
-sed -i '' "s/myPostgresPassword/${POSTGRES_PW}/" export/deployment/values-postgresql-tdf.yaml
+sed -i '' "s/myPostgresPassword/${POSTGRES_PW}/" export/deployment/values-postgresql.yaml
 kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD="${POSTGRES_PW}"
 kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD="${POSTGRES_PW}"
 ```
