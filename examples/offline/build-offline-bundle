@@ -84,13 +84,15 @@ echo "${suffix}" > "$OUT_DIR/BUNDLE_TAG"
 
 # first party images
 save-first-party() {
-  local short_name="$1"
+  monolog TRACE "save-first-party [$*]"
+  local service_name="$1"
+  local short_name="ghcr.io/opentdf/$service_name"
   local name_tag="$2"
-  local image="ghcr.io/opentdf/${short_name}:${name_tag}"
-  local path="${OUT_DIR}/containers/opentdf-${short_name}-${suffix}"
+  local image="${short_name}:${name_tag}"
+  local path="${OUT_DIR}/containers/opentdf-${service_name}-${suffix}"
   local tar_path="${path}.tar"
   local version="$(docker inspect --format='{{index .RepoDigests 0}}' ${image})"
-  monolog TRACE "Save docker images as [${tar_path}] from [${image}]"
+  monolog TRACE "Save docker images as [${tar_path}] from [${image}] version=[$version]"
   if ! docker save -o "${tar_path}" "${image}"; then
     monolog ERROR "Failed to save docker image [${image}] as [${tar_path}]"
     exit 1
@@ -122,11 +124,11 @@ done
 
 # third party items
 save-third-party() {
-  local short_name="$1"
-  local name_tag="$2"
-  local sha="$3"
-  local version="${name_tag}@sha256:${sha}"
-  local path="${OUT_DIR}/containers/third-party-image-${short_name}-${suffix}"
+  monolog TRACE "save-third-party [$*]"
+  local service_name="$1"
+  local image="$2"
+  local version="$(docker inspect --format='{{index .RepoDigests 0}}' ${image})"
+  local path="${OUT_DIR}/containers/third-party-image-${service_name}-${suffix}"
   local tar_path="${path}.tar"
   monolog TRACE "Save docker images as [${tar_path}] from [${version}]"
   if ! docker pull "${version}"; then
@@ -150,11 +152,11 @@ save-third-party() {
 
 # KIND: https://kind.sigs.k8s.io/docs/user/working-offline/
 # Update URI: https://hub.docker.com/r/kindest/node/tags
-save-third-party kind kindest/node:v1.23.5 69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6
+save-third-party kind kindest/node:v1.23.5
 
 # postgresql
 # Update URI: https://hub.docker.com/r/bitnami/postgresql/tags
-save-third-party postgresql bitnami/postgresql:v12.8.0 ff0644fea98b51f111cff32c0a4eea49cafe644087d723544c2d2a955eea7a69
+save-third-party postgresql bitnami/postgresql:12.8.0
 # Keycloak: Since we are bulding a custom image, we don't include that in thirdparty but in primary bundle
 
 # Third party helm charts

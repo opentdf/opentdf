@@ -63,7 +63,7 @@ for third in kind postgresql; do
   # shellcheck disable=SC2086
   for n in "$reponame" "$reponame:offline" "docker.io/$reponame:offline"; do
     if ! docker tag "$abstag" "$n"; then
-      monolog ERROR "3rd party bundle [${third}] failed: [docker tag ${reponame} ${n}]"
+      monolog ERROR "3rd party bundle [${third}] failed: [docker tag ${abstag} ${n}]"
       exit 1
     fi
   done
