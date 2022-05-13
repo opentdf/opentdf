@@ -132,6 +132,8 @@ if [[ $LOAD_SECRETS ]]; then
 
   monolog TRACE "Creating 'attributes-secrets'..."
   kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
+  monolog TRACE "Creating 'claims-secrets'..."
+  kubectl create secret generic claims-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create claims secrets failed"
   monolog TRACE "Creating 'entitlements-secrets'..."
   kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
   monolog TRACE "Creating 'keycloak-secrets'..."
