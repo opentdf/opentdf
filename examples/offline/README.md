@@ -65,6 +65,21 @@ They include, but are not limited to:
 
 If the pre-reqs fails for you, please let us know.
 
+#### Selecting a local cluster tool
+
+We currently have a facade, `lib-local.sh`, which provides simple management for minikube or kind.
+To select the appropriate cluster, please run either
+
+```
+export LOCAL_TOOL=minikube
+```
+
+or 
+
+```
+export LOCAL_TOOL=kind
+```
+
 ### 3. Use the quickstart test environment
 
 > `quickstart/start.sh --offline`
@@ -75,13 +90,25 @@ some sample data.
 
 ### 4. Exposing the sample environment
 
+First, describe the environment
+
+```
+kubectl describe ingress ingress-nginx
+```
+
+You will see that it is assigned a local class C network address or similar. This should be accessible. To test, run:
+
+```
+
+```
+
 #### 4.A. Connecting to a local host or container
 
 #### 4.B. Connecting to a Remote Host
 
-If you are connecting to a computer from
+If you are connecting to a computer from outside. First, on the host 
 
-> `ssh -L 80:
+> `sudo ssh -L 80:
 
 ## Advanced Install
 

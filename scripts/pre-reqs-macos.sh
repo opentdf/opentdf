@@ -22,7 +22,7 @@ if [[ $# -gt 0 ]]; then
         stuff+=("$item")
         ;;
       *)
-        e "Unrecognized options: [$*]"
+        e "Unrecognized options: [$item]"
         ;;
     esac
   done
