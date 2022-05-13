@@ -130,7 +130,7 @@ helm_resource(
     "oci://ghcr.io/opentdf/charts/abacus",
     flags=[
         "--version",
-        "0.0.0-sha-35319c7",
+        "0.0.0-sha-7a19f1c",
         "-f",
         "helm/values-abacus.yaml",
         "--set",
