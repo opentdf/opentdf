@@ -55,8 +55,8 @@ while [[ $# -gt 0 ]]; do
       monolog TRACE "--no-host-update"
       INGRESS_HOSTNAME=
       ;;
-    --no-opentdf)
-      monolog TRACE "--no-opentdf"
+    --no-init-opentdf)
+      monolog TRACE "--no-init-opentdf"
       INIT_OPENTDF=
       ;;
     --no-secrets)

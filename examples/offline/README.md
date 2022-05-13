@@ -90,9 +90,9 @@ some sample data.
 
 ### 4. Exposing the sample environment
 
-If you are using kind, follow instructions here: https://kind.sigs.k8s.io/docs/user/ingress/
+If you are using **kind**, follow instructions here: https://kind.sigs.k8s.io/docs/user/ingress/
 
-If you are using minikube with the docker network, you can use
+If you are using **minikube** with the docker network, you can use
 
 
 ```
@@ -115,7 +115,12 @@ Next, you will need to map the external name in your /etc/hosts file, so `sudo v
 
 where `[internal hostname]` is the value of `hostname` run on your host server, which is inserted as the external name by default. Alternative, you can overload hostname *BEFORE RUNNING start.sh* with the environment variable `INGRESS_HOSTNAME`.
 
-> TODO allow bootstrap to take multiple domains, to allow offline.demo.internal or opentdf.local too
+If you want to connect to the minikube dashboard, you can also do that with a tunnel.
+
+First, start the [dashboard](https://minikube.sigs.k8s.io/docs/handbook/dashboard/) with `minikube dashboard --url`. 
+Next, tunnel the URL from the host operating system using the `-L` option.
+
+> TODO allow bootstrap to take multiple domains, to allow offline.demo.internal or opentdf.local
 
 ## Advanced Install
 
