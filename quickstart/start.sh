@@ -18,7 +18,6 @@ e() {
 }
 
 : "${SERVICE_IMAGE_TAG:="offline"}"
-: "${INGRESS_HOSTNAME:=$(hostname | tr '[:upper:]' '[:lower:]')}"
 LOAD_IMAGES=1
 LOAD_SECRETS=1
 START_CLUSTER=1
@@ -27,6 +26,7 @@ USE_KEYCLOAK=1
 INIT_POSTGRES=1
 INIT_OPENTDF=1
 INIT_SAMPLE_DATA=1
+REWRITE_HOSTNAME=1
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -55,7 +55,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --no-host-update)
       monolog TRACE "--no-host-update"
-      INGRESS_HOSTNAME=
+      REWRITE_HOSTNAME=
       ;;
     --no-init-opentdf)
       monolog TRACE "--no-init-opentdf"
@@ -78,6 +78,12 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+: "${INGRESS_HOSTNAME:=$(hostname | tr '[:upper:]' '[:lower:]')}"
+
+if [[ ! $RUN_OFFLINE ]]; then
+  INGRESS_HOSTNAME=
+fi
 
 . "${TOOLS_ROOT}/lib-local.sh"
 
@@ -141,7 +147,7 @@ if [[ $INGRESS_HOSTNAME ]]; then
     if sed --help 2>&1 | grep in-place; then
       sed --in-place -e s/offline.demo.internal/"${INGRESS_HOSTNAME}"/g "$x"
     else
-      sed -i'' -e s/offline.demo.internal/"${INGRESS_HOSTNAME}"/g "$x"
+      sed -i'' s/offline.demo.internal/"${INGRESS_HOSTNAME}"/g "$x"
     fi
   done
 fi
