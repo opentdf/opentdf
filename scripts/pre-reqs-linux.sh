@@ -41,6 +41,7 @@ i_curl() {
   monolog INFO "Installing curl"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
   if ! which curl; then
+
     apt-get update && apt install -y curl || e "Unable to install curl"
   fi
   curl --version || e "Bad curl install"
@@ -82,7 +83,11 @@ i_kubectl() {
   monolog INFO "Installing kubectl"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
   if ! which kubectl; then
-    apt-get update && apt install -y kubectl || e "Unable to install kubectl"
+    if which snap; then
+      snap install kubectl --classic || e "Unable to install kubectl"
+    else
+      apt-get update && apt install -y kubectl || e "Unable to install kubectl"
+    fi
   fi
   kubectl version || e "Bad kubectl install"
 }
