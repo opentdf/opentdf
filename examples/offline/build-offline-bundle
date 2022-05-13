@@ -126,6 +126,8 @@ save-image() {
   fi
 }
 
+export save-image
+
 # TODO(PLAT-1417) add 'storage' once published to ghcr.io
 if [[ ! $no_first_party ]]; then
   for x in attributes claims entitlements kas keycloak keycloak-bootstrap; do
@@ -150,7 +152,7 @@ if [[ ! $no_third_party ]]; then
   # Keycloak: Since we are bulding a custom image, we don't include that in thirdparty but in primary bundle
 
   save-image maven 3.6-jdk-11 third-party-image-maven
-  if ! save-image virtru/openfire 0.1 third-party-image-openfire; then
+  if ! (save-image virtru/openfire 0.1 third-party-image-openfire); then
     monolog WARN "Unable to pull openfire. Have you logged in as a virtru user to docker.io?"
   fi
 fi
