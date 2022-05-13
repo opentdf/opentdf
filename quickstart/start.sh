@@ -191,4 +191,8 @@ if [[ $INIT_OPENTDF ]]; then
       helm upgrade --version "0.0.0-sha-fe676f4" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
     fi
   done
+
+  if [[ $USE_KEYCLOAK ]]; then
+    helm upgrade --install keycloak-bootstrap "${CHART_ROOT}"/keycloak-bootstrap-*.tgz -f "${DEPLOYMENT_DIR}/values-bootstrap.yaml" || e "Unable to start bootstrap job"
+  fi
 fi
