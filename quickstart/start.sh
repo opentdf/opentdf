@@ -129,7 +129,11 @@ fi
 
 if [[ $INGRESS_HOSTNAME ]]; then
   for x in "${DEPLOYMENT_DIR}"/values-*.yaml; do
-    sed -i s/offline.demo.internal/"${INGRESS_HOSTNAME}"/g "$x"
+    if sed --help 2>&1 | grep in-place; then
+      sed --in-place -e s/offline.demo.internal/"${INGRESS_HOSTNAME}"/g "$x"
+    else
+      sed -i'' -e s/offline.demo.internal/"${INGRESS_HOSTNAME}"/g "$x"
+    fi
   done
 fi
 
