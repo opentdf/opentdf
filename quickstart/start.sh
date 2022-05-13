@@ -107,7 +107,7 @@ fi
 if [[ $LOAD_SECRETS ]]; then
   "$TOOLS_ROOT"/genkeys-if-needed || e "Unable to generate keys"
 
-  printf "\nCreating 'kas-secrets'..."
+  monolog TRACE "Creating 'kas-secrets'..."
   kubectl create secret generic kas-secrets \
     "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
     "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
@@ -115,8 +115,11 @@ if [[ $LOAD_SECRETS ]]; then
     "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
     "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt" || e "create kas-secrets failed"
 
+  monolog TRACE "Creating 'attributes-secrets'..."
   kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
+  monolog TRACE "Creating 'entitlements-secrets'..."
   kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
+  monolog TRACE "Creating 'keycloak-secrets'..."
   kubectl create secret generic keycloak-secrets \
     --from-literal=DB_USER=postgres \
     --from-literal=DB_PASSWORD=myPostgresPassword \

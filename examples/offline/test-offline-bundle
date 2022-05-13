@@ -39,7 +39,6 @@ fi
 
 CHARTS_DIR="${EXPORT_ROOT}/charts"
 CONTAINERS_DIR="${EXPORT_ROOT}/containers"
-DEPLOYMENT_DIR="${EXPORT_ROOT}/deployment"
 LIB_DIR="${EXPORT_ROOT}/lib"
 QUICKSTART_DIR="${EXPORT_ROOT}/quickstart"
 TOOLS_DIR="${EXPORT_ROOT}/scripts"
@@ -47,7 +46,6 @@ TOOLS_DIR="${EXPORT_ROOT}/scripts"
 export EXPORT_ROOT
 export CHARTS_DIR
 export CONTAINERS_DIR
-export DEPLOYMENT_DIR
 export LIB_DIR
 export QUICKSTART_DIR
 export TOOLS_DIR
