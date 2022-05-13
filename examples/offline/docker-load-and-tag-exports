@@ -7,9 +7,8 @@
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
-# Are we running in offline mode (from a build/export/bundle)?
-if [ -f ${APP_DIR}/monolog ]; then
-  offline=1
+# Are we running in offline mode (from a ./build/export/bundle folder)?
+if [ -f "${APP_DIR}"/monolog ]; then
   : "${EXPORT_ROOT:="$(cd "${APP_DIR}/../" >/dev/null && pwd)"}"
 else
   : "${EXPORT_ROOT:="$(git rev-parse --show-toplevel)/build/export/bundle"}"
@@ -24,7 +23,7 @@ monolog TRACE "Running [$0${1+ }$*] within EXPORT_ROOT=[${EXPORT_ROOT}]"
 
 export LOCAL_TOOL
 
-suffix="$(<${EXPORT_ROOT}/BUNDLE_TAG)"
+suffix="$(<"${EXPORT_ROOT}"/BUNDLE_TAG)"
 if [[ ! ${suffix} ]]; then
   monolog ERROR "Bundle is missing required label metadata"
   exit 1

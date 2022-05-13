@@ -89,7 +89,7 @@ fi
 # Copy images from local registry into k8s registry
 maybe_load() {
   if [[ $LOAD_IMAGES ]]; then
-    local_load $1 || e "Unable to load service image [${1}]"
+    local_load "$1" || e "Unable to load service image [${1}]"
   fi
 }
 
@@ -105,7 +105,7 @@ else
 fi
 
 if [[ $LOAD_SECRETS ]]; then
-  $TOOLS_ROOT/genkeys-if-needed || e "Unable to generate keys"
+  "$TOOLS_ROOT"/genkeys-if-needed || e "Unable to generate keys"
 
   printf "\nCreating 'kas-secrets'..."
   kubectl create secret generic kas-secrets \

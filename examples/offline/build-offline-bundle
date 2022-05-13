@@ -22,6 +22,9 @@ monolog TRACE "Running [$0${1+ }$*]"
 
 clean_first=
 build_total_image=
+no_first_party=
+no_third_party=
+no_zip=
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -36,8 +39,20 @@ while [[ $# -gt 0 ]]; do
       monolog TRACE "--all"
       build_total_image=1
       ;;
+    --no-first-party)
+      monolog TRACE "--no-first-party"
+      no_first_party=1
+      ;;
+    --no-third-party)
+      monolog TRACE "--no-third-party"
+      no_third_party=1
+      ;;
+    --no-zip)
+      monolog TRACE "--no-zip"
+      no_zip=1
+      ;;
     *)
-      e "Unrecognized options: $*"
+      monolog ERROR "Unrecognized option: [$key]"
       exit 1
       ;;
   esac
@@ -80,22 +95,31 @@ export BACKEND_IMAGE_TAG
 
 echo "${suffix}" >"$OUT_DIR/BUNDLE_TAG"
 
-# first party images
-save-first-party() {
-  monolog TRACE "save-first-party [$*]"
-  local service_name="$1"
-  local short_name="ghcr.io/opentdf/$service_name"
+# Save an image to a file: repo tag outfile-prefix
+save-image() {
+  monolog TRACE "save-image [$*]"
+  local short_name="$1"
   local name_tag="$2"
   local image="${short_name}:${name_tag}"
-  local path="${OUT_DIR}/containers/opentdf-${service_name}-${suffix}"
+
+  monolog TRACE "save-image [docker pull $image]"
+  if ! docker pull "$image"; then
+    monolog ERROR "Failed to pull docker image ${image}"
+    exit 1
+  fi
+
+  local outprefix="$3"
+
+  local path="${OUT_DIR}/containers/${outprefix}-${suffix}"
   local tar_path="${path}.tar"
-  local version="$(docker inspect --format='{{index .RepoDigests 0}}' ${image})"
-  monolog TRACE "Save docker images as [${tar_path}] from [${image}] version=[$version]"
+  local version="$(docker inspect --format='{{index .RepoDigests 0}}' "${image}")"
+  monolog TRACE "save-image [docker save -o ${tar_path} ${image}]"
   if ! docker save -o "${tar_path}" "${image}"; then
     monolog ERROR "Failed to save docker image [${image}] as [${tar_path}]"
     exit 1
   fi
   # Required information for tagging image locally
+  monolog TRACE "save-image [echo $version $image >${path}.meta]"
   if ! echo "$version" "$image" >"${path}.meta"; then
     monolog ERROR "Failed to save tag metadata for docker image [${image}] to [${path}.meta]"
     exit 1
@@ -103,59 +127,28 @@ save-first-party() {
 }
 
 # TODO(PLAT-1417) add 'storage' once published to ghcr.io
-for x in attributes claims entitlements kas keycloak keycloak-bootstrap; do
-  i="ghcr.io/opentdf/${x}:${BACKEND_IMAGE_TAG}"
-  if ! docker pull "$i"; then
-    monolog ERROR "Failed to pull docker image ${i}"
-    exit 1
-  fi
-  save-first-party "${x}" "${BACKEND_IMAGE_TAG}"
-done
-for x in abacus; do
-  i="ghcr.io/opentdf/${x}:${FRONTEND_IMAGE_TAG}"
-  if ! docker pull "$i"; then
-    monolog ERROR "Failed to pull docker image ${i}"
-    exit 1
-  fi
-  save-first-party "${x}" "${FRONTEND_IMAGE_TAG}"
-done
-
-# third party items
-save-third-party() {
-  monolog TRACE "save-third-party [$*]"
-  local service_name="$1"
-  local image="$2"
-  local version="$(docker inspect --format='{{index .RepoDigests 0}}' ${image})"
-  local path="${OUT_DIR}/containers/third-party-image-${service_name}-${suffix}"
-  local tar_path="${path}.tar"
-  monolog TRACE "Save docker images as [${tar_path}] from [${version}]"
-  if ! docker pull "${version}"; then
-    monolog ERROR "Failed to pull docker image [${version}]"
-    exit 1
-  fi
-  if ! docker save -o "${tar_path}" "${version}"; then
-    monolog ERROR "Failed to save docker image [${version}] as [${tar_path}]"
-    exit 1
-  fi
-  # Required information for tagging image locally
-  if ! echo "$version" "$name_tag" >"${path}.meta"; then
-    monolog ERROR "Failed to save tag metadata for docker image [${version}] to [${path}.meta]"
-    exit 1
-  fi
-}
+if [[ ! $no_first_party ]]; then
+  for x in attributes claims entitlements kas keycloak keycloak-bootstrap; do
+    save-image "ghcr.io/opentdf/${x}" "${BACKEND_IMAGE_TAG}" "opentdf-${x}"
+  done
+  for x in abacus; do
+    save-image "ghcr.io/opentdf/${x}" "${FRONTEND_IMAGE_TAG}" "opentdf-${x}"
+  done
+fi
 
 # NOTE: Configure third party bundles to use the latest version manually.
 # To do this, search for the version you want of each of the following pacakges
 # on Docker Hub
+if [[ ! $no_third_party ]]; then
+  # KIND: https://kind.sigs.k8s.io/docs/user/working-offline/
+  # Update URI: https://hub.docker.com/r/kindest/node/tags
+  save-image kindest/node v1.23.5 third-party-image-kind
 
-# KIND: https://kind.sigs.k8s.io/docs/user/working-offline/
-# Update URI: https://hub.docker.com/r/kindest/node/tags
-save-third-party kind kindest/node:v1.23.5
-
-# postgresql
-# Update URI: https://hub.docker.com/r/bitnami/postgresql/tags
-save-third-party postgresql bitnami/postgresql:12.8.0
-# Keycloak: Since we are bulding a custom image, we don't include that in thirdparty but in primary bundle
+  # postgresql
+  # Update URI: https://hub.docker.com/r/bitnami/postgresql/tags
+  save-image bitnami/postgresql 12.8.0 third-party-image-postgresql
+  # Keycloak: Since we are bulding a custom image, we don't include that in thirdparty but in primary bundle
+fi
 
 # Third party helm charts
 if ! helm pull --repo https://kubernetes.github.io/ingress-nginx --version 4.0.16 --destination "${OUT_DIR}/charts" ingress-nginx; then
@@ -194,12 +187,12 @@ if ! rsync -lmr --safe-links --executability --force quickstart "${OUT_DIR}"; th
 fi
 
 # Include scripts for helping with things
-if ! rsync -lmr --safe-links --executability --force scripts ${OUT_DIR}; then
+if ! rsync -lmr --safe-links --executability --force scripts "${OUT_DIR}"; then
   monolog ERROR "Unable to update scripts folder"
   exit 1
 fi
 
-if ! cp examples/offline/docker-load-and-tag-exports ${OUT_DIR}/scripts; then
+if ! cp examples/offline/docker-load-and-tag-exports "${OUT_DIR}"/scripts; then
   monolog ERROR "Unable to update image load script"
   exit 1
 fi
@@ -220,7 +213,7 @@ npm-latest() {
   shift
 
   local NPM_LATEST
-  NPM_LATEST=$(curl -s http://registry.npmjs.org/${project}/latest/ | sed 's/.*"tarball":"\([^"]*\).*/\1/')
+  NPM_LATEST=$(curl -s http://registry.npmjs.org/"${project}"/latest/ | sed 's/.*"tarball":"\([^"]*\).*/\1/')
 
   local NPM_TGZ
   NPM_TGZ=$(echo "$NPM_LATEST" | sed 's/.*-\/\(.*\.tgz\)$/\1/')
@@ -270,15 +263,17 @@ pip-latest() {
 pip-latest opentdf
 
 # BUNDLE THAT STUFF UP
-fname="offline-bundle-${suffix}.zip"
-if ! (cd ${OUTPUT_DIRECTORY} && zip -r "${fname}" bundle); then
-  monolog ERROR "Failed to export as zip file"
-  exit 1
+if [[ ! $no_zip ]]; then
+  fname="offline-bundle-${suffix}.zip"
+  if ! (cd "${OUTPUT_DIRECTORY}" && zip -r "${fname}" bundle); then
+    monolog ERROR "Failed to export as zip file"
+    exit 1
+  fi
+  monolog DEBUG "Saved stuff as ${OUTPUT_DIRECTORY}/${fname}"
 fi
 
-echo "${suffix}" >${OUT_DIR}/COMPLETED_TAG
-monolog DEBUG "Saved stuff as ${OUTPUT_DIRECTORY}/${fname}"
+echo "${suffix}" >"${OUT_DIR}"/COMPLETED_TAG
 
 if [[ $build_total_image ]]; then
-  docker buildx build -t opentdf/offline-demo:${suffix} -f examples/offline/Dockerfile "${OUT_DIR}"
+  docker buildx build -t opentdf/offline-demo:"${suffix}" -f examples/offline/Dockerfile "${OUT_DIR}"
 fi
