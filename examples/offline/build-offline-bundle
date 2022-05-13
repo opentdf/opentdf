@@ -10,7 +10,7 @@
 # Parameters:
 #    MONOLOG_LEVEL: 0 = Debug logging
 #    BACKEND_IMAGE_TAG: tag to apply to all backend images (kas, attribute and entity services)
-#    BACKEND_CHART_TAG: tag to apply to all backend charts 
+#    BACKEND_CHART_TAG: tag to apply to all backend charts
 #    FRONTEND_IMAGE_TAG: tag to apply to all frontend images (abacus)
 #    FRONTEND_CHART_TAG: tag to apply to all backend charts
 
@@ -48,13 +48,11 @@ if ! cd "$PROJECT_ROOT"; then
   exit 1
 fi
 
-
 today="$(date +%Y-%m-%d)"
 digest="$(git rev-parse --short HEAD)"
 suffix="${today}-${digest}"
 : "${SERVICE_CHART_TAG:="0.0.0-sha-${digest}"}"
 : "${OUTPUT_DIRECTORY:="${PROJECT_ROOT}/build/export"}"
-
 
 : "${BACKEND_IMAGE_TAG:="main"}"
 : "${BACKEND_CHART_TAG:="0.9.1"}"
@@ -80,7 +78,7 @@ mkdir -p "${OUT_DIR}/containers"
 
 export BACKEND_IMAGE_TAG
 
-echo "${suffix}" > "$OUT_DIR/BUNDLE_TAG"
+echo "${suffix}" >"$OUT_DIR/BUNDLE_TAG"
 
 # first party images
 save-first-party() {
@@ -206,7 +204,6 @@ if ! cp examples/offline/docker-load-and-tag-exports ${OUT_DIR}/scripts; then
   exit 1
 fi
 
-
 maybe-exit() {
   local err="$?"
   if [[ ! $err ]]; then
@@ -214,7 +211,6 @@ maybe-exit() {
     exit 1
   fi
 }
-
 
 # # # DOWNLOAD SOME SDKS
 # TODO(PLAT-1417) Get @opentdf/client from npm
@@ -275,7 +271,7 @@ pip-latest opentdf
 
 # BUNDLE THAT STUFF UP
 fname="offline-bundle-${suffix}.zip"
-if ! ( cd ${OUTPUT_DIRECTORY} && zip -r "${fname}" bundle ); then
+if ! (cd ${OUTPUT_DIRECTORY} && zip -r "${fname}" bundle); then
   monolog ERROR "Failed to export as zip file"
   exit 1
 fi

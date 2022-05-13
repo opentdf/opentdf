@@ -20,18 +20,16 @@ if [[ $1 ]]; then
     exit 1
   fi
 
-  if ! cd export; then 
+  if ! cd export; then
     monolog ERROR "Bundle [${1}] did not create expected folder, [export]"
     exit 1
   fi
 else
   # Validating a local run of build-offline-bundle; no need to unzip
-  
   if ! cd "$EXPORT_ROOT"; then
     monolog ERROR "Unable to find export root [${EXPORT_ROOT}] from APP_DIR=[${APP_DIR}]"
     exit 1
   fi
-
 
   if ! diff BUNDLE_TAG COMPLETED_TAG; then
     monolog ERROR "build-offline-bundle did not complete successfully"

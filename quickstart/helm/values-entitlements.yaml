@@ -12,7 +12,7 @@ oidc:
   clientId: tdf-entitlement
   clientSecret: myclientsecret
   realm: tdf
-#    trailing / is required
+  #    trailing / is required
   serverUrl: http://keycloak-http/auth/
   configurationUrl: http://keycloak-http/auth/realms/tdf/.well-known/openid-configuration
   authorizationUrl: http://offline.demo.internal/auth/realms/tdf/protocol/openid-connect/auth
@@ -30,4 +30,4 @@ ingress:
     offline.demo.internal: *paths
     opentdf.local: *paths
 secretRef:
- name: entitlements-secrets
+  name: entitlements-secrets

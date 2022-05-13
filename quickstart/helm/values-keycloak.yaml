@@ -47,4 +47,3 @@ ingress:
     - host: opentdf.local
       paths: *paths
   tls: null
-

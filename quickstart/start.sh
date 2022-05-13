@@ -118,10 +118,10 @@ if [[ $LOAD_SECRETS ]]; then
   kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
   kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
   kubectl create secret generic keycloak-secrets \
-      --from-literal=DB_USER=postgres \
-      --from-literal=DB_PASSWORD=myPostgresPassword \
-      --from-literal=KEYCLOAK_USER=keycloakadmin \
-      --from-literal=KEYCLOAK_PASSWORD=mykeycloakpassword
+    --from-literal=DB_USER=postgres \
+    --from-literal=DB_PASSWORD=myPostgresPassword \
+    --from-literal=KEYCLOAK_USER=keycloakadmin \
+    --from-literal=KEYCLOAK_PASSWORD=mykeycloakpassword
 fi
 
 if [[ $INGRESS_HOSTNAME ]]; then

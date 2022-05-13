@@ -4,7 +4,7 @@ load("ext://min_tilt_version", "min_tilt_version")
 # The helm_resource extension uses the 'new extensions api' introduced in tilt 0.25
 min_tilt_version("0.25")
 
-# Where the 
+# Where the
 EXTERNAL_URL = "http://localhost:65432"
 
 k8s_yaml(
@@ -56,8 +56,13 @@ helm_resource(
 helm_resource(
     "attributes",
     "oci://ghcr.io/opentdf/charts/attributes",
-    flags=["--version", "0.0.0-sha-0b804dd", "-f", "helm/values-attributes.yaml",
-    "--set", "oidc.externalHost=%s/auth/" % EXTERNAL_URL, 
+    flags=[
+        "--version",
+        "0.0.0-sha-0b804dd",
+        "-f",
+        "helm/values-attributes.yaml",
+        "--set",
+        "oidc.externalHost=%s/auth/" % EXTERNAL_URL,
     ],
     labels="backend",
     resource_deps=["postgresql"],
@@ -74,9 +79,15 @@ helm_resource(
 helm_resource(
     "entitlements",
     "oci://ghcr.io/opentdf/charts/entitlements",
-    flags=["--version", "0.0.0-sha-0b804dd", "-f", "helm/values-entitlements.yaml"
-        "--set", "oidc.authorizationUrl=%s/auth/realms/tdf/protocol/openid-connect/auth" % EXTERNAL_URL, 
-        "--set", "oidc.tokenUrl=%s/auth/realms/tdf/protocol/openid-connect/token" % EXTERNAL_URL, 
+    flags=[
+        "--version",
+        "0.0.0-sha-0b804dd",
+        "-f",
+        "helm/values-entitlements.yaml" "--set",
+        "oidc.authorizationUrl=%s/auth/realms/tdf/protocol/openid-connect/auth"
+        % EXTERNAL_URL,
+        "--set",
+        "oidc.tokenUrl=%s/auth/realms/tdf/protocol/openid-connect/token" % EXTERNAL_URL,
     ],
     labels="backend",
     resource_deps=["postgresql"],
@@ -101,8 +112,13 @@ helm_resource(
 helm_resource(
     "keycloak-bootstrap",
     "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
-    flags=["--version", "0.0.0-sha-0b804dd", "-f", "helm/values-bootstrap.yaml",
-        "--set", "externalUrl=%s/" % EXTERNAL_URL, 
+    flags=[
+        "--version",
+        "0.0.0-sha-0b804dd",
+        "-f",
+        "helm/values-bootstrap.yaml",
+        "--set",
+        "externalUrl=%s/" % EXTERNAL_URL,
     ],
     labels="utility",
     resource_deps=["attributes", "entitlements", "keycloak"],
@@ -111,14 +127,21 @@ helm_resource(
 helm_resource(
     "abacus",
     "oci://ghcr.io/opentdf/charts/abacus",
-    flags=["--version", "0.0.0-sha-35319c7", "-f", "helm/values-abacus.yaml",
-    "--set", "attributes.serverUrl=%s/api/attributes" % EXTERNAL_URL, 
-    "--set", "entitlements.serverUrl=%s/api/entitlements" % EXTERNAL_URL, 
-    "--set", "oidc.serverUrl=%s/auth/" % EXTERNAL_URL, 
-     ],
+    flags=[
+        "--version",
+        "0.0.0-sha-35319c7",
+        "-f",
+        "helm/values-abacus.yaml",
+        "--set",
+        "attributes.serverUrl=%s/api/attributes" % EXTERNAL_URL,
+        "--set",
+        "entitlements.serverUrl=%s/api/entitlements" % EXTERNAL_URL,
+        "--set",
+        "oidc.serverUrl=%s/auth/" % EXTERNAL_URL,
+    ],
     labels="frontend",
     resource_deps=["keycloak-bootstrap"],
-)('config/%s.yaml' % name)
+)("config/%s.yaml" % name)
 
 # ability to pass in custom test script with path to script as env var
 if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
@@ -128,5 +151,3 @@ if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
         labels="tests",
         resource_deps=["ingress-nginx", "kas", "keycloak-bootstrap"],
     )
-
-

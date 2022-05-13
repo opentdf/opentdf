@@ -77,10 +77,9 @@ some sample data.
 
 #### 4.A. Connecting to a local host or container
 
-
 #### 4.B. Connecting to a Remote Host
 
-If you are connecting to a computer from 
+If you are connecting to a computer from
 
 > `ssh -L 80:
 
@@ -95,7 +94,6 @@ require only the `postgresql` image.
 These images must be made available to your cluster's registry.
 One way to do this is to first install them to a local docker registry,
 and then push them to a remote registry, e.g. using `docker load` and `docker push`.
-
 
 ```sh
 docker load export/*.tar

@@ -30,11 +30,10 @@ if [[ ! ${suffix} ]]; then
   exit 1
 fi
 
-
 for first in abacus attributes claims entitlements kas keycloak-bootstrap keycloak; do
   prefix="${CONTAINERS_DIR}/opentdf-${first}-${suffix}"
   monolog TRACE "docker load image from [${prefix}.tar]"
-  if ! docker load -i "${prefix}.tar" ; then
+  if ! docker load -i "${prefix}.tar"; then
     monolog ERROR "offline bundle for [${first}] failed to load"
     exit 1
   fi
@@ -51,7 +50,7 @@ done
 for third in kind postgresql; do
   prefix="${CONTAINERS_DIR}/third-party-image-${third}-${suffix}"
   monolog TRACE "docker load kind from [${prefix}.tar]"
-  if ! docker load -i "${prefix}.tar" ; then
+  if ! docker load -i "${prefix}.tar"; then
     monolog ERROR "offline bundle for [${third}] failed to load"
     exit 1
   fi
