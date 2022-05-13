@@ -18,7 +18,7 @@ e() {
 }
 
 : "${SERVICE_IMAGE_TAG:="offline"}"
-: "${INGRESS_HOSTNAME:=$(hostname)}"
+: "${INGRESS_HOSTNAME:=$(hostname | tr '[:upper:]' '[:lower:]')}"
 LOAD_IMAGES=1
 LOAD_SECRETS=1
 START_CLUSTER=1
@@ -26,12 +26,19 @@ export RUN_OFFLINE=
 USE_KEYCLOAK=1
 INIT_POSTGRES=1
 INIT_OPENTDF=1
+INIT_SAMPLE_DATA=1
+WAIT_FOR=postgresql
 
 while [[ $# -gt 0 ]]; do
   key="$1"
   shift
 
   case "$key" in
+    --no-bootstrap)
+    --no-sample-data)
+      monolog TRACE "$key"
+      INIT_SAMPLE_DATA=
+      ;;
     --no-keycloak)
       monolog TRACE "--no-keycloak"
       USE_KEYCLOAK=
@@ -174,7 +181,7 @@ if [[ $INIT_POSTGRES ]]; then
   fi
   monolog INFO "Waiting until postgresql is ready"
 
-  while [[ $(kubectl get pods postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+  while [[ $(kubectl get pods postgresql-postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
     echo "waiting for postgres..."
     sleep 5
   done
@@ -198,8 +205,8 @@ if [[ $INIT_OPENTDF ]]; then
       helm upgrade --version "0.0.0-sha-fe676f4" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
     fi
   done
+fi
 
-  if [[ $USE_KEYCLOAK ]]; then
-    helm upgrade --install keycloak-bootstrap "${CHART_ROOT}"/keycloak-bootstrap-*.tgz -f "${DEPLOYMENT_DIR}/values-bootstrap.yaml" || e "Unable to start bootstrap job"
-  fi
+if [[ $INIT_SAMPLE_DATA ]]; then
+  helm upgrade --install keycloak-bootstrap "${CHART_ROOT}"/keycloak-bootstrap-*.tgz -f "${DEPLOYMENT_DIR}/values-bootstrap.yaml" || e "Unable to start bootstrap job"
 fi

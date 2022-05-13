@@ -90,25 +90,32 @@ some sample data.
 
 ### 4. Exposing the sample environment
 
-First, describe the environment
+If you are using kind, follow instructions here: https://kind.sigs.k8s.io/docs/user/ingress/
+
+If you are using minikube with the docker network, you can use
+
 
 ```
 kubectl describe ingress ingress-nginx
 ```
 
-You will see that it is assigned a local class C network address or similar. This should be accessible. To test, run:
+to see what network address is assigned to the nginx ingress controller, e.g. 
+192.168.42.2. You can then route to that as you would any other host.
 
-```
-
-```
-
-#### 4.A. Connecting to a local host or container
-
-#### 4.B. Connecting to a Remote Host
 
 If you are connecting to a computer from outside. First, on the host 
 
-> `sudo ssh -L 80:
+> `sudo ssh -L 80:[private network address]:80 [host address]`
+
+Next, you will need to map the external name in your /etc/hosts file, so `sudo vim /etc/hosts` and add the following line:
+
+```
+127.0.0.1 [internal hostname] offline.demo.internal opentdf.local
+```
+
+where `[internal hostname]` is the value of `hostname` run on your host server, which is inserted as the external name by default. Alternative, you can overload hostname *BEFORE RUNNING start.sh* with the environment variable `INGRESS_HOSTNAME`.
+
+> TODO allow bootstrap to take multiple domains, to allow offline.demo.internal or opentdf.local too
 
 ## Advanced Install
 
