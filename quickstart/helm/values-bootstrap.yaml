@@ -1,4 +1,5 @@
 name: keycloak-bootstrap
+externalUrl: http://offline.demo.internal/
 attributes:
   hostname: http://attributes:4020
 entitlements:

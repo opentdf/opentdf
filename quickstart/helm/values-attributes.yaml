@@ -3,7 +3,7 @@ serverRootPath: /attributes
 serverPublicName: "Attribute Authority"
 oidc:
   clientId: tdf-attributes
-  externalHost: http://localhost:65432/auth
+  externalHost: http://offline.demo.internal/auth
   internalHost: http://keycloak-http/auth
 ingress:
   enabled: true
