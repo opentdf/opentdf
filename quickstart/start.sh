@@ -27,7 +27,6 @@ USE_KEYCLOAK=1
 INIT_POSTGRES=1
 INIT_OPENTDF=1
 INIT_SAMPLE_DATA=1
-WAIT_FOR=postgresql
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -35,6 +34,9 @@ while [[ $# -gt 0 ]]; do
 
   case "$key" in
     --no-bootstrap)
+      monolog TRACE "$key"
+      INIT_SAMPLE_DATA=
+      ;;
     --no-sample-data)
       monolog TRACE "$key"
       INIT_SAMPLE_DATA=
