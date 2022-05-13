@@ -83,7 +83,8 @@ helm_resource(
         "--version",
         "0.0.0-sha-0b804dd",
         "-f",
-        "helm/values-entitlements.yaml" "--set",
+        "helm/values-entitlements.yaml",
+        "--set",
         "oidc.authorizationUrl=%s/auth/realms/tdf/protocol/openid-connect/auth"
         % EXTERNAL_URL,
         "--set",
@@ -141,7 +142,7 @@ helm_resource(
     ],
     labels="frontend",
     resource_deps=["keycloak-bootstrap"],
-)("config/%s.yaml" % name)
+)
 
 # ability to pass in custom test script with path to script as env var
 if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
