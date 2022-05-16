@@ -72,7 +72,7 @@ suffix="${today}-${digest}"
 : "${BACKEND_IMAGE_TAG:="main"}"
 : "${BACKEND_CHART_TAG:="0.9.1"}"
 : "${FRONTEND_IMAGE_TAG:="main"}"
-: "${FRONTEND_CHART_TAG:="0.0.0-sha-7a19f1c"}"
+: "${FRONTEND_CHART_TAG:="0.0.0-sha-a730590"}"
 
 OUT_DIR="${OUTPUT_DIRECTORY}/bundle"
 

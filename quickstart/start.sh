@@ -159,7 +159,7 @@ fi
 if [[ $USE_KEYCLOAK ]]; then
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching locally-built development opentdf Keycloak in dev cluster"
-    for s in claims keycloak keycloak-bootstrap; do
+    for s in claims keycloak; do
       maybe_load ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}
     done
   fi
@@ -197,24 +197,23 @@ if [[ $INIT_POSTGRES ]]; then
   done
 fi
 
+load-chart() {
+  svc="$1"
+  version="$2"
+  val_file="${DEPLOYMENT_DIR}/values-${svc}.yaml"
+  if [[ $RUN_OFFLINE ]]; then
+    helm upgrade --install ${s} "${CHART_ROOT}"/${svc}-*.tgz -f "${val_file}" --set image.tag="${SERVICE_IMAGE_TAG}" || e "Unable to install chart for ${svc}"
+  else
+    helm upgrade --version "${version}" --install ${svc} "oci://ghcr.io/opentdf/charts/${svc}" -f "${val_file}" || e "Unable to install $svc chart"
+  fi
+}
+
 if [[ $INIT_OPENTDF ]]; then
   monolog INFO --- "OpenTDF charts"
   for s in attributes claims entitlements kas; do
-    val_file="${DEPLOYMENT_DIR}/values-${s}.yaml"
-    if [[ $RUN_OFFLINE ]]; then
-      helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" --set image.tag="${SERVICE_IMAGE_TAG}" || e "Unable to install chart for ${s}"
-    else
-      helm upgrade --version "0.0.0-sha-0b804dd" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
-    fi
+    load-chart "${s}" "0.0.0-sha-0b804dd"
   done
-  for s in abacus; do
-    val_file="${DEPLOYMENT_DIR}/values-${s}.yaml"
-    if [[ $RUN_OFFLINE ]]; then
-      helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" --set image.tag="${SERVICE_IMAGE_TAG}" || e "Unable to install chart for ${s}"
-    else
-      helm upgrade --version "0.0.0-sha-fe676f4" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
-    fi
-  done
+  load-chart abacus "0.0.0-sha-fe676f4"
 fi
 
 if [[ $INIT_SAMPLE_DATA ]]; then
@@ -222,5 +221,5 @@ if [[ $INIT_SAMPLE_DATA ]]; then
     monolog INFO "Caching bootstrap image in cluster"
     maybe_load ghcr.io/opentdf/keycloak-bootstrap:${SERVICE_IMAGE_TAG}
   fi
-  helm upgrade --install keycloak-bootstrap "${CHART_ROOT}"/keycloak-bootstrap-*.tgz -f "${DEPLOYMENT_DIR}/values-bootstrap.yaml" --set image.tag="${SERVICE_IMAGE_TAG}" || e "Unable to start bootstrap job"
+  load-chart keycloak-bootstrap "0.0.0-sha-0b804dd"
 fi
