@@ -202,7 +202,7 @@ if [[ $INIT_OPENTDF ]]; then
   for s in attributes claims entitlements kas; do
     val_file="${DEPLOYMENT_DIR}/values-${s}.yaml"
     if [[ $RUN_OFFLINE ]]; then
-      helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" || e "Unable to install chart for ${s}"
+      helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" --set image.tag=offline || e "Unable to install chart for ${s}"
     else
       helm upgrade --version "0.0.0-sha-0b804dd" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
     fi
@@ -210,7 +210,7 @@ if [[ $INIT_OPENTDF ]]; then
   for s in abacus; do
     val_file="${DEPLOYMENT_DIR}/values-${s}.yaml"
     if [[ $RUN_OFFLINE ]]; then
-      helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" || e "Unable to install chart for ${s}"
+      helm upgrade --install ${s} "${CHART_ROOT}"/${s}-*.tgz -f "${val_file}" --set image.tag=offline || e "Unable to install chart for ${s}"
     else
       helm upgrade --version "0.0.0-sha-fe676f4" --install ${s} "oci://ghcr.io/opentdf/charts/${s}" -f "${val_file}" || e "Unable to install $s chart"
     fi
@@ -218,5 +218,5 @@ if [[ $INIT_OPENTDF ]]; then
 fi
 
 if [[ $INIT_SAMPLE_DATA ]]; then
-  helm upgrade --install keycloak-bootstrap "${CHART_ROOT}"/keycloak-bootstrap-*.tgz -f "${DEPLOYMENT_DIR}/values-bootstrap.yaml" || e "Unable to start bootstrap job"
+  helm upgrade --install keycloak-bootstrap "${CHART_ROOT}"/keycloak-bootstrap-*.tgz -f "${DEPLOYMENT_DIR}/values-bootstrap.yaml" --set image.tag=offline || e "Unable to start bootstrap job"
 fi
