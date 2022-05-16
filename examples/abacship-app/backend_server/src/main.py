@@ -6,15 +6,8 @@ import requests
 import asyncio
 from enum import Enum
 from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
-from urllib.parse import urlparse
-from pprint import pprint
 from typing import Optional, List, Literal#, Annotated
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
 
-import databases as databases
-import sqlalchemy
-from asyncpg import UniqueViolationError
 from fastapi import (
     FastAPI,
     Body,
@@ -25,21 +18,15 @@ from fastapi import (
     Security,
     status,
 )
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.security import OAuth2AuthorizationCodeBearer, OpenIdConnect
-from keycloak import KeycloakOpenID
+
 from pydantic import AnyUrl, BaseSettings, Field, Json, ValidationError, conlist
 from pydantic.main import BaseModel
 #from python_base import Pagination, get_query
-from sqlalchemy import and_
-from sqlalchemy.orm import Session, sessionmaker, declarative_base
 
 from game import (
     Status,
     Player,
-    Row,
-    SingleBoard,
     WholeBoard,
     Game,
     validBoard
@@ -51,7 +38,11 @@ from services import (
     teardownEntitlements,
     teardownAttributes,
     teardownKeycloak,
+    setupUserEntitlements,
+    addUserEntitlement
 )
+
+from constants import *
 
 
 logging.basicConfig(
@@ -73,17 +64,6 @@ app = FastAPI(
 
 #create the game
 abacship = Game()
-
-
-def get_retryable_request():
-    retry_strategy = Retry(total=3, backoff_factor=1)
-
-    adapter = HTTPAdapter(max_retries=retry_strategy)
-
-    http = requests.Session()
-    http.mount("https://", adapter)
-    http.mount("http://", adapter)
-    return http
 
 
 # middleware
@@ -110,7 +90,8 @@ async def shutdown():
     # delete the attributes from the backend client
     # delete attributes from the DB
     # delete the backend client
-    teardownEntitlements(abacship.player1.username, abacship.player2.username)
+    if abacship.player1 is not None:
+        teardownEntitlements(abacship.player1.username, abacship.player2.username)
     teardownAttributes()
     teardownKeycloak()
 
@@ -125,8 +106,6 @@ class ProbeType(str, Enum):
 
 @app.get("/healthz", status_code=NO_CONTENT, include_in_schema=False)
 async def read_liveness(probe: ProbeType = ProbeType.liveness):
-    # if probe == ProbeType.readiness:
-    #     await database.execute("SELECT 1")
     pass
 
 @app.get(
@@ -168,7 +147,6 @@ async def grant_attribute(player: Player):
 
 @app.get(
     "/board",
-    response_model=WholeBoard,
     responses={
         200: {"content": {"application/json": {"example":{
             "player1": [
@@ -186,7 +164,7 @@ async def grant_attribute(player: Player):
 )
 async def get_board():
     """
-    Returns 2D array board representation for each player (with encrypted strings)
+    Returns 2D array board representation for each player (with encrypted strings, base64-encoded)
     (or nothing if the board is not set yet)
     """
     return abacship.getWholeBoard()
@@ -215,7 +193,7 @@ async def get_board():
             "status": 2}}}}
     }
 )
-async def submit_board(access_token: str, refresh_token: str, board: SingleBoard):
+async def post_board(access_token: str, refresh_token: str, board: conlist(conlist(str, min_items=10, max_items=10), min_items=10, max_items=10)):
     """
     submit refresh token and 2D array representation of board (unencrypted)
     returns player information including assigned name and new refresh token,
@@ -237,41 +215,46 @@ async def submit_board(access_token: str, refresh_token: str, board: SingleBoard
             detail="Invalid board",
         )
     # store the player information in the game (user name [get from access token], current access token and refresh token?)
-    player_name, username = abacship.setupPlayer(access_token, board)
+    player_name, username = abacship.setupPlayer(access_token, board, refresh_token)
     # assign the attributes to this player
     setupUserEntitlements(username, player_name)
     # encrypt this board
     if player_name == "player1": 
         abacship.player1.encryptBoard(abacship.opentdf_oidccreds)
+        abacship.player1.refreshPlayerTokens()
     else:
         abacship.player2.encryptBoard(abacship.opentdf_oidccreds)
+        abacship.player2.refreshPlayerTokens()
     # await other players board -- do not reutrn until game has both boards stored (some boolean)
     while not (abacship.player1 is not None and abacship.player2 is not None and abacship.player1.ready and abacship.player2.ready):
         await asyncio.sleep(1)
     # set status to p1 turn
-    if abacship.status = Status.setup:
+    if abacship.status == Status.setup:
         abacship.status = Status.p1_turn
     # return player information and full board and game status
+    wholeboard = abacship.getWholeBoard()
+    payload = {}
     if player_name == "player1":
         payload = {
             "player_info": {
             "name": player_name,
-            "refresh_token": player1.player.refresh_token,
-            "access_token": player1.player.access_token,
+            "refresh_token": abacship.player1.player.refresh_token,
+            "access_token": abacship.player1.player.access_token,
             },
-            "full_board": abacship.getWholeBoard(),
+            "full_board": wholeboard,
             "status": abacship.status
             }
     else:
         payload = {
             "player_info": {
             "name": player_name,
-            "refresh_token": player2.player.refresh_token,
-            "access_token": player2.player.access_token,
+            "refresh_token": abacship.player2.player.refresh_token,
+            "access_token": abacship.player2.player.access_token,
             },
-            "full_board": abacship.getWholeBoard(),
+            "full_board": wholeboard,
             "status": abacship.status
         }
+    logger.info(payload)
     return payload
 
 
@@ -321,7 +304,7 @@ async def check_square(player: Player, row: int, col: int):
         )
         abacship.status = Status.p1_request_attr_from_p2
         # await grant access
-        while not (abacship.status==p2_grants_attr_to_p1):
+        while not (abacship.status==Status.p2_grants_attr_to_p1):
             await asyncio.sleep(1)
         # actually grant the access
         abacship.player1.makeGuess(row, col)
@@ -346,7 +329,7 @@ async def check_square(player: Player, row: int, col: int):
             raise HTTPException( #could add some more reasoning here -- valid board could return why invalid
             status_code=BAD_REQUEST,
             detail="Has already been guessed",
-        )
+            )
         abacship.status = Status.p2_request_attr_from_p1
         # await grant access
         while not (abacship.status==p1_grants_attr_to_p2):
@@ -371,4 +354,3 @@ async def check_square(player: Player, row: int, col: int):
         }
     return payload
 
-###https://editor.swagger.io/#/

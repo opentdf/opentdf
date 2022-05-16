@@ -5,18 +5,11 @@ import jwt
 from keycloak import KeycloakAdmin, KeycloakOpenID
 import requests
 from constants import *
+from fastapi import HTTPException
 
 logging.basicConfig()
 logger = logging.getLogger("abacship")
 logger.setLevel(logging.DEBUG)
-
-keycloak_admin = KeycloakAdmin(
-    server_url=KEYCLOAK_URL,
-    username=KC_ADMIN_USER,
-    password=KC_ADMIN_PASSWORD,
-    realm_name=REALM,
-    user_realm_name="master",
-)
 
 keycloak_openid = KeycloakOpenID(
     # NOTE: `realm_name` IS NOT == `target_realm` here
@@ -26,13 +19,20 @@ keycloak_openid = KeycloakOpenID(
     server_url=KEYCLOAK_URL,
     client_id=OIDC_CLIENTID,
     realm_name=REALM,
-)  # Entitlements endpoint always uses `tdf` realm client creds
+) 
 
 
 ########################## Setup ##############################
 
 def setupKeycloak():
-    createAbacshipClient()
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
+    createAbacshipClient(keycloak_admin)
 
 def setupAttributes():
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
@@ -40,12 +40,26 @@ def setupAttributes():
     createAbacshipAttributes(authToken) 
 
 def setupEntitlements():
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
-    addBackendClientAttrs(authToken)
+    addBackendClientAttrs(authToken, keycloak_admin)
 
 def setupUserEntitlements(username, player_name):
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
-    addGameUserAttrs(username, player_name, authToken)
+    addGameUserAttrs(username, player_name, authToken, keycloak_admin)
 
 ###############################################################
 
@@ -61,13 +75,27 @@ def teardownAttributes():
     deleteAbacshipAttrDefinitions(authToken)
 
 def teardownKeycloak():
-    deleteAbacshipClient()
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
+    deleteAbacshipClient(keycloak_admin)
 
 ###############################################################
 
 ####################### Guess a Square ########################
 
 def addUserEntitlement(username, player_name, row, col):
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
     user_attr_map = {
         username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/{str(row)+str(col)}"],
@@ -161,17 +189,17 @@ def createClient(keycloak_admin, keycloak_auth_url, client_id, client_secret):
     addVirtruMappers(keycloak_admin, keycloak_client_id)
 
 
-def createAbacshipClient():
+def createAbacshipClient(keycloak_admin):
     createClient(keycloak_admin, KEYCLOAK_URL, BACKEND_CLIENTID, BACKEND_CLIENT_SECRET)
 
-def deleteAbacshipClient():
-    keycloak_admin.delete_client(BACKEND_CLIENTID)
+def deleteAbacshipClient(keycloak_admin):
+    keycloak_admin.delete_client(keycloak_admin.get_client_id(BACKEND_CLIENTID))
 
 def refreshTokens(refresh_token):
     decoded = jwt.decode(refresh_token, options={"verify_signature": False})
     response = requests.post("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token",
     headers={"Content-Type": "application/x-www-form-urlencoded"},
-    data={"grant_type": "refresh_token", "refresh_token": f"{refresh_token}", "client_id":decoded["azp"]})
+    data={"grant_type": "refresh_token", "refresh_token": f"{refresh_token}", "client_id":decoded['azp']})
     if response.status_code != 200:
         logger.error(
             "Unexpected error when refreshing token",
@@ -197,15 +225,15 @@ player1_definition = {
     "name": "Player1",
     "rule": "anyOf",
     "state": "published",
-    "order": digits + ["Board"]
-    }
-    player2_definition = {
+    "order": digits + ["board"]
+}
+player2_definition = {
     "authority": AUTH_NAMESPACE,
     "name": "Player2",
     "rule": "anyOf",
     "state": "published",
-    "order": digits + ["Board"]
-    }
+    "order": digits + ["board"]
+}
 
 
 def createAuthority(authority, authToken):
@@ -214,6 +242,7 @@ def createAuthority(authority, authToken):
     response = requests.get(loc, headers={"Authorization": f"Bearer {authToken}"})
     if authority in response.json():
         logger.info(f"Authority {authority} already exists")
+        return
     
     logger.debug("Using auth JWT: [%s]", authToken)
 
@@ -224,16 +253,23 @@ def createAuthority(authority, authToken):
     )
     if response.status_code != 200:
         logger.error(
-            "Unexpected code [%s] from entitlements service when attempting to entitle user! [%s]",
+            "Unexpected code [%s] from attributes service when attempting to create authority! [%s]",
             response.status_code,
             response.text,
             exc_info=True,
         )
-        exit(1)
+        raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Failed to create authority",
+        )
 
 def createAttibuteDefinition(definition, authToken):
     loc = f"{ATTRIBUTES_URL}/definitions/attributes"
     logger.debug(f"Adding attribute definition {definition}")
+    response = requests.get(loc, headers={"Authorization": f"Bearer {authToken}"})
+    if definition in response.json():
+        logger.info(f"Attribute definition {definition} already exists")
+        return
 
     response = requests.post(
         loc,
@@ -242,16 +278,24 @@ def createAttibuteDefinition(definition, authToken):
     )
     if response.status_code != 200:
         logger.error(
-            "Unexpected code [%s] from entitlements service when attempting to entitle user! [%s]",
+            "Unexpected code [%s] from attributes service when attempting to create attribute definition! [%s]",
             response.status_code,
             response.text,
             exc_info=True,
         )
-        exit(1)
+        raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Failed to create attribute definition",
+        )
 
 def deleteAuthority(authory, authToken):
     loc = f"{ATTRIBUTES_URL}/authorities"
-    logger.info(f"Adding authority {authority}")
+    logger.info(f"Deleting authority {authority}")
+    response = requests.get(loc, headers={"Authorization": f"Bearer {authToken}"})
+    if authority not in response.json():
+        logger.info(f"Authority {authority} does not exists")
+        return
+
     logger.debug("Using auth JWT: [%s]", authToken)
 
     response = requests.delete(
@@ -261,16 +305,23 @@ def deleteAuthority(authory, authToken):
     )
     if response.status_code != 202:
         logger.error(
-            "Unexpected code [%s] from entitlements service when attempting to entitle user! [%s]",
+            "Unexpected code [%s] from attributes service when attempting to delete authority! [%s]",
             response.status_code,
             response.text,
             exc_info=True,
         )
-        exit(1)
+        raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Failed to delete authority",
+        )
 
 def deleteAttributeDefinition(definition, authToken):
     loc = f"{ATTRIBUTES_URL}/definitions/attributes"
-    logger.debug(f"Adding attribute definition {definition}")
+    logger.debug(f"Deleting attribute definition {definition}")
+    response = requests.get(loc, headers={"Authorization": f"Bearer {authToken}"})
+    if definition not in response.json():
+        logger.info(f"Attribute definition {definition} does not exists")
+        return
 
     response = requests.delete(
         loc,
@@ -279,18 +330,21 @@ def deleteAttributeDefinition(definition, authToken):
     )
     if response.status_code != 202:
         logger.error(
-            "Unexpected code [%s] from entitlements service when attempting to entitle user! [%s]",
+            "Unexpected code [%s] from attributes service when attempting to delete attribute definition! [%s]",
             response.status_code,
             response.text,
             exc_info=True,
         )
-        exit(1)
+        raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Failed to delete attribute definition",
+        )
 
 
 def createAbacshipAuthority(authToken):
     createAuthority(AUTH_NAMESPACE, authToken)
 
-def create_abacship_attributes(authToken):
+def createAbacshipAttributes(authToken):
     createAttibuteDefinition(player1_definition, authToken)
     createAttibuteDefinition(player2_definition, authToken)
 
@@ -318,20 +372,22 @@ def insertAttrsForUsers(keycloak_admin, entitlement_host, user_attr_map, authTok
         )
         logger.debug("Using auth JWT: [%s]", authToken)
 
-        for attr in attrs:
-            response = requests.post(
-                loc,
-                json=[attr],
-                headers={"Authorization": f"Bearer {authToken}"},
+        response = requests.post(
+            loc,
+            json=attrs,
+            headers={"Authorization": f"Bearer {authToken}"},
+        )
+        if response.status_code != 200:
+            logger.error(
+                "Unexpected code [%s] from entitlements service when attempting to entitle user! [%s]",
+                response.status_code,
+                response.text,
+                exc_info=True,
             )
-            if response.status_code != 200:
-                logger.error(
-                    "Unexpected code [%s] from entitlements service when attempting to entitle user! [%s]",
-                    response.status_code,
-                    response.text,
-                    exc_info=True,
-                )
-                exit(1)
+            raise HTTPException(
+                status_code=BAD_REQUEST,
+                detail=f"Failed to entitle user {user['username']} with {attrs}",
+            )
 
 def insertAttrsForClients(keycloak_admin, entitlement_host, client_attr_map, authToken):
     clients = keycloak_admin.get_clients()
@@ -346,20 +402,22 @@ def insertAttrsForClients(keycloak_admin, entitlement_host, client_attr_map, aut
             "Entitling for client: [%s] with [%s] at [%s]", clientId, attrs, loc
         )
         logger.debug("Using auth JWT: [%s]", authToken)
-        for attr in attrs:
-            response = requests.post(
-                loc,
-                json=[attr],
-                headers={"Authorization": f"Bearer {authToken}"},
+        response = requests.post(
+            loc,
+            json=attrs,
+            headers={"Authorization": f"Bearer {authToken}"},
+        )
+        if response.status_code != 200:
+            logger.error(
+                "Unexpected code [%s] from entitlements service when attempting to entitle client! [%s]",
+                response.status_code,
+                response.text,
+                exc_info=True,
             )
-            if response.status_code != 200:
-                logger.error(
-                    "Unexpected code [%s] from entitlements service when attempting to entitle client! [%s]",
-                    response.status_code,
-                    response.text,
-                    exc_info=True,
-                )
-                exit(1)
+            raise HTTPException(
+                status_code=BAD_REQUEST,
+                detail=f"Failed to entitle client {user['clientId']} with {attrs}",
+            )
 
 def deleteAttrsForUsers(keycloak_admin, entitlement_host, user_attr_map, authToken):
     users = keycloak_admin.get_users()
@@ -375,20 +433,22 @@ def deleteAttrsForUsers(keycloak_admin, entitlement_host, user_attr_map, authTok
         )
         logger.debug("Using auth JWT: [%s]", authToken)
 
-        for attr in attrs:
-            response = requests.delete(
-                loc,
-                json=[attr],
-                headers={"Authorization": f"Bearer {authToken}"},
+        response = requests.delete(
+            loc,
+            json=attrs,
+            headers={"Authorization": f"Bearer {authToken}"},
+        )
+        if response.status_code != 202:
+            logger.error(
+                "Unexpected code [%s] from entitlements service when attempting to entitle user! [%s]",
+                response.status_code,
+                response.text,
+                exc_info=True,
             )
-            if response.status_code != 202:
-                logger.error(
-                    "Unexpected code [%s] from entitlements service when attempting to entitle user! [%s]",
-                    response.status_code,
-                    response.text,
-                    exc_info=True,
-                )
-                exit(1)
+            raise HTTPException(
+                status_code=BAD_REQUEST,
+                detail=f"Failed to delete entitlements for user {user['username']} with {attrs}",
+            )
 
 def deleteAttrsForClients(keycloak_admin, entitlement_host, client_attr_map, authToken):
     clients = keycloak_admin.get_clients()
@@ -403,22 +463,24 @@ def deleteAttrsForClients(keycloak_admin, entitlement_host, client_attr_map, aut
             "Deleting entitlement for client: [%s] with [%s] at [%s]", clientId, attrs, loc
         )
         logger.debug("Using auth JWT: [%s]", authToken)
-        for attr in attrs:
-            response = requests.delete(
-                loc,
-                json=[attr],
-                headers={"Authorization": f"Bearer {authToken}"},
+        response = requests.delete(
+            loc,
+            json=attrs,
+            headers={"Authorization": f"Bearer {authToken}"},
+        )
+        if response.status_code != 200:
+            logger.error(
+                "Unexpected code [%s] from entitlements service when attempting to entitle client! [%s]",
+                response.status_code,
+                response.text,
+                exc_info=True,
             )
-            if response.status_code != 200:
-                logger.error(
-                    "Unexpected code [%s] from entitlements service when attempting to entitle client! [%s]",
-                    response.status_code,
-                    response.text,
-                    exc_info=True,
-                )
-                exit(1)
+            raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail=f"Failed to delete entitlements for client {client['clientId']} with {attrs}",
+            )
 
-def addBackendClientAttrs(authToken):
+def addBackendClientAttrs(authToken, keycloak_admin):
     attr_map = {
         BACKEND_CLIENTID: [
             f"{AUTH_NAMESPACE}/attr/player1/value/board",
@@ -427,9 +489,9 @@ def addBackendClientAttrs(authToken):
     }
     insertAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
 
-def addGameUserAttr(username, player_name, authToken):
+def addGameUserAttrs(username, player_name, authToken, keycloak_admin):
     user_attr_map = {
-        username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/{i}" for i in digits],
+        username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/board"],
     }
     insertAttrsForUsers(keycloak_admin, ENTITLEMENTS_URL, user_attr_map, authToken)
 
@@ -444,8 +506,10 @@ def deleteBackendClientAttrs(authToken):
 
 def deleteGameUserAttrs(username1, username2, authToken):
     user_attr_map = {
-        username1: [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits],
-        username2: [f"{AUTH_NAMESPACE}/attr/player2/value/{i}" for i in digits]
+        username1: [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
+         [f"{AUTH_NAMESPACE}/attr/player1/value/board"],
+        username2: [f"{AUTH_NAMESPACE}/attr/player2/value/{i}" for i in digits] +
+         [f"{AUTH_NAMESPACE}/attr/player2/value/board"]
     }
     deleteAttrsForUsers(keycloak_admin, ENTITLEMENTS_URL, user_attr_map, authToken)
 
