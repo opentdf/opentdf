@@ -20,8 +20,8 @@ if [[ $1 ]]; then
     exit 1
   fi
 
-  if ! cd export; then
-    monolog ERROR "Bundle [${1}] did not create expected folder, [export]"
+  if ! cd bundle; then
+    monolog ERROR "Bundle [${1}] did not create expected folder, [bundle]"
     exit 1
   fi
 else

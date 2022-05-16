@@ -79,7 +79,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-: "${INGRESS_HOSTNAME:=$(hostname | tr '[:upper:]' '[:lower:]')}"
+: "${INGRESS_HOSTNAME:=$([[ $REWRITE_HOSTNAME ]] && hostname | tr '[:upper:]' '[:lower:]')}"
 
 if [[ ! $RUN_OFFLINE ]]; then
   INGRESS_HOSTNAME=
