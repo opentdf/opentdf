@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/static/css/main.073c9b0a.css",
-    "main.js": "/static/js/main.c89a0545.js",
+    "main.css": "/static/css/main.d1d1cfa5.css",
+    "main.js": "/static/js/main.475ea3a5.js",
     "static/js/787.d37de791.chunk.js": "/static/js/787.d37de791.chunk.js",
-    "static/media/logo.svg": "/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
+    "static/media/opentdf_banner.jpeg": "/static/media/opentdf_banner.3ded8fd1a8da2556229c.jpeg",
     "index.html": "/index.html",
-    "main.073c9b0a.css.map": "/static/css/main.073c9b0a.css.map",
-    "main.c89a0545.js.map": "/static/js/main.c89a0545.js.map",
+    "main.d1d1cfa5.css.map": "/static/css/main.d1d1cfa5.css.map",
+    "main.475ea3a5.js.map": "/static/js/main.475ea3a5.js.map",
     "787.d37de791.chunk.js.map": "/static/js/787.d37de791.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.073c9b0a.css",
-    "static/js/main.c89a0545.js"
+    "static/css/main.d1d1cfa5.css",
+    "static/js/main.475ea3a5.js"
   ]
 }
