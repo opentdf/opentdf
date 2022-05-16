@@ -126,7 +126,7 @@ i_tilt() (
   rm -rf tilt
   mkdir tilt || e "mkdir tilt fail"
   cd tilt || e "no tilt build folder"
-  curl -fsSL "https://github.com/tilt-dev/tilt/releases/download/v$TILT_VERSION/tilt.$TILT_VERSION.linux.x86_64.tar.gz" | tar -xzv tilt || e "tilt download and unzip failure"
+  curl -fsSL "https://github.com/tilt-dev/tilt/releases/download/v$TILT_VERSION/tilt.$TILT_VERSION.linux.x86_64.tar.gz" | tar -xzv tilt || e "tilt download and untar failure"
   chmod +x tilt || e "tilt is not executableable"
   mv tilt "$BUILD_BIN/" || e "tilt is not mvable"
 )

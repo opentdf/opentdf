@@ -271,9 +271,9 @@ pip-latest opentdf
 
 # BUNDLE THAT STUFF UP
 if [[ ! $no_zip ]]; then
-  fname="offline-bundle-${suffix}.zip"
-  if ! (cd "${OUTPUT_DIRECTORY}" && zip -r "${fname}" bundle); then
-    monolog ERROR "Failed to export as zip file"
+  fname="offline-bundle-${suffix}.tgz"
+  if ! (cd "${OUTPUT_DIRECTORY}" && tar -czf "${fname}" bundle); then
+    monolog ERROR "Failed to export as tgz file"
     exit 1
   fi
   monolog DEBUG "Saved stuff as ${OUTPUT_DIRECTORY}/${fname}"

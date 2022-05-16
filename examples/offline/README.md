@@ -20,8 +20,8 @@ on linux and macos):
 - curl
 - npm (for abacus and node/web libraries)
 
-Running the `build-offline-bundle` script will create a zip file in the
-`build/export` folder named `offline-bundle-[date]-[short digest].zip.
+Running the `build-offline-bundle` script will create a tgz file in the
+`build/export` folder named `offline-bundle-[date]-[short digest].tgz.
 
 Another script, `test-offline-bundle`, can be used to validate that a build was
 created and can start, using a local k8s cluster created with kind.
@@ -42,9 +42,9 @@ The offline bundle includes:
 - Utility scripts
 - Optional docker image with everything inside
 
-### 1. First unzip the bundle
+### 1. First decompress the bundle
 
-> `unzip offline-bundle-*.zip && cd bundle`
+> `tar -xzvf offline-bundle-*.tgz && cd bundle`
 
 Unzip the bundle and go into the folder.
 The below samples all assume you are running from the `bundle` root folder.

@@ -15,8 +15,8 @@ monolog TRACE "Running [$0${1+ }$*]"
 export LOCAL_TOOL
 
 if [[ $1 ]]; then
-  if ! unzip "$1"; then
-    monolog ERROR "Unable to unzip bundle [${1}]"
+  if ! tar -xzvf "$1"; then
+    monolog ERROR "Unable to untar bundle [${1}]"
     exit 1
   fi
 
@@ -25,7 +25,7 @@ if [[ $1 ]]; then
     exit 1
   fi
 else
-  # Validating a local run of build-offline-bundle; no need to unzip
+  # Validating a local run of build-offline-bundle; no need to untar
   if ! cd "$EXPORT_ROOT"; then
     monolog ERROR "Unable to find export root [${EXPORT_ROOT}] from APP_DIR=[${APP_DIR}]"
     exit 1
