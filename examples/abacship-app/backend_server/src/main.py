@@ -6,6 +6,7 @@ import requests
 import asyncio
 from enum import Enum
 from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional, List, Literal#, Annotated
 
 from fastapi import (
@@ -60,6 +61,14 @@ app = FastAPI(
     debug=True,
     root_path=os.getenv("SERVER_ROOT_PATH", ""),
     servers=[{"url": settings.base_path}],
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 #create the game
