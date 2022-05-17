@@ -6,7 +6,7 @@ import logo from '../opentdf-logo.png';
 const githubIcon = <FontAwesomeIcon icon={faGithub} />
 const NavigationBar = () => {
   return (
-    <Navbar style={{ background: "black", opacity: ".4"}}>
+    <Navbar style={{ background: "black"}}>
     {/* <Navbar.Brand href="#">
     <img src={logo} className="opentdf-logo" alt="logo" />
     </Navbar.Brand> */}

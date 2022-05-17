@@ -1,13 +1,9 @@
-import { Affix } from "rsuite";
-import NavigationBar from "./components/nav-bar";
-import './App.css';
+import Home from "./components/home"
 
 function App() {
   return (
     <div>
-      <Affix>
-        <NavigationBar></NavigationBar>
-      </Affix>
+      <Home />
     </div>
   );
 }
