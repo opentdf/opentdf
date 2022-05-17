@@ -26,6 +26,7 @@ USE_KEYCLOAK=1
 INIT_POSTGRES=1
 INIT_OPENTDF=1
 INIT_SAMPLE_DATA=1
+INIT_NGINX_CONTROLLER=1
 REWRITE_HOSTNAME=1
 
 while [[ $# -gt 0 ]]; do
@@ -44,6 +45,10 @@ while [[ $# -gt 0 ]]; do
     --no-keycloak)
       monolog TRACE "--no-keycloak"
       USE_KEYCLOAK=
+      ;;
+    --no-init-nginx-controller)
+      monolog TRACE "--no-nginx-controller"
+      INIT_NGINX_CONTROLLER=
       ;;
     --no-init-postgres)
       monolog TRACE "--no-init-postgres"
@@ -195,6 +200,20 @@ if [[ $INIT_POSTGRES ]]; then
     echo "waiting for postgres..."
     sleep 5
   done
+fi
+
+if [[ $INIT_NGINX_CONTROLLER ]]; then
+  monolog INFO --- "Installing ingress-nginx"
+  if [[ $LOAD_IMAGES ]]; then
+    monolog INFO "Caching ingress-nginx image"
+    maybe_load k8s.gcr.io/ingress-nginx/controller:${SERVICE_IMAGE_TAG}
+  fi
+  nginx_params=("--set" "controller.config.large-client-header-buffers=20 32k" "--set" "controller.admissionWebhooks.enabled=false")
+  if [[ $RUN_OFFLINE ]]; then
+    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "${nginx-params[@]}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade postgresql"
+  else
+    helm upgrade --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx-params[@]}" ingress-nginx || e "Unable to helm upgrade postgresql"
+  fi
 fi
 
 load-chart() {

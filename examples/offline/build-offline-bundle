@@ -151,6 +151,9 @@ if [[ ! $no_third_party ]]; then
   save-image bitnami/postgresql 12.8.0 third-party-image-postgresql
   # Keycloak: Since we are bulding a custom image, we don't include that in thirdparty but in primary bundle
 
+  # nginx ingress
+  save-image k8s.gcr.io/ingress-nginx/controller v1.1.1 third-party-image-ingress-nginx
+
   save-image maven 3.6-jdk-11 third-party-image-maven
   if ! (save-image virtru/openfire 0.1 third-party-image-openfire); then
     monolog WARN "Unable to pull openfire. Have you logged in as a virtru user to docker.io?"
