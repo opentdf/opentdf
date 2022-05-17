@@ -1,24 +1,15 @@
-.SquareTdDivFlip {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  line-height: 50px;
-  text-align: center;
-  font-weight: bold;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+.boardRow{
+  display: flex;
 }
-
-.SquareTdDiv {
-  width: 100%;
-  height: 100%;
+.boardItem {
+  height: 50px;
+  width: 50px;
   transition: transform 1s;
   transform-style: preserve-3d;
   cursor: pointer;
-  position: relative;
-}
+  backface-visibility: hidden;
 
-.SquareTd {
-  height: 50px;
-  width: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

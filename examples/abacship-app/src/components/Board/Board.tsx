@@ -32,37 +32,27 @@ export function Board({ onCellClicked, grid }: IBoard) {
     // First row is the indicator row.
     const gridRowIndex = rows.length - 1;
     grid[gridRowIndex].forEach((gridCell: number) => {
-      row.push(<Square type={gridCell} />);
+      row.push(<Square type={gridCell}/>);
     });
     rows.push(row);
   });
-  const isRevealed = (rowIdx: number, colIdx: number, grid: number[][]):string => {
+  const isRevealed = (rowIdx: number, colIdx: number, grid: number[][]): string => {
     return rowIdx > 0 && colIdx > 0 && grid[rowIdx - 1][colIdx - 1] !== CELL_TYPE.UNKNOWN ? 'revealed' : 'unrevealed';
   }
 
-  return (
-    <table cellSpacing="0" cellPadding="0">
-      <tbody>
-        {rows.map((row, rowIdx) => (
-          <tr key={rowIdx}>
-            {row.map((cell, colIdx) => (
-              <td
-                className="SquareTd"
-                key={colIdx}
-                align="center"
-                onClick={() => onCellClickedHandler(rowIdx - 1, colIdx - 1)}
-              >
-                <div
-                  className={`SquareTdDiv index${colIdx}-${rowIdx} ${isRevealed(rowIdx, colIdx, grid)}`}>
-                  <div className="SquareTdDivFlip inner_box">
-                    {cell}
-                  </div>
-                </div>
-              </td>
-            ))}
-          </tr>
+  return (<div className="playerBoard">
+    {rows.map((row, rowIdx) => (
+      <div className="boardRow" key={rowIdx}>
+        {row.map((cell, colIdx) => (
+          <div
+            className={`boardItem index${colIdx}-${rowIdx} ${isRevealed(rowIdx, colIdx, grid)}`}
+            key={colIdx}
+            onClick={() => onCellClickedHandler(rowIdx - 1, colIdx - 1)}
+          >
+            {cell}
+          </div>
         ))}
-      </tbody>
-    </table>
-  );
+      </div>
+    ))}
+  </div>)
 }
