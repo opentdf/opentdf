@@ -76,9 +76,12 @@ async def add_response_headers(request: Request, call_next):
 
 @app.on_event("startup")
 async def startup():
-    # load all the attributes (if not already there)
-    # create a backend client (if not already created)
-    # assign the client the proper attributes
+    """
+    load all the attributes (if not already there)
+    create a backend client (if not already created)
+    assign the client the proper attributes
+    """
+    logger.info("App Startup")
     setupKeycloak()
     setupAttributes()
     setupEntitlements()
@@ -86,10 +89,13 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
-    # delete all the added attributes from the users
-    # delete the attributes from the backend client
-    # delete attributes from the DB
-    # delete the backend client
+    """
+    delete all the added attributes from the users
+    delete the attributes from the backend client
+    delete attributes from the DB
+    delete the backend client
+    """
+    logger.debug("App Teardown")
     if abacship.player1 is not None:
         teardownEntitlements(abacship.player1.username, abacship.player2.username)
     teardownAttributes()
@@ -120,6 +126,7 @@ async def get_status():
     Returns the current game status
     (See Status enum -- possibly restructuring)
     """
+    logger.debug("Get status")
     return abacship.status
 
 
@@ -136,9 +143,12 @@ async def grant_attribute(player: Player):
     Grants an attribute to opposing player
     Returns game status
     """
+    logger.debug("Grant attribute")
     if player.name == "player1" and abacship.status == Status.p2_request_attr_from_p1:
+        logger.debug("player1 grants attribute to player2")
         abacship.status = Status.p1_grants_attr_to_p2
     elif player.name == "player2" and abacship.status == Status.p1_request_attr_from_p2:
+        logger.debug("player2 grants attribute to player1")
         abacship.status = Status.p2_grants_attr_to_p1
 
     return {"status": abacship.status}
@@ -167,6 +177,7 @@ async def get_board():
     Returns 2D array board representation for each player (with encrypted strings, base64-encoded)
     (or nothing if the board is not set yet)
     """
+    logger.debug("Get board")
     return abacship.getWholeBoard()
 
 
@@ -208,6 +219,7 @@ async def post_board(access_token: str, refresh_token: str, board: conlist(conli
     -- i will need the username (ex user1) in order to assign attributes, which i can
     get from the access_token, or can just change it to pass in the username instead)
     """
+    logger.debug("Post board")
     # some sort of board verification -- raise error if invalid
     if not validBoard(board):
         raise HTTPException( #could add some more reasoning here -- valid board could return why invalid
@@ -219,7 +231,7 @@ async def post_board(access_token: str, refresh_token: str, board: conlist(conli
     # assign the attributes to this player
     setupUserEntitlements(username, player_name)
     # encrypt this board
-    if player_name == "player1": 
+    if player_name == "player1":
         abacship.player1.encryptBoard(abacship.opentdf_oidccreds)
         abacship.player1.refreshPlayerTokens()
     else:
@@ -254,7 +266,7 @@ async def post_board(access_token: str, refresh_token: str, board: conlist(conli
             "full_board": wholeboard,
             "status": abacship.status
         }
-    logger.info(payload)
+    logger.debug(f"Payload: {payload}")
     return payload
 
 
@@ -295,7 +307,13 @@ async def check_square(player: Player, row: int, col: int):
     returns updated board
     returns new status
     """
-    # check if square already checked -- if so tell them?
+    logger.debug(f"Check square {row}, {col}")
+    if row not in range(SIZE) or col not in range(SIZE):
+        raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Invalid row/col",
+        )
+
     if player.name == "player1":
         if str(row)+str(col) in abacship.player1.guesses:
             raise HTTPException( #could add some more reasoning here -- valid board could return why invalid
@@ -304,16 +322,23 @@ async def check_square(player: Player, row: int, col: int):
         )
         abacship.status = Status.p1_request_attr_from_p2
         # await grant access
+        logger.debug("Waiting for player2 to grant access")
         while not (abacship.status==Status.p2_grants_attr_to_p1):
             await asyncio.sleep(1)
         # actually grant the access
         abacship.player1.makeGuess(row, col)
         # refresh tokens?
-        abacship.player1.refreshPlayerTokens()
+        try:
+            abacship.player1.refreshPlayerTokens()
+        except Exception as e:
+            raise HTTPException( 
+            status_code=BAD_REQUEST,
+            detail=f"Unable to refresh keycloak tokens -- {str(e)}",
+            ) 
         # set new status
         victory = abacship.victoryCheck()
         if not victory:
-            abacship.status = p2_turn
+            abacship.status = Status.p2_turn
         #construct payload
         payload = {
             "player_info": {
@@ -332,7 +357,8 @@ async def check_square(player: Player, row: int, col: int):
             )
         abacship.status = Status.p2_request_attr_from_p1
         # await grant access
-        while not (abacship.status==p1_grants_attr_to_p2):
+        logger.debug("Waiting for player1 to grant access")
+        while not (abacship.status==Status.p1_grants_attr_to_p2):
             await asyncio.sleep(1)
         # actually grant the access
         abacship.player2.makeGuess(row, col)
@@ -341,7 +367,7 @@ async def check_square(player: Player, row: int, col: int):
         # set new status
         victory = abacship.victoryCheck()
         if not victory:
-            abacship.status = p1_turn
+            abacship.status = Status.p1_turn
         #construct payload
         payload = {
             "player_info": {
@@ -352,5 +378,6 @@ async def check_square(player: Player, row: int, col: int):
             "full_board": abacship.getWholeBoard(),
             "status": abacship.status
         }
+    logger.debug(f"Payload: {payload}")
     return payload
 

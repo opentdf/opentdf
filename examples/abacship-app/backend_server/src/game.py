@@ -5,10 +5,17 @@ from typing import Optional, List, Literal
 
 import jwt
 import base64
+import logging
+import sys
 from opentdf import NanoTDFClient, OIDCCredentials, LogLevel
 
 from services import addUserEntitlement, refreshTokens
 from constants import *
+
+logging.basicConfig(
+    stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "CRITICAL").upper()
+)
+logger = logging.getLogger(__package__)
 
 class Status(int, Enum):
     setup = 1
@@ -51,6 +58,7 @@ class GamePlayer:
     Encrypt the unencrypted board of the player with board and square attributes
     """
     def encryptBoard(self, oidc_creds):
+        logger.debug(f"Encrypting board of {self.player.name}")
         encrypted_board = []
         attr_base = f"{AUTH_NAMESPACE}/attr/{self.player.name}/value/"
         board_attr = attr_base + "board"
@@ -60,7 +68,7 @@ class GamePlayer:
                 client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
                 client.enable_console_logging(LogLevel.Error)
 
-                client.add_data_attribute(board_attr, KAS_URL)
+                # client.add_data_attribute(board_attr, KAS_URL) # dont add until KAS allOf issue is fixed
                 client.add_data_attribute(attr_base+str(i)+str(j), KAS_URL)
 
                 encrypted_string = base64.b64encode(client.encrypt_string(self.board[i][j]))
@@ -74,6 +82,7 @@ class GamePlayer:
     Player guesses there is a ship at row, col
     """
     def makeGuess(self, row, col):
+        logger.debug("Player {self.player.name} makes guess {row}, {col}")
         self.guesses.append(str(row)+str(col))
         name = "player1" if self.player.name == "player2" else "player2"
         addUserEntitlement(self.player.username, name, row, col)
@@ -82,6 +91,7 @@ class GamePlayer:
     Refresh keycloak tokens for player
     """
     def refreshPlayerTokens(self):
+        logger.debug("Refreshing keycloak tokens")
         if self.player.refresh_token is not None:
             new_access, new_refresh = refreshTokens(self.player.refresh_token)
             self.player.refresh_token = new_refresh
@@ -107,6 +117,7 @@ class Game:
     Return whole encrypted board -- whats given to front end
     """
     def getWholeBoard(self):
+        logger.debug("Get whole board")
         return {"player1": self.player1.board_encrypted if self.player1 is not None else [],
          "player2": self.player2.board_encrypted if self.player2 is not None else []}
 
@@ -135,6 +146,7 @@ class Game:
     Check if a player has won
     """
     def victoryCheck(self):
+        logger.debug("Victory check")
         if set(self.player2.ships).issubset(set(self.player1.guesses)):
             self.status = Status.p1_victory
             return True
@@ -160,6 +172,7 @@ There must be single battleship (size of 4 cells), 2 cruisers (size 3), 3 destro
 Any additional ships or missing ships are not allowed.
 """
 def validBoard(board):
+    logger.debug("Validating submitted board")
     ## basic checks
     _validateBoard(board)
     return _checkBoard(board, 0)

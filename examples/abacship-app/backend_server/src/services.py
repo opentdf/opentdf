@@ -2,14 +2,16 @@ import os
 import json
 import logging
 import jwt
+import sys
 from keycloak import KeycloakAdmin, KeycloakOpenID
 import requests
 from constants import *
 from fastapi import HTTPException
 
-logging.basicConfig()
-logger = logging.getLogger("abacship")
-logger.setLevel(logging.DEBUG)
+logging.basicConfig(
+    stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "CRITICAL").upper()
+)
+logger = logging.getLogger(__package__)
 
 keycloak_openid = KeycloakOpenID(
     # NOTE: `realm_name` IS NOT == `target_realm` here
@@ -25,6 +27,7 @@ keycloak_openid = KeycloakOpenID(
 ########################## Setup ##############################
 
 def setupKeycloak():
+    logger.debug("Setting up keycloak")
     keycloak_admin = KeycloakAdmin(
     server_url=KEYCLOAK_URL,
     username=KC_ADMIN_USER,
@@ -35,11 +38,13 @@ def setupKeycloak():
     createAbacshipClient(keycloak_admin)
 
 def setupAttributes():
+    logger.debug("Setting up attributes")
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
     createAbacshipAuthority(authToken)
     createAbacshipAttributes(authToken) 
 
 def setupEntitlements():
+    logger.debug("Setting up entitlements")
     keycloak_admin = KeycloakAdmin(
     server_url=KEYCLOAK_URL,
     username=KC_ADMIN_USER,
@@ -51,6 +56,7 @@ def setupEntitlements():
     addBackendClientAttrs(authToken, keycloak_admin)
 
 def setupUserEntitlements(username, player_name):
+    logger.debug(f"Setting up user entitlements for {username}")
     keycloak_admin = KeycloakAdmin(
     server_url=KEYCLOAK_URL,
     username=KC_ADMIN_USER,
@@ -89,6 +95,7 @@ def teardownKeycloak():
 ####################### Guess a Square ########################
 
 def addUserEntitlement(username, player_name, row, col):
+    logger.debug(f"Adding entitlement for {username} {player_name} {row},{col}")
     keycloak_admin = KeycloakAdmin(
     server_url=KEYCLOAK_URL,
     username=KC_ADMIN_USER,
@@ -196,6 +203,7 @@ def deleteAbacshipClient(keycloak_admin):
     keycloak_admin.delete_client(keycloak_admin.get_client_id(BACKEND_CLIENTID))
 
 def refreshTokens(refresh_token):
+    logger.debug("Refreshing token")
     decoded = jwt.decode(refresh_token, options={"verify_signature": False})
     response = requests.post("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token",
     headers={"Content-Type": "application/x-www-form-urlencoded"},
@@ -485,13 +493,15 @@ def addBackendClientAttrs(authToken, keycloak_admin):
         BACKEND_CLIENTID: [
             f"{AUTH_NAMESPACE}/attr/player1/value/board",
             f"{AUTH_NAMESPACE}/attr/player2/value/board"
-        ]
+        ] + [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
+        [f"{AUTH_NAMESPACE}/attr/player2/value/{i}" for i in digits]
     }
     insertAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
 
 def addGameUserAttrs(username, player_name, authToken, keycloak_admin):
     user_attr_map = {
-        username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/board"],
+        username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/board"] + 
+        [f"{AUTH_NAMESPACE}/attr/{player_name}/value/{i}" for i in digits],
     }
     insertAttrsForUsers(keycloak_admin, ENTITLEMENTS_URL, user_attr_map, authToken)
 
@@ -500,7 +510,8 @@ def deleteBackendClientAttrs(authToken):
         BACKEND_CLIENTID: [
             f"{AUTH_NAMESPACE}/attr/player1/value/board",
             f"{AUTH_NAMESPACE}/attr/player2/value/board"
-        ]
+        ] + [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
+        [f"{AUTH_NAMESPACE}/attr/player2/value/{i}" for i in digits]
     }
     deleteAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
 
