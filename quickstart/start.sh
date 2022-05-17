@@ -202,7 +202,7 @@ load-chart() {
   version="$2"
   val_file="${DEPLOYMENT_DIR}/values-${svc}.yaml"
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install ${s} "${CHART_ROOT}"/${svc}-*.tgz -f "${val_file}" --set image.tag="${SERVICE_IMAGE_TAG}" || e "Unable to install chart for ${svc}"
+    helm upgrade --install ${svc} "${CHART_ROOT}"/${svc}-*.tgz -f "${val_file}" --set image.tag="${SERVICE_IMAGE_TAG}" || e "Unable to install chart for ${svc}"
   else
     helm upgrade --version "${version}" --install ${svc} "oci://ghcr.io/opentdf/charts/${svc}" -f "${val_file}" || e "Unable to install $svc chart"
   fi
