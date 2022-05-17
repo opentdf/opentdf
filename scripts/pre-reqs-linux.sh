@@ -42,7 +42,7 @@ i_curl() {
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
   if ! which curl; then
 
-    apt-get update && apt install -y curl || e "Unable to install curl"
+    (apt-get update && apt install -y curl) || e "Unable to install curl"
   fi
   curl --version || e "Bad curl install"
 }
@@ -51,7 +51,7 @@ i_docker() (
   monolog INFO "Installing Docker"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
   if ! which docker; then
-    apt-get update && apt install -y docker.io || e "Unable to install docker"
+    (apt-get update && apt install -y docker.io) || e "Unable to install docker"
   fi
   docker --version || e "Bad docker install"
 )
@@ -86,7 +86,7 @@ i_kubectl() {
     if which snap; then
       snap install kubectl --classic || e "Unable to install kubectl"
     else
-      apt-get update && apt install -y kubectl || e "Unable to install kubectl"
+      (apt-get update && apt install -y kubectl) || e "Unable to install kubectl"
     fi
   fi
   kubectl version || e "Bad kubectl install"

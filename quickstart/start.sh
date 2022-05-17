@@ -210,9 +210,9 @@ if [[ $INIT_NGINX_CONTROLLER ]]; then
   fi
   nginx_params=("--set" "controller.config.large-client-header-buffers=20 32k" "--set" "controller.admissionWebhooks.enabled=false")
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "${nginx-params[@]}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade postgresql"
+    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "${nginx_params[@]}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade postgresql"
   else
-    helm upgrade --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx-params[@]}" ingress-nginx || e "Unable to helm upgrade postgresql"
+    helm upgrade --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}" ingress-nginx || e "Unable to helm upgrade postgresql"
   fi
 fi
 
