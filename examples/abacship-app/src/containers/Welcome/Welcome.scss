@@ -1,0 +1,29 @@
+.container {
+  display: grid;
+  grid-template-columns: 1fr 500px 1fr;
+  grid-template-rows: 1fr 400px 1fr;
+  height: 100%;
+
+  h1 {
+    font-size: 42px;
+  }
+
+  h2 {
+    font-size: 32px;
+  }
+
+  .content {
+    grid-column: 2/3;
+    grid-row: 2/3;
+    justify-self: center;
+    align-self: center;
+
+    footer {
+      button {
+        padding: 10px 20px;
+        margin: 5px;
+        // background-color: white;
+      }
+    }
+  }
+}

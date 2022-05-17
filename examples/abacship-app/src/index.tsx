@@ -1,17 +1,15 @@
-
+import React from "react";
 import "core-js/stable";
 import "regenerator-runtime/runtime";
-
 import ReactDOM from "react-dom";
 
 //OIDC shenanigans
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 import Keycloak from "keycloak-js";
 
-import ABACShip from './abacship';
-
 import "./index.scss";
-import React from "react";
+import { GameMain } from "./containers/GameMain";
+import { RecoilRoot } from "recoil";
 
 //Obviously these would not be hardcoded normally
 const KEYCLOAK_HOST = "http://localhost:65432/keycloak/auth/"
@@ -26,19 +24,21 @@ const keycloak = new Keycloak({
 });
 
 ReactDOM.render(
-    <ReactKeycloakProvider
-      authClient={keycloak}
-      initOptions={{
-        onLoad: 'login-required',
-      }}
-      onEvent={(event, error) => {
-        console.log("onKeycloakEvent", event, error);
-      }}
-      onTokens={(tokens) => {
-        sessionStorage.setItem("keycloak", tokens.token || "");
-      }}
-    >
-        <ABACShip />
-    </ReactKeycloakProvider>,
-    document.getElementById("react-root"),
+  <ReactKeycloakProvider
+    authClient={keycloak}
+    initOptions={{
+      onLoad: 'login-required',
+    }}
+    onEvent={(event, error) => {
+      console.log("onKeycloakEvent", event, error);
+    }}
+    onTokens={(tokens) => {
+      sessionStorage.setItem("keycloak", tokens.token || "");
+    }}
+  >
+    <RecoilRoot>
+      <GameMain />
+    </RecoilRoot>
+  </ReactKeycloakProvider>,
+  document.getElementById("react-root"),
 );

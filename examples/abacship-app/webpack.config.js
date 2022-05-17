@@ -42,7 +42,7 @@ module.exports = {
       title: "ABAC Ship",
       template: "./public/index.html",
       filename: "index.html",
-    }),
+    })
   ],
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],

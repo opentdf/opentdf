@@ -1,0 +1,24 @@
+.SquareTdDivFlip {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  line-height: 50px;
+  text-align: center;
+  font-weight: bold;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.SquareTdDiv {
+  width: 100%;
+  height: 100%;
+  transition: transform 1s;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  position: relative;
+}
+
+.SquareTd {
+  height: 50px;
+  width: 50px;
+}
