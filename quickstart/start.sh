@@ -212,9 +212,11 @@ if [[ $INIT_NGINX_CONTROLLER ]]; then
   nginx_params=("--set" "controller.config.large-client-header-buffers=20 32k" "--set" "controller.admissionWebhooks.enabled=false")
   if [[ $RUN_OFFLINE ]]; then
     # TODO: Figure out how to set controller.image.tag to the correct value
-    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "${nginx_params[@]}" || e "Unable to helm upgrade postgresql"
+    monolog TRACE "helm upgrade --install ingress-nginx ${CHART_ROOT}/ingress-nginx-4.0.16.tgz --set controller.image.digest= ${nginx_params[*]}"
+    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "--set" "controller.image.digest=" "${nginx_params[@]}" || e "Unable to helm upgrade postgresql"
   else
-    helm upgrade --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}" ingress-nginx || e "Unable to helm upgrade postgresql"
+    monolog TRACE "helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx ${nginx_params[*]}"
+    helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}" || e "Unable to helm upgrade postgresql"
   fi
 fi
 
@@ -223,8 +225,10 @@ load-chart() {
   version="$2"
   val_file="${DEPLOYMENT_DIR}/values-${svc}.yaml"
   if [[ $RUN_OFFLINE ]]; then
+    monolog TRACE "helm upgrade --install ${svc} ${CHART_ROOT}/${svc}-*.tgz -f ${val_file} --set image.tag=${SERVICE_IMAGE_TAG}"
     helm upgrade --install ${svc} "${CHART_ROOT}"/${svc}-*.tgz -f "${val_file}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to install chart for ${svc}"
   else
+    monolog TRACE "helm upgrade --version ${version} --install ${svc} oci://ghcr.io/opentdf/charts/${svc} -f ${val_file}"
     helm upgrade --version "${version}" --install ${svc} "oci://ghcr.io/opentdf/charts/${svc}" -f "${val_file}" || e "Unable to install $svc chart"
   fi
 }
