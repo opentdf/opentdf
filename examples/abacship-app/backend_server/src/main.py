@@ -1,5 +1,6 @@
 import json
 import logging
+from logging.config import dictConfig
 import os
 import sys
 import requests
@@ -7,6 +8,7 @@ import asyncio
 from enum import Enum
 from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
 from fastapi.middleware.cors import CORSMiddleware
+# from starlette.middleware.cors import CORSMiddleware
 from typing import Optional, List, Literal#, Annotated
 
 from fastapi import (
@@ -40,16 +42,20 @@ from services import (
     teardownAttributes,
     teardownKeycloak,
     setupUserEntitlements,
-    addUserEntitlement
+    addUserEntitlement,
+    deleteUserEntitlement
 )
 
 from constants import *
 
 
-logging.basicConfig(
-    stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "DEBUG").upper()
-)
-logger = logging.getLogger(__package__)
+# logging.basicConfig(
+#     stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "DEBUG").upper()
+# )
+# logger = logging.getLogger(__package__)
+
+dictConfig(LogConfig().dict())
+logger = logging.getLogger("abacship")
 
 class Settings(BaseSettings):
     base_path: str = os.getenv("SERVER_ROOT_PATH", "")
@@ -187,6 +193,8 @@ async def get_board():
     (or nothing if the board is not set yet)
     """
     logger.debug("Get board")
+    if not (abacship.player1 is not None and abacship.player2 is not None and abacship.player1.ready and abacship.player2.ready):
+        raise HTTPException(status_code=BAD_REQUEST, detail=f"Board not ready yet, waiting for players to submit")
     return abacship.getWholeBoard()
 
 
@@ -198,17 +206,6 @@ async def get_board():
             "name": "player1",
             "refresh_token": "the refresh token ...",
             "access_token": "the access token ...",
-            },
-            "full_board": {"player1": [
-            ["encryptedstring00", "encryptedstring01", "..."],
-            ["encryptedstring10", "encryptedstring11", "..."],
-            ["..."],
-            ["encryptedstring90", "encryptedstring91", "..."]],
-            "player2":[
-                ["encryptedstring00", "encryptedstring01", "..."],
-            ["encryptedstring10", "encryptedstring11", "..."],
-            ["..."],
-            ["encryptedstring90", "encryptedstring91", "..."]]
             },
             "status": 2}}}}
     }
@@ -242,19 +239,26 @@ async def post_board(access_token: str, refresh_token: str, board: conlist(conli
     # encrypt this board
     if player_name == "player1":
         abacship.player1.encryptBoard(abacship.opentdf_oidccreds)
-        abacship.player1.refreshPlayerTokens()
+        try:
+            abacship.player1.refreshPlayerTokens()
+        except Exception as e:
+            deleteUserEntitlement(username)
+            abacship.player1 = None
+            raise e
     else:
         abacship.player2.encryptBoard(abacship.opentdf_oidccreds)
-        abacship.player2.refreshPlayerTokens()
-    # await other players board -- do not reutrn until game has both boards stored (some boolean)
-    while not (abacship.player1 is not None and abacship.player2 is not None and abacship.player1.ready and abacship.player2.ready):
-        await asyncio.sleep(1)
-    # set status to p1 turn
-    if abacship.status == Status.setup:
-        abacship.status = Status.p1_turn
-    # return player information and full board and game status
-    wholeboard = abacship.getWholeBoard()
+        try:
+            abacship.player2.refreshPlayerTokens()
+        except Exception as e:
+            deleteUserEntitlement(username)
+            abacship.player2 = None
+            raise e
     payload = {}
+    if not (abacship.player1 is not None and abacship.player2 is not None and abacship.player1.ready and abacship.player2.ready):
+        logger.debug("Waiting for other player")
+    else:
+        if abacship.status == Status.setup:
+            abacship.status = Status.p1_turn
     if player_name == "player1":
         payload = {
             "player_info": {
@@ -262,7 +266,6 @@ async def post_board(access_token: str, refresh_token: str, board: conlist(conli
             "refresh_token": abacship.player1.player.refresh_token,
             "access_token": abacship.player1.player.access_token,
             },
-            "full_board": wholeboard,
             "status": abacship.status
             }
     else:
@@ -272,11 +275,42 @@ async def post_board(access_token: str, refresh_token: str, board: conlist(conli
             "refresh_token": abacship.player2.player.refresh_token,
             "access_token": abacship.player2.player.access_token,
             },
-            "full_board": wholeboard,
             "status": abacship.status
         }
     logger.debug(f"Payload: {payload}")
     return payload
+
+    # # await other players board -- do not reutrn until game has both boards stored (some boolean)
+    # while not (abacship.player1 is not None and abacship.player2 is not None and abacship.player1.ready and abacship.player2.ready):
+    #     await asyncio.sleep(1)
+    # # set status to p1 turn
+    # if abacship.status == Status.setup:
+    #     abacship.status = Status.p1_turn
+    # # return player information and full board and game status
+    # wholeboard = abacship.getWholeBoard()
+    # payload = {}
+    # if player_name == "player1":
+    #     payload = {
+    #         "player_info": {
+    #         "name": player_name,
+    #         "refresh_token": abacship.player1.player.refresh_token,
+    #         "access_token": abacship.player1.player.access_token,
+    #         },
+    #         "full_board": wholeboard,
+    #         "status": abacship.status
+    #         }
+    # else:
+    #     payload = {
+    #         "player_info": {
+    #         "name": player_name,
+    #         "refresh_token": abacship.player2.player.refresh_token,
+    #         "access_token": abacship.player2.player.access_token,
+    #         },
+    #         "full_board": wholeboard,
+    #         "status": abacship.status
+    #     }
+    # logger.debug(f"Payload: {payload}")
+    # return payload
 
 
 @app.post(
@@ -390,3 +424,11 @@ async def check_square(player: Player, row: int, col: int):
     logger.debug(f"Payload: {payload}")
     return payload
 
+###https://editor.swagger.io/#/
+
+## handle keycloak refresh issues (if havent refreshed in a while and keycloak returns 400)
+## make guess -- dont need username anymore
+## handle invalid row, col guess
+## more logging
+## check whether you can decrypt (with backend client and user?)
+## add to readme (put constants in env)

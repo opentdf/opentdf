@@ -6,16 +6,19 @@ from typing import Optional, List, Literal
 import jwt
 import base64
 import logging
+from logging.config import dictConfig
 import sys
 from opentdf import NanoTDFClient, OIDCCredentials, LogLevel
 
 from services import addUserEntitlement, refreshTokens
 from constants import *
 
-logging.basicConfig(
-    stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "CRITICAL").upper()
-)
-logger = logging.getLogger(__package__)
+# logging.basicConfig(
+#     stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "CRITICAL").upper()
+# )
+# logger = logging.getLogger(__package__)
+dictConfig(LogConfig().dict())
+logger = logging.getLogger("abacship")
 
 class Status(int, Enum):
     setup = 1
