@@ -206,7 +206,8 @@ if [[ $INIT_NGINX_CONTROLLER ]]; then
   monolog INFO --- "Installing ingress-nginx"
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching ingress-nginx image"
-    maybe_load k8s.gcr.io/ingress-nginx/controller:${SERVICE_IMAGE_TAG}
+    # TODO: Figure out how to guess the correct nginx tag
+    maybe_load k8s.gcr.io/ingress-nginx/controller:v1.1.1
   fi
   nginx_params=("--set" "controller.config.large-client-header-buffers=20 32k" "--set" "controller.admissionWebhooks.enabled=false")
   if [[ $RUN_OFFLINE ]]; then
@@ -221,7 +222,8 @@ load-chart() {
   version="$2"
   val_file="${DEPLOYMENT_DIR}/values-${svc}.yaml"
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install ${svc} "${CHART_ROOT}"/${svc}-*.tgz -f "${val_file}" --set image.tag="${SERVICE_IMAGE_TAG}" || e "Unable to install chart for ${svc}"
+    # TODO: Figure out how to set controller.image.tag to the correct value
+    helm upgrade --install ${svc} "${CHART_ROOT}"/${svc}-*.tgz -f "${val_file}" || e "Unable to install chart for ${svc}"
   else
     helm upgrade --version "${version}" --install ${svc} "oci://ghcr.io/opentdf/charts/${svc}" -f "${val_file}" || e "Unable to install $svc chart"
   fi
