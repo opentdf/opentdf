@@ -7,6 +7,7 @@ from keycloak import KeycloakAdmin, KeycloakOpenID
 import requests
 from constants import *
 from fastapi import HTTPException
+from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
 
 logging.basicConfig(
     stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "CRITICAL").upper()
@@ -72,9 +73,16 @@ def setupUserEntitlements(username, player_name):
 ######################## Teardown #############################
 
 def teardownEntitlements(username1, username2):
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
-    deleteBackendClientAttrs(authToken)
-    deleteGameUserAttrs(username1, username2, authToken)
+    deleteBackendClientAttrs(authToken, keycloak_admin)
+    deleteGameUserAttrs(username1, username2, authToken, keycloak_admin)
 
 def teardownAttributes():
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
@@ -476,7 +484,7 @@ def deleteAttrsForClients(keycloak_admin, entitlement_host, client_attr_map, aut
             json=attrs,
             headers={"Authorization": f"Bearer {authToken}"},
         )
-        if response.status_code != 200:
+        if response.status_code != 202:
             logger.error(
                 "Unexpected code [%s] from entitlements service when attempting to entitle client! [%s]",
                 response.status_code,
@@ -505,7 +513,7 @@ def addGameUserAttrs(username, player_name, authToken, keycloak_admin):
     }
     insertAttrsForUsers(keycloak_admin, ENTITLEMENTS_URL, user_attr_map, authToken)
 
-def deleteBackendClientAttrs(authToken):
+def deleteBackendClientAttrs(authToken, keycloak_admin):
     attr_map = {
         BACKEND_CLIENTID: [
             f"{AUTH_NAMESPACE}/attr/player1/value/board",
@@ -515,7 +523,7 @@ def deleteBackendClientAttrs(authToken):
     }
     deleteAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
 
-def deleteGameUserAttrs(username1, username2, authToken):
+def deleteGameUserAttrs(username1, username2, authToken, keycloak_admin):
     user_attr_map = {
         username1: [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
          [f"{AUTH_NAMESPACE}/attr/player1/value/board"],

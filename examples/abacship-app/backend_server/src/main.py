@@ -47,7 +47,7 @@ from constants import *
 
 
 logging.basicConfig(
-    stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "CRITICAL").upper()
+    stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "DEBUG").upper()
 )
 logger = logging.getLogger(__package__)
 
@@ -105,8 +105,8 @@ async def shutdown():
     delete the backend client
     """
     logger.debug("App Teardown")
-    if abacship.player1 is not None:
-        teardownEntitlements(abacship.player1.username, abacship.player2.username)
+    if abacship.player1 is not None and abacship.player2 is not None:
+        teardownEntitlements(abacship.player1.player.username, abacship.player2.player.username)
     teardownAttributes()
     teardownKeycloak()
 
@@ -340,7 +340,7 @@ async def check_square(player: Player, row: int, col: int):
         try:
             abacship.player1.refreshPlayerTokens()
         except Exception as e:
-            raise HTTPException( 
+            raise HTTPException(
             status_code=BAD_REQUEST,
             detail=f"Unable to refresh keycloak tokens -- {str(e)}",
             ) 
