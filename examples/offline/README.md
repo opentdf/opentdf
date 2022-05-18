@@ -90,9 +90,23 @@ some sample data.
 
 ### 4. Exposing the sample environment
 
-If you are using **kind**, follow instructions here: https://kind.sigs.k8s.io/docs/user/ingress/
+If you are using **kind**, follow instructions here: https://kind.sigs.k8s.io/docs/user/ingress/, or the `expose port` flow below.
 
-If you are using **minikube** with the docker network, you can use
+If you are using **minikube** with the docker network, you can use the `private network` flow below.
+
+##### Expose Port
+
+If you are running kind, `kubectl describe ingress ingress-nginx` doesn't show an IP, since it is running on the local host.
+
+To expose it, you can use:
+
+```
+sudo kubectl port-forward $(kubectl get pods -o name --no-headers=true | grep nginx) 80:80
+```
+
+which maps port 80 on nginx to port 80 on the current host.
+
+##### Private Network
 
 
 ```
@@ -102,6 +116,7 @@ kubectl describe ingress ingress-nginx
 to see what network address is assigned to the nginx ingress controller, e.g. 
 192.168.42.2. You can then route to that as you would any other host.
 
+#### Routing from an external machine
 
 If you are connecting to a computer from outside. First, on the host 
 
