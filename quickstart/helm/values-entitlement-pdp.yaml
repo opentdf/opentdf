@@ -1,0 +1,9 @@
+useImagePullSecret: true
+imageCredentials:
+  registry: ghcr.io
+  username: bleggett
+  password: "<override>"
+  email: algosystem@gmail.com
+
+secret:
+  opaPolicyPullSecret: "<override>"

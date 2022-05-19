@@ -51,6 +51,22 @@ helm_resource(
 )
 
 helm_resource(
+    "entitlement-pdp",
+    "oci://ghcr.io/virtru-corp/entitlement-pdp/chart/entitlement-pdp",
+    flags=[
+        "--version",
+        "0.0.7",
+        "-f",
+        "helm/values-entitlement-pdp.yaml",
+        "--set",
+        "imageCredentials.password={}".format(os.environ.get("OCI_REG_PASS")),
+        "--set",
+        "secret.opaPolicyPullSecret={}".format(os.environ.get("OCI_REG_PASS"))
+    ],
+    labels="pdp",
+)
+
+helm_resource(
     "attributes",
     "oci://ghcr.io/opentdf/charts/attributes",
     flags=["--version", "0.0.0-sha-0b804dd", "-f", "helm/values-attributes.yaml"],
