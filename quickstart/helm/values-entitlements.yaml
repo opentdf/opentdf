@@ -29,3 +29,6 @@ ingress:
     host.docker.internal: *paths
 secretRef:
  name: entitlements-secrets
+
+image:
+  tag: 0.0.3-pdptest
