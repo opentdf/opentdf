@@ -10,11 +10,6 @@ from constants import *
 from fastapi import HTTPException
 from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
 
-# logging.basicConfig(
-#     stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "CRITICAL").upper()
-# )
-# logger = logging.getLogger(__package__)
-
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("abacship")
 

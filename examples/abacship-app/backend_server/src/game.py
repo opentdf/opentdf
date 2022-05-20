@@ -13,10 +13,6 @@ from opentdf import NanoTDFClient, OIDCCredentials, LogLevel
 from services import addUserEntitlement, refreshTokens
 from constants import *
 
-# logging.basicConfig(
-#     stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "CRITICAL").upper()
-# )
-# logger = logging.getLogger(__package__)
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("abacship")
 

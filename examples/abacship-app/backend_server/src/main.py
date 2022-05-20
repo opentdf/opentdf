@@ -48,12 +48,6 @@ from services import (
 
 from constants import *
 
-
-# logging.basicConfig(
-#     stream=sys.stdout, level=os.getenv("SERVER_LOG_LEVEL", "DEBUG").upper()
-# )
-# logger = logging.getLogger(__package__)
-
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("abacship")
 
@@ -351,6 +345,13 @@ async def check_square(player: Player, row: int, col: int):
     returns new status
     """
     logger.debug(f"Check square {row}, {col}")
+    if (player.name == "player1" and abacship.status != Status.p1_turn) or (
+        player.name == "player2" and abacship.status != Status.p2_turn):
+        raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Not your turn",
+        )
+    
     if row not in range(SIZE) or col not in range(SIZE):
         raise HTTPException(
             status_code=BAD_REQUEST,
@@ -423,12 +424,4 @@ async def check_square(player: Player, row: int, col: int):
         }
     logger.debug(f"Payload: {payload}")
     return payload
-
-###https://editor.swagger.io/#/
-
-## handle keycloak refresh issues (if havent refreshed in a while and keycloak returns 400)
-## make guess -- dont need username anymore
-## handle invalid row, col guess
-## more logging
-## check whether you can decrypt (with backend client and user?)
-## add to readme (put constants in env)
+    
