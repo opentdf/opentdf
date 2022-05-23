@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 // @ts-ignore
 import {AuthProviders, NanoTDFClient} from "@opentdf/client";
 import {KAS_BASE_ENDPOINT, OIDC_BASE_ENDPOINT} from "../../configs";
-import {RefreshTokenCredentials} from "@opentdf/client/dist/types/src/nanotdf/types/OIDCCredentials";
+import {type RefreshTokenCredentials} from "@opentdf/client/dist/types/src/nanotdf/types/OIDCCredentials";
 
 
 interface TextArea {

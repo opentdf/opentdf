@@ -1,7 +1,7 @@
 import './App.scss';
 import TextBlock from "./components/TextBlock";
 
-function App() {
+export function App() {
   return (
     <div className="App">
        <h1>NanoTDF Example</h1>
@@ -9,5 +9,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
