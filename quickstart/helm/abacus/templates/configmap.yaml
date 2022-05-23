@@ -8,3 +8,4 @@ data:
   KEYCLOAK_REALM: {{ .Values.oidc.realm }}
   ATTRIBUTES_HOST: {{ .Values.attributes.serverUrl }}
   ENTITLEMENTS_HOST: {{ .Values.entitlements.serverUrl }}
+  SERVER_BASE_PATH: {{ .Values.serverBasePath }}
