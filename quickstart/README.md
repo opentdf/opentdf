@@ -42,6 +42,10 @@ git clone https://github.com/opentdf/documentation.git
 cd documentation/quickstart
 ```
 
+### Log in to GitHub Container Registry
+
+Follow [these instructions to log in to ghcr.io](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
+
 ### Create cluster
 
 ```
