@@ -89,7 +89,7 @@ jobs:
       packages: read
     needs: deltas
     if: >-
-      ${{ needs.deltas.outputs.offline || github.event.schedule == "0 7 * * 2,4" }}
+      ${{ needs.deltas.outputs.offline || github.event.schedule == '0 7 * * 2,4' }}
     steps:
       - uses: actions/checkout@v3
       - name: 🦪 ✔ 🧼🧼🧼
