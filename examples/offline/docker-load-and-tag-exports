@@ -37,7 +37,6 @@ docker-load-from() {
     exit 1
   fi
   meta=$(<"${prefix}.meta")
-  abstag=${meta%% *}
   reponame=${meta%%[:@ ]*}
   prettytag=${meta##*:}
   monolog TRACE "docker-load-from [docker tag ${reponame}:{${prettytag},offline}]"

@@ -49,3 +49,18 @@ jobs:
           TEST_SCRIPT: tests/wait-and-test.sh
         run: tilt ci
         working-directory: quickstart
+
+
+  offline-start-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: 🦪 ✔ 🧼🧼🧼
+        run: >-
+            docker run --rm -v "$PWD:/mnt" --workdir "/mnt" "koalaman/shellcheck:v0.8.0" --color=always
+            scripts/*
+            examples/offline/{build-offline-bundle,docker-load-and-tag-exports,test-offline-bundle}
+            quickstart/start.sh

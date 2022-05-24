@@ -97,9 +97,12 @@ echo "${suffix}" >"$OUT_DIR/BUNDLE_TAG"
 # Save an image to a file: repo tag outfile-prefix
 save-image() {
   monolog TRACE "save-image [$*]"
-  local short_name="$1"
-  local name_tag="$2"
-  local image="${short_name}:${name_tag}"
+  local short_name
+  local name_tag
+  local image
+  short_name="$1"
+  name_tag="$2"
+  image="${short_name}:${name_tag}"
 
   monolog TRACE "save-image [docker pull $image]"
   if ! docker pull "$image"; then
@@ -107,11 +110,16 @@ save-image() {
     exit 1
   fi
 
-  local outprefix="$3"
+  local outprefix
+  outprefix="$3"
 
-  local path="${OUT_DIR}/containers/${outprefix}-${suffix}"
-  local tar_path="${path}.tar"
-  local version="$(docker inspect --format='{{index .RepoDigests 0}}' "${image}")"
+  local path
+  local tar_path
+  local version
+
+  path="${OUT_DIR}/containers/${outprefix}-${suffix}"
+  tar_path="${path}.tar"
+  version="$(docker inspect --format='{{index .RepoDigests 0}}' "${image}")"
   monolog TRACE "save-image [docker save -o ${tar_path} ${image}]"
   if ! docker save -o "${tar_path}" "${image}"; then
     monolog ERROR "Failed to save docker image [${image}] as [${tar_path}]"
@@ -132,6 +140,7 @@ if [[ ! $no_first_party ]]; then
   for x in attributes claims entitlements kas keycloak keycloak-bootstrap; do
     save-image "ghcr.io/opentdf/${x}" "${BACKEND_IMAGE_TAG}" "opentdf-${x}"
   done
+  # shellcheck disable=SC2043 # Keep this similar to the backend loop
   for x in abacus; do
     save-image "ghcr.io/opentdf/${x}" "${FRONTEND_IMAGE_TAG}" "opentdf-${x}"
   done
@@ -181,6 +190,7 @@ for x in attributes claims entitlements kas keycloak-bootstrap; do
     exit 1
   fi
 done
+# shellcheck disable=SC2043 # Keep this similar to the backend loop
 for x in abacus; do
   i="oci://ghcr.io/opentdf/charts/${x}"
   if ! helm pull "${i}" --version "${FRONTEND_CHART_TAG}" --destination "${OUT_DIR}/charts"; then

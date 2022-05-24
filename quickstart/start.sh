@@ -86,6 +86,7 @@ if [[ ! $RUN_OFFLINE ]]; then
   INGRESS_HOSTNAME=
 fi
 
+# shellcheck source-path=SCRIPTDIR/../scripts
 . "${TOOLS_ROOT}/lib-local.sh"
 
 # Make sure required utilities are installed.
@@ -222,10 +223,10 @@ load-chart() {
   val_file="${DEPLOYMENT_DIR}/values-${svc}.yaml"
   if [[ $RUN_OFFLINE ]]; then
     monolog TRACE "helm upgrade --install ${svc} ${CHART_ROOT}/${svc}-*.tgz -f ${val_file} --set image.tag=${SERVICE_IMAGE_TAG}"
-    helm upgrade --install ${svc} "${CHART_ROOT}"/${svc}-*.tgz -f "${val_file}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to install chart for ${svc}"
+    helm upgrade --install "${svc}" "${CHART_ROOT}"/"${svc}"-*.tgz -f "${val_file}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to install chart for ${svc}"
   else
     monolog TRACE "helm upgrade --version ${version} --install ${svc} oci://ghcr.io/opentdf/charts/${svc} -f ${val_file}"
-    helm upgrade --version "${version}" --install ${svc} "oci://ghcr.io/opentdf/charts/${svc}" -f "${val_file}" || e "Unable to install $svc chart"
+    helm upgrade --version "${version}" --install "${svc}" "oci://ghcr.io/opentdf/charts/${svc}" -f "${val_file}" || e "Unable to install $svc chart"
   fi
 }
 
