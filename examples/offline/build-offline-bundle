@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Generate `offline-bundle` zipfile.
+# Generate `offline-bundle` zipfile for installing OpenTDF cluster in an intranet.
 #
 # This bundle contains:
 #   * opentdf-service-images.tar, containing all microservices
@@ -35,8 +35,8 @@ while [[ $# -gt 0 ]]; do
       monolog TRACE "--clean"
       clean_first=1
       ;;
-    --all)
-      monolog TRACE "--all"
+    --oci)
+      monolog TRACE "--oci"
       build_total_image=1
       ;;
     --no-first-party)
@@ -66,7 +66,6 @@ fi
 today="$(date +%Y-%m-%d)"
 digest="$(git rev-parse --short HEAD)"
 suffix="${today}-${digest}"
-: "${SERVICE_CHART_TAG:="0.0.0-sha-${digest}"}"
 : "${OUTPUT_DIRECTORY:="${PROJECT_ROOT}/build/export"}"
 
 : "${BACKEND_IMAGE_TAG:="main"}"

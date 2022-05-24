@@ -151,7 +151,7 @@ and then push them to a remote registry, e.g. using `docker load` and `docker pu
 
 ```sh
 docker load export/*.tar
-docker images --format="{{json .Repository }}"  | sort | uniq | tr -d '"'| grep ^virtru/tdf | while read name; do docker push $name; done
+docker images --format="{{json .Repository }}"  | sort | uniq | tr -d '"'| grep ^opentdf/ | while read name; do docker push $name; done
 ```
 
 ## Configuring the OpenTDF Services

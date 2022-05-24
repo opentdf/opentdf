@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 # Log a message to std err, with some time stamp and level.
 #
-# Please refer to https://docs.google.com/document/d/1aZyqY-yPLFoBe-xpXgTyculyG9BExSb_1misinQPRPg/edit
-# for a discussion on logging best practices.
-#
 # Example:
 #   monolog INFO "This is a sample log message"
 #   monolog WARN --- "This causes buildkite to render a collapsed group. should I have used warning?"
@@ -18,7 +15,7 @@
 # To override log verbosity, set this to a smaller number.
 # 0 = all, 4 = only severe
 # 2 = default (info)
-MONOLOG_LEVEL=${MONOLOG_LEVEL:-${VIRTRU_LOG_LEVEL:-2}}
+MONOLOG_LEVEL=${MONOLOG_LEVEL:-2}
 
 # ## About Levels
 #

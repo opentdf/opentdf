@@ -34,37 +34,33 @@ while [[ $# -gt 0 ]]; do
   shift
 
   case "$key" in
-    --no-bootstrap)
-      monolog TRACE "$key"
-      INIT_SAMPLE_DATA=
-      ;;
-    --no-sample-data)
-      monolog TRACE "$key"
-      INIT_SAMPLE_DATA=
-      ;;
-    --no-keycloak)
-      monolog TRACE "--no-keycloak"
-      USE_KEYCLOAK=
+    --no-host-update)
+      monolog TRACE "--no-host-update"
+      REWRITE_HOSTNAME=
       ;;
     --no-init-nginx-controller)
       monolog TRACE "--no-nginx-controller"
       INIT_NGINX_CONTROLLER=
       ;;
+    --no-init-opentdf)
+      monolog TRACE "--no-init-opentdf"
+      INIT_OPENTDF=
+      ;;
     --no-init-postgres)
       monolog TRACE "--no-init-postgres"
       INIT_POSTGRES=
+      ;;
+    --no-keycloak)
+      monolog TRACE "--no-keycloak"
+      USE_KEYCLOAK=
       ;;
     --no-load-images)
       monolog TRACE "--no-load-images"
       LOAD_IMAGES=
       ;;
-    --no-host-update)
-      monolog TRACE "--no-host-update"
-      REWRITE_HOSTNAME=
-      ;;
-    --no-init-opentdf)
-      monolog TRACE "--no-init-opentdf"
-      INIT_OPENTDF=
+    --no-sample-data)
+      monolog TRACE "$key"
+      INIT_SAMPLE_DATA=
       ;;
     --no-secrets)
       monolog TRACE "--no-secrets"
