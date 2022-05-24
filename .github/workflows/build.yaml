@@ -4,13 +4,45 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: "0 7 * * 1,3,5"
+    - cron: "0 7 * * 2,4"
 jobs:
-  integration-test:
+  deltas:
+    runs-on: ubuntu-latest
+    outputs:
+      offline: ${{ steps.changes.outputs.offline }}
+      quickstart: ${{ steps.changes.outputs.quickstart }}
+      scripts: ${{ steps.changes.outputs.scripts }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |-
+            offline:
+              - 'examples/offline/**'
+              - 'quickstart/start.sh'
+            quickstart:
+              - 'quickstart/**'
+            scripts:
+              - 'scripts/**'
+      - name: 🦪 ✔ 🧼🧼🧼
+        if: ${{ steps.changes.outputs.scripts }}
+        run: >-
+            docker run --rm -v "$PWD:/mnt" --workdir "/mnt" "koalaman/shellcheck:v0.8.0" --color=always
+            scripts/*
+
+
+  quickstart-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       contents: read
       packages: read
+    needs: deltas
+    if: ${{ needs.deltas.outputs.quickstart || github.event.schedule }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
@@ -57,10 +89,49 @@ jobs:
     permissions:
       contents: read
       packages: read
+    needs: deltas
+    if: ${{ needs.deltas.outputs.offline || github.event.schedule == "0 7 * * 2,4" }}
     steps:
+      - uses: actions/checkout@v3
       - name: 🦪 ✔ 🧼🧼🧼
         run: >-
             docker run --rm -v "$PWD:/mnt" --workdir "/mnt" "koalaman/shellcheck:v0.8.0" --color=always
-            scripts/*
             examples/offline/{build-offline-bundle,docker-load-and-tag-exports,test-offline-bundle}
             quickstart/start.sh
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      - run: pip install opentdf
+      - uses: yokawasa/action-setup-kube-tools@v0.7.1
+        with:
+          setup-tools: |
+            kubectl
+            helm
+            tilt
+          # This should be in sync with the minikube-deployed kube version below
+          kubectl: "1.23.3"
+          helm: "3.8.1"
+          helmv3: "3.8.1"
+          tilt: "0.26.3"
+      - run: |
+          kustomize version
+          tilt version
+      - name: build offline bundle
+        id: bundler
+        run: examples/offline/build-offline-bundle --no-zip
+      - name: Start Minikube
+        id: minikube
+        uses: medyagh/setup-minikube@latest
+        with:
+          minikube-version: 1.25.2
+          # This should be in sync with the setup-tools version above
+          kubernetes-version: 1.23.3
+      - name: Get cluster versions
+        run: |-
+          kubectl version
+          kubectl get pods -A
+      - env:
+          CR_PAT: ${{ secrets.GITHUB_TOKEN }}
+          CR_USER: ${{ github.repository_owner }}
+        run: ./examples/offline/test-offline-bundle
