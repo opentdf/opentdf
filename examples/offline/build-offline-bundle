@@ -69,9 +69,9 @@ suffix="${today}-${digest}"
 : "${OUTPUT_DIRECTORY:="${PROJECT_ROOT}/build/export"}"
 
 : "${BACKEND_IMAGE_TAG:="main"}"
-: "${BACKEND_CHART_TAG:="0.9.1"}"
+: "${BACKEND_CHART_TAG:="0.0.0-sha-e58137b"}"
 : "${FRONTEND_IMAGE_TAG:="main"}"
-: "${FRONTEND_CHART_TAG:="0.0.0-sha-a730590"}"
+: "${FRONTEND_CHART_TAG:="0.0.0-sha-93bb332"}"
 
 OUT_DIR="${OUTPUT_DIRECTORY}/bundle"
 
