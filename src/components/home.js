@@ -9,11 +9,11 @@ function Home() {
     <div>
       <NavigationBar />
       <div className="header-section">
-        <h1>Protect Your Data. Control Your Keys. Build Your Future.</h1>
+        <h1>Protect Your Data. Build Your Future.</h1>
+        <p>The OpenTDF project is an open set of tools and services that allows you to protect your data everywhere it goes.</p>
         <div className="header-detail">
           <p>
-            Just getting started? See our Quickstart Guide to run a simple local
-            cluster of OpenTDF services
+            Just getting started? Check out our Quickstart Guide:
           </p>
           <Button
             className="light-blue-theme"
@@ -23,8 +23,7 @@ function Home() {
             Quickstart
           </Button>
           <p>
-            Ready to Integrate? Download packages directly from the Github
-            Container Registry!
+            Ready to Integrate? Download packages here:
           </p>
           <Button
             className="light-blue-theme"
@@ -32,6 +31,16 @@ function Home() {
             href="https://github.com/orgs/opentdf/packages"
           >
             Download Packages
+          </Button>
+          <p>
+            Want to learn more? Access examples, documentation, and more on Github:
+          </p>
+          <Button
+            className="light-blue-theme"
+            appearance="primary"
+            href="https://github.com/orgs/opentdf/"
+          >
+            OpenTDF
           </Button>
         </div>
         {/* <img src={Banner} className="OpenTDF-Banner" alt="OpenTDF" /> */}

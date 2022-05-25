@@ -8,8 +8,12 @@
   color: #61dafb;
 }
 
+/* .nav-bar {
+  padding-top: "4vh";
+} */
+
 .opentdf-logo {
-  size: 10px;
+  max-height: 6vh;
 }
 
 .ProtectEntitleAuthImage {
@@ -23,8 +27,14 @@
 }
 
 .header-section {
-  margin: 20px 20px 20px 20px;
-  text-align: center;
+  text-align: left;
+  width: 60vw;
+  align-content: center;
+  color:black;
+}
+
+.lightblue-bg {
+  /* background-color: #68ABE5; */
 }
 
 .header-detail {
@@ -34,6 +44,8 @@
   background-color: #004A87;
   padding: 10px;
   border-radius: 5px;
+  border-color: white;
+  border-width: 30px;
   color: white;
 }
 

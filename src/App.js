@@ -6,9 +6,13 @@ import "rsuite/dist/rsuite.min.css";
 function App() {
   return (
     <div>
-      <Home />
-      <br></br>
-      <Info className='info-section' />
+      <div className="lightblue-bg">
+        <Home />
+        <br></br>
+      </div>
+      <div>
+        <Info className="info-section" />
+      </div>
     </div>
   );
 }
