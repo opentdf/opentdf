@@ -523,9 +523,14 @@ def addBackendClientAttrs(authToken, keycloak_admin):
     insertAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
 
 def addGameUserAttrs(username, player_name, authToken, keycloak_admin):
+    # user_attr_map = {
+    #     username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/board"] + 
+    #     [f"{AUTH_NAMESPACE}/attr/{player_name}/value/{i}" for i in digits],
+    # }
+
+    # temporarily stop assinging player1 all of player1 attributes 
     user_attr_map = {
-        username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/board"] + 
-        [f"{AUTH_NAMESPACE}/attr/{player_name}/value/{i}" for i in digits],
+        username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/board"],
     }
     insertAttrsForUsers(keycloak_admin, ENTITLEMENTS_URL, user_attr_map, authToken)
 

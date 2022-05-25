@@ -16,7 +16,7 @@ KAS_URL = os.getenv("KAS_URL", "http://localhost:65432/api/kas")
 SAMPLE_USER = "testuser@virtru.com"
 SAMPLE_PASSWORD = "testuser123"
 
-AUTH_NAMESPACE = "http://battleship.fun"
+AUTH_NAMESPACE = "http://ship.fun"
 
 BACKEND_CLIENTID = "abacship"
 BACKEND_CLIENT_SECRET = "123-456"
