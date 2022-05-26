@@ -128,4 +128,4 @@ jobs:
         run: |-
           kubectl version
           kubectl get pods -A
-        run: ./examples/offline/test-offline-bundle
+      - run: ./examples/offline/test-offline-bundle
