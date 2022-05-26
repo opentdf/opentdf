@@ -11,6 +11,7 @@ jobs:
   deltas:
     runs-on: ubuntu-latest
     outputs:
+      clientapp: ${{ steps.changes.outputs.clientapp }}
       offline: ${{ steps.changes.outputs.offline }}
       quickstart: ${{ steps.changes.outputs.quickstart }}
       scripts: ${{ steps.changes.outputs.scripts }}
@@ -43,7 +44,7 @@ jobs:
       contents: read
       packages: read
     needs: deltas
-    if: ${{ needs.deltas.outputs.quickstart || github.event.schedule }}
+    if: ${{ needs.deltas.outputs.quickstart == 'true' || github.event.schedule }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
@@ -89,7 +90,7 @@ jobs:
       packages: read
     needs: deltas
     if: >-
-      ${{ needs.deltas.outputs.offline || github.event.schedule == '0 7 * * 2,4' }}
+      ${{ needs.deltas.outputs.offline == 'true' || github.event.schedule == '0 7 * * 2,4' }}
     steps:
       - uses: actions/checkout@v3
       - name: 🦪 ✔ 🧼🧼🧼
@@ -140,7 +141,7 @@ jobs:
     timeout-minutes: 30
     needs: deltas
     if: >-
-      ${{ needs.deltas.outputs.clientapp || github.event.schedule == '0 7 * * 2,4' }}
+      ${{ needs.deltas.outputs.clientapp == 'true' || github.event.schedule == '0 7 * * 2,4' }}
     permissions: 
       contents: read
       packages: read
