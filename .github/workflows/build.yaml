@@ -171,9 +171,9 @@ jobs:
           echo "${{ matrix.job }} Failed!"
           exit 1
         if: >-
-          ${{ needs.[matrix.job].result == 'failure' }}
+          ${{ needs[matrix.job].result == 'failure' }}
       - run: |-
           echo "${{ matrix.job }} cancelled"
           exit 1
         if: >-
-          ${{ needs.[matrix.job].result == 'cancelled' }}
+          ${{ needs[matrix.job].result == 'cancelled' }}
