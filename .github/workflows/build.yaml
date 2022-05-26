@@ -141,13 +141,17 @@ jobs:
     needs: deltas
     if: >-
       ${{ needs.deltas.outputs.clientapp || github.event.schedule == '0 7 * * 2,4' }}
+    permissions: 
+      contents: read
+      packages: read
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: '16'
           cache: 'npm'
           cache-dependency-path: './examples/nanotdf-client-app/package-lock.json'
+          registry-url: 'https://npm.pkg.github.com'
       - run: npm ci
       - run: npm test
       - run: npm audit
