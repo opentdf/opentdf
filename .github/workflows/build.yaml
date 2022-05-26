@@ -164,18 +164,12 @@ jobs:
       [deltas, quickstart-test, offline-start-test, nanotdf-client-app-test]
     if: always()
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        job:
-          [deltas, quickstart-test, offline-start-test, nanotdf-client-app-test]
     steps:
-      - run: |-
-          echo "${{ matrix.job }} Failed!"
-          exit 1
-        if: >-
-          ${{ needs[matrix.job].result == 'failure' }}
-      - run: |-
-          echo "${{ matrix.job }} cancelled"
-          exit 1
-        if: >-
-          ${{ needs[matrix.job].result == 'cancelled' }}
+      - run: exit 1
+        if: ${{ needs.deltas.result == 'failure' }}
+      - run: exit 1
+        if: ${{ needs.quickstart-test.result == 'failure' }}
+      - run: exit 1
+        if: ${{ needs.offline-start-test.result == 'failure' }}
+      - run: exit 1
+        if: ${{ needs.nanotdf-client-app-test.result == 'failure' }}
