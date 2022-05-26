@@ -133,7 +133,7 @@ jobs:
           kubectl get pods -A
       - run: ./examples/offline/test-offline-bundle
 
-  nanotdf-client-app:
+  nanotdf-client-app-test:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -156,3 +156,22 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm audit
+
+  ci:
+    needs: [deltas, quickstart-test, offline-start-test, nanotdf-client-app-test]
+    if: always()
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        job: [deltas, quickstart-test, offline-start-test, nanotdf-client-app-test]
+    steps:
+      - run: |
+          echo ${{ matrix.job }} Failed!
+          exit 1
+        if: >-
+          ${{ needs.[matrix.job].result == 'failure' }}
+      - run: |
+          echo ${{ matrix.job }} cancelled
+          exit 1
+        if: >-
+          ${{ needs.[matrix.job].result == 'cancelled' }}
