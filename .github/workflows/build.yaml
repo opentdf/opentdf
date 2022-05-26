@@ -142,36 +142,38 @@ jobs:
     needs: deltas
     if: >-
       ${{ needs.deltas.outputs.clientapp == 'true' || github.event.schedule == '0 7 * * 2,4' }}
-    permissions: 
+    permissions:
       contents: read
       packages: read
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v3
         with:
-          node-version: '16'
-          cache: 'npm'
-          cache-dependency-path: './examples/nanotdf-client-app/package-lock.json'
-          registry-url: 'https://npm.pkg.github.com'
+          node-version: "16"
+          cache: "npm"
+          cache-dependency-path: "./examples/nanotdf-client-app/package-lock.json"
+          registry-url: "https://npm.pkg.github.com"
       - run: npm ci
       - run: npm test
       - run: npm audit
 
   ci:
-    needs: [deltas, quickstart-test, offline-start-test, nanotdf-client-app-test]
+    needs:
+      [deltas, quickstart-test, offline-start-test, nanotdf-client-app-test]
     if: always()
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        job: [deltas, quickstart-test, offline-start-test, nanotdf-client-app-test]
+        job:
+          [deltas, quickstart-test, offline-start-test, nanotdf-client-app-test]
     steps:
-      - run: |
-          echo ${{ matrix.job }} Failed!
+      - run: |-
+          echo "${{ matrix.job }} Failed!"
           exit 1
         if: >-
           ${{ needs.[matrix.job].result == 'failure' }}
-      - run: |
-          echo ${{ matrix.job }} cancelled
+      - run: |-
+          echo "${{ matrix.job }} cancelled"
           exit 1
         if: >-
           ${{ needs.[matrix.job].result == 'cancelled' }}
