@@ -154,6 +154,8 @@ jobs:
           cache-dependency-path: "./examples/nanotdf-client-app/package-lock.json"
           registry-url: "https://npm.pkg.github.com"
       - run: npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       - run: npm test
       - run: npm audit
 
