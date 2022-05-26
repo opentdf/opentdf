@@ -28,6 +28,8 @@ jobs:
               - 'quickstart/**'
             scripts:
               - 'scripts/**'
+            clientapp:
+              - 'examples/nanotdf-client-app/**'
       - name: 🦪 ✔ 🧼🧼🧼
         if: ${{ steps.changes.outputs.scripts }}
         run: >-
@@ -135,6 +137,10 @@ jobs:
     defaults:
       run:
         working-directory: ./examples/nanotdf-client-app
+    timeout-minutes: 30
+    needs: deltas
+    if: >-
+      ${{ needs.deltas.outputs.clientapp || github.event.schedule == '0 7 * * 2,4' }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
