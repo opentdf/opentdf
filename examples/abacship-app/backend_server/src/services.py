@@ -226,7 +226,7 @@ def deleteAbacshipClient(keycloak_admin):
 def refreshTokens(refresh_token):
     logger.debug("Refreshing token")
     decoded = jwt.decode(refresh_token, options={"verify_signature": False})
-    response = requests.post("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token",
+    response = requests.post(f"{KEYCLOAK_URL}realms/tdf/protocol/openid-connect/token",
     headers={"Content-Type": "application/x-www-form-urlencoded"},
     data={"grant_type": "refresh_token", "refresh_token": f"{refresh_token}", "client_id":decoded['azp']})
     if response.status_code != 200:
