@@ -2,13 +2,12 @@
   "name": "hackathon_2021_2",
   "version": "1.0.0",
   "description": "",
-  "main": "./dist/main,bundle.js",
+  "main": "./dist/main.*.bundle.js",
   "scripts": {
     "build": "webpack --mode production",
     "start": "webpack serve",
     "test": "echo \"No tests! That's good, right?\" && exit 0"
   },
-  "author": "ntrevino@virtru.com",
   "license": "UNLICENSED",
   "devDependencies": {
     "@babel/cli": "^7.16.0",
@@ -16,7 +15,6 @@
     "@babel/preset-env": "^7.17.10",
     "@babel/preset-react": "^7.16.7",
     "@babel/preset-typescript": "^7.16.7",
-    "@opentdf/client": "file:opentdf-client-0.0.1.tgz",
     "@types/react-dom": "^18.0.3",
     "@types/styled-components": "^5.1.25",
     "babel-loader": "^8.2.3",
@@ -32,8 +30,9 @@
     "webpack-dev-server": "^4.8.1"
   },
   "dependencies": {
+    "@opentdf/client": "file:opentdf-client-0.2.1.tgz",
     "@react-keycloak/web": "^3.4.0",
-    "core-js": "^3.19.3",
+    "axios": "^0.27.2",
     "keycloak-js": "^15.1.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

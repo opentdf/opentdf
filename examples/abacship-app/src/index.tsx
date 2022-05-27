@@ -1,5 +1,4 @@
 import React from "react";
-import "core-js/stable";
 import ReactDOM from "react-dom";
 
 //OIDC shenanigans
@@ -9,11 +8,7 @@ import Keycloak from "keycloak-js";
 import "./index.scss";
 import { GameMain } from "./containers/GameMain";
 import { RecoilRoot } from "recoil";
-
-//Obviously these would not be hardcoded normally
-const KEYCLOAK_HOST = "http://localhost:65432/keycloak/auth/"
-const KEYCLOAK_CLIENT_ID = "browsertest"
-const KEYCLOAK_REALM = "tdf"
+import { KEYCLOAK_CLIENT_ID, KEYCLOAK_HOST, KEYCLOAK_REALM } from "./config";
 
 // @ts-ignore
 const keycloak = new Keycloak({
@@ -26,13 +21,14 @@ ReactDOM.render(
   <ReactKeycloakProvider
     authClient={keycloak}
     initOptions={{
-      onLoad: 'login-required',
+      onLoad: 'login-required'
     }}
     onEvent={(event, error) => {
       console.log("onKeycloakEvent", event, error);
     }}
     onTokens={(tokens) => {
-      sessionStorage.setItem("keycloak", tokens.token || "");
+      sessionStorage.setItem("token", tokens.token || "");
+      sessionStorage.setItem("refreshToken", tokens.refreshToken || "");
     }}
   >
     <RecoilRoot>

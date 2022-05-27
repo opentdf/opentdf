@@ -1,7 +1,7 @@
 import React from "react";
 import "./Welcome.scss";
 
-export function Welcome({ handleClick } : {handleClick: (val: string)=> void}) {
+export function Welcome({ handleClick } : {handleClick: (player: string, enemy: string)=> void}) {
   const welcomeText = "Welcome !";
 
   return (
@@ -14,8 +14,8 @@ export function Welcome({ handleClick } : {handleClick: (val: string)=> void}) {
         <h2>{"Select player:"}</h2>
 
         <footer>
-          <button className="" onClick={() => handleClick("Player1")}>Player 1</button>
-          <button className="" onClick={() => handleClick("Player2")}>Player 2</button>
+          <button className="" onClick={() => handleClick("player1", "player2")}>Player 1</button>
+          <button className="" onClick={() => handleClick("player2", "player1")}>Player 2</button>
         </footer>
       </div>
     </section>);

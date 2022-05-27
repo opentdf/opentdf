@@ -5,5 +5,13 @@ export const playerState = atom({
   default: {
     id: "",
     name: "",
+    enemyName:"",
+  },
+});
+
+export const playerMoveState = atom({
+  key: "PlayerMoveState",
+  default: {
+    isYourTurn: false,
   },
 });
