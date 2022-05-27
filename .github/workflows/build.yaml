@@ -41,7 +41,7 @@ jobs:
   misc-tests-and-lint:
     runs-on: ubuntu-latest
     needs: deltas
-      if: ${{ needs.deltas.outputs.scripts == 'true' || github.event.schedule }}
+    if: ${{ needs.deltas.outputs.scripts == 'true' || github.event.schedule }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
