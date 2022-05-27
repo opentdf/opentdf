@@ -72,7 +72,18 @@ def setupUserEntitlements(username, player_name):
 
 ######################## Teardown #############################
 
-def teardownEntitlements(username1, username2):
+def teardownUserEntitlements(username):
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
+    authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
+    deleteGameUserAttrs(username, authToken, keycloak_admin)
+
+def teardownClientEntitlements():
     keycloak_admin = KeycloakAdmin(
     server_url=KEYCLOAK_URL,
     username=KC_ADMIN_USER,
@@ -82,8 +93,7 @@ def teardownEntitlements(username1, username2):
     )
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
     deleteBackendClientAttrs(authToken, keycloak_admin)
-    deleteGameUserAttrs(username1, authToken, keycloak_admin)
-    deleteGameUserAttrs(username2, authToken, keycloak_admin)
+
 
 def teardownAttributes():
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
@@ -516,9 +526,9 @@ def addBackendClientAttrs(authToken, keycloak_admin):
     attr_map = {
         BACKEND_CLIENTID: [
             f"{AUTH_NAMESPACE}/attr/player1/value/board",
-            f"{AUTH_NAMESPACE}/attr/player2/value/board"
-        ] + [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
-        [f"{AUTH_NAMESPACE}/attr/player2/value/{i}" for i in digits]
+            f"{AUTH_NAMESPACE}/attr/player2/value/board"]
+        # + [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
+        # [f"{AUTH_NAMESPACE}/attr/player2/value/{i}" for i in digits]
     }
     insertAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
 
@@ -544,10 +554,12 @@ def deleteBackendClientAttrs(authToken, keycloak_admin):
     }
     deleteAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
 
-def deleteGameUserAttrs(username1, authToken, keycloak_admin):
+def deleteGameUserAttrs(username, authToken, keycloak_admin):
     user_attr_map = {
-        username1: [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
-         [f"{AUTH_NAMESPACE}/attr/player1/value/board"]
+        username: [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
+         [f"{AUTH_NAMESPACE}/attr/player1/value/board"] + 
+         [f"{AUTH_NAMESPACE}/attr/player2/value/{i}" for i in digits] +
+         [f"{AUTH_NAMESPACE}/attr/player2/value/board"]
     }
     deleteAttrsForUsers(keycloak_admin, ENTITLEMENTS_URL, user_attr_map, authToken)
 

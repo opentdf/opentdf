@@ -154,6 +154,14 @@ class Game:
             return True
         return False
 
+    """
+    Reset the game
+    """
+    def reset(self):
+        self.status = 1
+        self.player1 = None
+        self.player2 = None
+
 """
 Get the positions of ships on board
 """

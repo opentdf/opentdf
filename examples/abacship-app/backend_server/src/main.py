@@ -38,7 +38,8 @@ from services import (
     setupKeycloak,
     setupAttributes,
     setupEntitlements,
-    teardownEntitlements,
+    teardownUserEntitlements,
+    teardownClientEntitlements,
     teardownAttributes,
     teardownKeycloak,
     setupUserEntitlements,
@@ -105,8 +106,11 @@ async def shutdown():
     delete the backend client
     """
     logger.debug("App Teardown")
-    if abacship.player1 is not None and abacship.player2 is not None:
-        teardownEntitlements(abacship.player1.player.username, abacship.player2.player.username)
+    if abacship.player1 is not None:
+        teardownUserEntitlements(abacship.player1.player.username)
+    if abacship.player2 is not None:
+        teardownUserEntitlements(abacship.player2.player.username)
+    teardownClientEntitlements()
     teardownAttributes()
     teardownKeycloak()
 
@@ -425,3 +429,24 @@ async def check_square(player: Player, row: int, col: int):
     logger.debug(f"Payload: {payload}")
     return payload
     
+
+@app.put(
+    "/reset",
+    responses={
+        200: {"content": {"application/json": {"example":{
+            "status": 1}}}}
+    }
+)
+async def reset_game():
+    """
+    Resets game
+    Removes all entitlements from users
+    """
+    if abacship.player1 is not None:
+        teardownUserEntitlements(abacship.player1.player.username)
+    if abacship.player2 is not None:
+        teardownUserEntitlements(abacship.player2.player.username)
+
+    abacship.reset()
+
+    return {"status": abacship.status}
