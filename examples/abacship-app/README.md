@@ -2,6 +2,7 @@
 
 Do you want a quick, local demonstration of OpenTDF? See [Quickstart](../../quickstart)
 
+### Front-end start
 ### Create cluster
 
 ```
@@ -11,11 +12,15 @@ kind create cluster --name opentdf
 
 ### Start services
 
-```shell
+```
 tilt up
 ```
 
-Front-end [Link](http://localhost:65432/abacship/) .
+### Start backend
+Follow game server steps [Link](backend_server).
+
+### Now you can use Abacship
+Front-end [Link](http://localhost:65432/abacship/).
 </br>
 Use user1 for player 1 :
 </br>login: user1
