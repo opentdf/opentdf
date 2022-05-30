@@ -52,6 +52,5 @@ export const sendBoard = async (player: string) => {
   localStorage.setItem(player, "1");
   const token = sessionStorage.getItem("token") || "";
   const refreshToken = sessionStorage.getItem("refreshToken") || "";
-  const response = await postBoard(token, refreshToken, TDFDATA);
-  console.log(response);
+  postBoard(token, refreshToken, TDFDATA);
 };

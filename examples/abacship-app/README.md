@@ -1,31 +1,37 @@
-# Frontend Quickstart
+## Quickstart
 
-1. cd ./examples/abacship-app
-2. npm i 
-3. npm run start
-4. open in browser http://localhost:3000/ 
-# Keycloak authentic
+Do you want a quick, local demonstration of OpenTDF? See [Quickstart](../../quickstart)
 
-# KC Admin (needed for setup)
+### Create cluster
 
-U: `keycloakadmin`
-P: `mykeycloakpassword`
+```
+cd ./examples/abacship-app
+kind create cluster --name opentdf
+```
 
-# KC Setup (just for hackathon)
+### Start services
 
-1. Stand up openTDF quickstart
-2. Login to Keycloak admin portal with Admin credentials above: `http://localhost:65432/keycloak/auth/`
+```shell
+tilt up
+```
 
-3. On the left, click on `clients`-> from the list, select `browsertest`
+Front-end [Link](http://localhost:65432/abacship/) .
+</br>
+Use user1 for player 1 :
+</br>login: user1
+</br>password: testuser123
 
-4. Modify `Valid Redirect URLs` property to be: http://localhost*
+Use user1 for player 2 :
+</br>login: user2
+</br>password: testuser123
 
-# User1
 
-U: `user1`
-P: `password`
+### Clean up
 
-# User2
+NOTE: Running kind delete will wipe your local cluster and any data associated with it. Delete at your own risk!
 
-U: `user2`
-P: `password`
+```shell
+tilt down
+kind delete cluster --name opentdf
+pip3 uninstall opentdf
+```

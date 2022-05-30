@@ -108,12 +108,12 @@ export function GameDesk() {
     }
 
     // REQUEST ATTR
-    if (currentServerStatus === ServerStatus.p1_request_attr_from_p2  && playerData.name === "player2") {
+    if (currentServerStatus === ServerStatus.p1_request_attr_from_p2 && playerData.name === "player2") {
       // PLAYER 1
       shareAccess();
     }
 
-    if (currentServerStatus === ServerStatus.p2_request_attr_from_p1  && playerData.name === "player1") {
+    if (currentServerStatus === ServerStatus.p2_request_attr_from_p1 && playerData.name === "player1") {
       //PLAYER 2
       shareAccess();
     }
@@ -157,8 +157,8 @@ export function GameDesk() {
         refresh_token: data.player_info.refresh_token,
         cypher_text: data?.full_board[enemyName][rowIdx][colIdx],
       };
-      console.log("Player enemy name = ", enemyName);
-      setTextToDecrypt(_data); // TODO Enable after KAS fix
+      console.log("Enemy name = ", enemyName);
+      setTextToDecrypt(_data);
       setOpponentGrid(hitGridItem(opponentGrid, rowIdx, colIdx));
     }
   };
