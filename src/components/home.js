@@ -49,7 +49,7 @@ const learnMoreButtonStyle = {
 
   const wrapperStyle = {
     backgroundImage: "linear-gradient(to right, #5EB29E, #1C4880)",
-    padding: "26vh 40vh",
+    padding: "26vh 20vw",
     height: "82vh",
   };
 
