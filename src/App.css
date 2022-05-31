@@ -1,3 +1,8 @@
+html, body {
+  height: 100vh;
+  width: 100vw;
+  }
+
 .App-header {
   display: flex;
   flex-direction: column;
@@ -28,25 +33,30 @@
 
 .header-section {
   text-align: left;
-  width: 60vw;
-  align-content: center;
+  width: 55vw;
   color:black;
 }
 
-.lightblue-bg {
-  /* background-color: #68ABE5; */
+.header-wrapper {
+  background-image: linear-gradient(to right, #5EB29E, #1C4880);
+  padding: 26vh 40vh ;
+}
+
+.subheader {
+  font-size: large;
+}
+
+.white-font {
+  color: white;
 }
 
 .header-detail {
   margin: auto;
   width: 60vw;
   text-align: left;
-  background-color: #004A87;
-  padding: 10px;
-  border-radius: 5px;
-  border-color: white;
-  border-width: 30px;
+  margin-top: 10px;
   color: white;
+  
 }
 
 .light-blue-theme {
