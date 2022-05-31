@@ -22,46 +22,45 @@ function Home() {
 }
 
 const buttonStyle = {
-    appearance: "button",
-    WebkitAppearance: "button",
-    MozAppearance: "button",
-    textDecoration: "none",
-    padding: "6px 18px",
-    fontWeight: "bold",
-    border: "white",
-    borderStyle: "solid",
-    borderWidth: "thin",
-    marginTop: "10px",
-}
+  appearance: "button",
+  WebkitAppearance: "button",
+  MozAppearance: "button",
+  textDecoration: "none",
+  padding: "6px 18px",
+  fontWeight: "bold",
+  border: "white",
+  borderStyle: "solid",
+  borderWidth: "thin",
+  marginTop: "10px",
+};
 
 const getStartedButtonStyle = {
-    marginRight: "1vw",
-    backgroundColor: "white",
-    color: "#04A777",
-    ...buttonStyle,
-  }
+  marginRight: "1vw",
+  backgroundColor: "white",
+  color: "#04A777",
+  ...buttonStyle,
+};
 
 const learnMoreButtonStyle = {
-    color: "white",
-    backgroundColor: "transparent",
-    ...buttonStyle,
-  }
+  color: "white",
+  backgroundColor: "transparent",
+  ...buttonStyle,
+};
 
-  const wrapperStyle = {
-    backgroundImage: "linear-gradient(to right, #5EB29E, #1C4880)",
-    padding: "26vh 20vw",
-    height: "82vh",
-  };
+const wrapperStyle = {
+  backgroundImage: "linear-gradient(to right, #5EB29E, #1C4880)",
+  padding: "26vh 20vw",
+  height: "82vh",
+};
 
 const headerStyle = {
-    textAlign: "left",
-    width: "55vw",
-    color: "white"
-} 
+  textAlign: "left",
+  width: "55vw",
+  color: "white",
+};
 
 const headerDetailStyle = {
-    fontSize: "large"
-}
-
+  fontSize: "large",
+};
 
 export default Home;

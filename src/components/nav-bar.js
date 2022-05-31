@@ -1,9 +1,8 @@
 import { Navbar, Nav } from "rsuite";
-import logo from '../opentdf-name-logo.png';
-import githubIcon from '../github-logo.png';
+import logo from "../opentdf-name-logo.png";
+import githubIcon from "../github-logo.png";
 import twitterIcon from "../twitter-logo.png";
-import { headerFooterStyle as navbarStyle } from '../styles'
-
+import { headerFooterStyle as navbarStyle } from "../styles";
 
 function NavigationBar() {
   return (
@@ -13,39 +12,28 @@ function NavigationBar() {
           <img src={logo} className="opentdf-logo" alt="logo" />
         </Nav.Item>
       </Nav>
-      <Nav
-        pullRight
-        style={rightNavStyle}
-      >
+      <Nav pullRight style={rightNavStyle}>
         <Nav.Item href="https://opentdf.stoplight.io/docs/opentdf-full-api-documentation/branches/main/pqb9cavidvql2-open-tdf">
           API
         </Nav.Item>
         <Nav.Item href="https://github.com/opentdf">
-          <img
-            src={githubIcon}
-            className="opentdf-logo"
-            alt="github"
-          />
+          <img src={githubIcon} className="opentdf-logo" alt="github" />
         </Nav.Item>
         <Nav.Item href="https://twitter.com/openTDF">
-          <img
-            src={twitterIcon}
-            className="opentdf-logo"
-            alt="twitter"
-          />
+          <img src={twitterIcon} className="opentdf-logo" alt="twitter" />
         </Nav.Item>
       </Nav>
     </Navbar>
   );
 }
 
-const navPadding = { paddingTop: "1vh" }
+const navPadding = { paddingTop: "1vh" };
 
 const rightNavStyle = {
-    padding: "1vh",
-    color: "white",
-    fontWeight: "bold",
-    fontSize: "2vh",
-  }
+  padding: "1vh",
+  color: "white",
+  fontWeight: "bold",
+  fontSize: "2vh",
+};
 
 export default NavigationBar;
