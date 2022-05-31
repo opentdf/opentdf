@@ -1,5 +1,4 @@
-import ProtectEntitleAuthImage from "../opentdf-protect-entitle-auth.png";
-
+// placeholder
 
 function Info() {
     return (

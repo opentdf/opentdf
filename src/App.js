@@ -1,22 +1,22 @@
 import Home from "./components/home"
 import Info from './components/info'
-import { Footer } from "rsuite";
+import NavigationBar from "./components/nav-bar";
+import { Container, Header, Content, Footer } from "rsuite";
 import "rsuite/dist/rsuite.min.css";
-
+import { headerFooterStyle as footerStyle } from './styles'
 
 function App() {
   return (
-    <div>
-      <div className="lightblue-bg">
+    <Container>
+      <Header>
+      <NavigationBar/>
+      </Header>
+      <Content>
         <Home />
-      </div>
-      <div>
         <Info className="info-section" />
-      </div>
-      <div>
-        <Footer style={{ background: "#061e49", height: "9vh" }} />
-      </div>
-    </div>
+      </Content>
+        <Footer style={footerStyle} />
+    </Container>
   );
 }
 
