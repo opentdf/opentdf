@@ -52,7 +52,7 @@ paths:
     get:
       summary: Get Board
       description: |-
-        Returns 2D array board representation for each player (with encrypted strings)
+        Returns 2D array board representation for each player (with encrypted strings, base64-encoded)
         (or nothing if the board is not set yet)
       operationId: get_board_board_get
       responses:
@@ -60,8 +60,7 @@ paths:
           description: Successful Response
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/WholeBoard'
+              schema: {}
               example:
                 player1:
                   - - encryptedstring00
@@ -85,9 +84,8 @@ paths:
                   - - encryptedstring90
                     - encryptedstring91
                     - ...
-  /submit/board:
     post:
-      summary: Submit Board
+      summary: Post Board
       description: |-
         submit refresh token and 2D array representation of board (unencrypted)
         returns player information including assigned name and new refresh token,
@@ -101,7 +99,7 @@ paths:
         (im not sure if I will need both the access and refresh token 
         -- i will need the username (ex user1) in order to assign attributes, which i can
         get from the access_token, or can just change it to pass in the username instead)
-      operationId: submit_board_submit_board_post
+      operationId: post_board_board_post
       parameters:
         - required: true
           schema:
@@ -119,7 +117,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SingleBoard'
+              title: Board
+              maxItems: 10
+              minItems: 10
+              type: array
+              items:
+                maxItems: 10
+                minItems: 10
+                type: array
+                items:
+                  type: string
         required: true
       responses:
         '200':
@@ -132,29 +139,6 @@ paths:
                   name: player1
                   refresh_token: the refresh token ...
                   access_token: the access token ...
-                full_board:
-                  player1:
-                    - - encryptedstring00
-                      - encryptedstring01
-                      - ...
-                    - - encryptedstring10
-                      - encryptedstring11
-                      - ...
-                    - - ...
-                    - - encryptedstring90
-                      - encryptedstring91
-                      - ...
-                  player2:
-                    - - encryptedstring00
-                      - encryptedstring01
-                      - ...
-                    - - encryptedstring10
-                      - encryptedstring11
-                      - ...
-                    - - ...
-                    - - encryptedstring90
-                      - encryptedstring91
-                      - ...
                 status: 2
         '422':
           description: Validation Error
@@ -270,20 +254,6 @@ components:
         username:
           title: Username
           type: string
-    Row:
-      title: Row
-      maxItems: 10
-      minItems: 10
-      type: array
-      items:
-        type: string
-    SingleBoard:
-      title: SingleBoard
-      maxItems: 10
-      minItems: 10
-      type: array
-      items:
-        $ref: '#/components/schemas/Row'
     ValidationError:
       title: ValidationError
       required:
@@ -303,14 +273,3 @@ components:
         type:
           title: Error Type
           type: string
-    WholeBoard:
-      title: WholeBoard
-      required:
-        - player1
-        - player2
-      type: object
-      properties:
-        player1:
-          $ref: '#/components/schemas/SingleBoard'
-        player2:
-          $ref: '#/components/schemas/SingleBoard'
