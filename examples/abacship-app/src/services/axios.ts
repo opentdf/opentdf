@@ -34,7 +34,7 @@ export async function requestCheckSquare(rowId:number, colId:number, dataInfo:IG
   return axiosRequest("post", `${GAME_SERVER_BASE_URL}/check/square?row=${rowId}&col=${colId}`, dataInfo);
 }
 
-export async function putGameReset(dataInfo:IGrandAccess): Promise<ICheckSquareResponse> {
-  return axiosRequest("post", `${GAME_SERVER_BASE_URL}/reset`, dataInfo);
+export async function putGameReset(): Promise<ICheckSquareResponse> {
+  return axiosRequest("put", `${GAME_SERVER_BASE_URL}/reset`);
 }
 

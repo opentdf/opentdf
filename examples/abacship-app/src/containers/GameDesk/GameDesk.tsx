@@ -12,6 +12,7 @@ import { postGrandAccess, requestCheckSquare } from "../../services/axios";
 import { usePingServer } from "../../hooks/usePingServer";
 import { useClientTDF } from "../../hooks/useClientTDF";
 import { ServerModeStatus } from '../../components/ServerModeStatus';
+import { ResetGameButton } from '../../components/ResetGameButton';
 
 const { IMAGES } = ASSETS_LIST;
 
@@ -168,6 +169,7 @@ export function GameDesk() {
             <Board grid={opponentGrid} onCellClicked={onOpponentCellClicked} />
           </div>
         </div>
+        <div className="resetGamePanel"><ResetGameButton /></div>
       </div>
     </div>
   );

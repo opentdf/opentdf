@@ -1,18 +1,18 @@
-.centered {
-}
+.centered {}
 
 .logo {
   display: flex;
   justify-content: center;
+
   img {
     width: 520px;
     height: 100px;
   }
 }
 
-.wrapper {
-}
-.boardStatus{
+.wrapper {}
+
+.boardStatus {
   text-align: center;
 }
 
@@ -24,4 +24,10 @@
   h1 {
     text-align: center;
   }
+}
+
+.resetGamePanel {
+  display: flex;
+  justify-content: center;
+  margin: 20px;
 }
