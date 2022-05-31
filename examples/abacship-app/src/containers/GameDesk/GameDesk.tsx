@@ -11,6 +11,7 @@ import { boardState, player1Board, player2Board, ServerStatus } from "../../reco
 import { postGrandAccess, requestCheckSquare } from "../../services/axios";
 import { usePingServer } from "../../hooks/usePingServer";
 import { useClientTDF } from "../../hooks/useClientTDF";
+import { ServerModeStatus } from '../../components/ServerModeStatus';
 
 const { IMAGES } = ASSETS_LIST;
 
@@ -21,16 +22,6 @@ const getMyGrid = async (): Promise<number[][]> => {
 const getOpponentGrid = async (): Promise<number[][]> => {
   return ROW_INDICATORS.map(() => COL_INDICATORS.map(() => CELL_TYPE.UNKNOWN));
 }
-
-const BoardMode = () => {
-  const BoardState = useRecoilValue(boardState);
-
-  return (
-    <div className="boardStatus">
-      <h1>{ServerStatus[BoardState.status]}</h1>
-    </div>
-  );
-};
 
 export function GameDesk() {
   const [myGrid, setMyGrid] = useState<number[][] | null>(null);
@@ -164,17 +155,17 @@ export function GameDesk() {
     <div className="mainContainer centered">
       <div className="wrapper">
         <div className="logo">
-          <img alt="ABACShip" src={IMAGES.abacship_img}/>
+          <img alt="ABACShip" src={IMAGES.abacship_img} />
         </div>
-        <BoardMode/>
+        <ServerModeStatus />
         <div className="boardsDesk">
           <div className="board1">
             <h1>{`You are ${playerData.name}`}</h1>
-            <Board grid={myGrid} onCellClicked={onMyCellClicked}/>
+            <Board grid={myGrid} onCellClicked={onMyCellClicked} />
           </div>
           <div className="board2">
             <h1>{"Enemy"}</h1>
-            <Board grid={opponentGrid} onCellClicked={onOpponentCellClicked}/>
+            <Board grid={opponentGrid} onCellClicked={onOpponentCellClicked} />
           </div>
         </div>
       </div>
