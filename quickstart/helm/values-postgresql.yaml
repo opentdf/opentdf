@@ -34,7 +34,7 @@ initdbScripts:
         rule         VARCHAR NOT NULL,
         name         VARCHAR NOT NULL UNIQUE, -- ??? COLLATE NOCASE
         description  VARCHAR,
-        values       TEXT[]
+        values_array TEXT[]
     );
 
     CREATE SCHEMA IF NOT EXISTS tdf_entitlement;
@@ -71,7 +71,7 @@ initdbScripts:
     GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entitlement TO tdf_entitlement_manager;
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_entitlement TO tdf_entitlement_manager;
 
-    -- service_entity_object
+    -- claims
     CREATE ROLE tdf_entitlement_reader WITH LOGIN PASSWORD 'myPostgresPassword';
     GRANT USAGE ON SCHEMA tdf_entitlement TO tdf_entitlement_reader;
     GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entitlement TO tdf_entitlement_reader;

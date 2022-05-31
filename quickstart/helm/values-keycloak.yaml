@@ -26,7 +26,7 @@ extraEnv: |
 # - name: KEYCLOAK_PROXY_ADDRESS_FORWARDING
 #   value: "true"
 # - name: KEYCLOAK_FRONTEND_URL
-#   value: "http://localhost:65432/auth"
+#   value: "http://offline.demo.internal/auth"
 # - name: KEYCLOAK_LOG_LEVEL
 #   value: DEBUG
 extraEnvFrom: |
@@ -37,12 +37,13 @@ ingress:
   ingressClassName: nginx
   rules:
     - host: localhost
-      paths:
+      paths: &paths
         - path: /auth(/|$)(.*)
           pathType: Prefix
     - host: host.docker.internal
-      paths:
-        - path: /auth(/|$)(.*)
-          pathType: Prefix
+      paths: *paths
+    - host: offline.demo.internal
+      paths: *paths
+    - host: opentdf.local
+      paths: *paths
   tls: null
-

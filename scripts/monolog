@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Log a message to std err, with some time stamp and level.
+#
+# Example:
+#   monolog INFO "This is a sample log message"
+#   monolog WARN --- "This causes buildkite to render a collapsed group. should I have used warning?"
+#   monolog ERROR +++ "This causes buildkite to render an expanded group"
+#
+# Param 1: Log Level, either TRACE DEBUG INFO WARN ERROR WTF or a number from 0 (trace) to 5 (WTF)
+# Param 2: Log Message (Optional: if not set, reads from stdin)
+# Options: (between 1 and 2): --- and +++ are for buildkite log output control
+# Env Variables:
+#   MONOLOG_LEVEL: Controls how verbose to log. Defaults to 2 (info)
+
+# To override log verbosity, set this to a smaller number.
+# 0 = all, 4 = only severe
+# 2 = default (info)
+MONOLOG_LEVEL=${MONOLOG_LEVEL:-2}
+
+# ## About Levels
+#
+# This can be variously called severity and level, or verbosity.
+#
+# Please refer to https://docs.google.com/document/d/1aZyqY-yPLFoBe-xpXgTyculyG9BExSb_1misinQPRPg
+# for guidance on level selection
+
+# Escape newlines and similar characters.
+json_escape() {
+  if command -v python3 >/dev/null; then
+    printf '%s' "$1" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read(), ensure_ascii=False))'
+  else
+    printf \'%q\' "$1"
+  fi
+}
+
+if [[ -z "$1" ]]; then
+  exit 1
+fi
+
+la() {
+  local all_monolog_levels=(TRACE DEBUG INFO WARN ERROR WTF)
+  local py_log_levels=(NOTSET DEBUG INFO WARNING ERROR CRITICAL)
+  local level_num=
+  local level=INFO
+  case "${1}" in
+    '' | *[!0-9]*)
+      level="${1}"
+      for level_num in "${!all_monolog_levels[@]}"; do
+        if [[ ${all_monolog_levels[$level_num]} == "${1}" ]]; then
+          break
+        elif [[ ${py_log_levels[$level_num]} == "${1}" ]]; then
+          level="${all_monolog_levels[$level_num]}"
+          break
+        fi
+      done
+      ;;
+    *)
+      level_num=$1
+      ((level_num < 0 || level_num > 5)) && level_num=5
+      level=${all_monolog_levels[$level_num]}
+      ;;
+  esac
+
+  if [[ ${MONOLOG_LEVEL} -gt ${level_num} ]]; then
+    if [[ -z "$2" ]]; then
+      cat >/dev/null
+    fi
+    exit 0
+  fi
+
+  # Logging Colors
+  local LIGHT_PURPLE='\033[1;35m'
+  local RED='\033[0;31m'
+  local YELLOW='\033[0;33m'
+  local GREEN='\033[0;32m'
+  local DEFAULT='\033[39m'
+  local NO_COLOR='\033[0m'
+  local style_colors=("$NO_COLOR" "$GREEN" "$NO_COLOR" "$YELLOW" "$RED" "$LIGHT_PURPLE")
+  local color="${style_colors[$level_num]}"
+  local prefix=""
+
+  if [[ "---" == "$2" ]]; then
+    prefix="--- "
+    shift
+  elif [[ "+++" == "$2" ]]; then
+    prefix="+++ "
+    shift
+  fi
+
+  local time
+  local message
+  if [[ -z "$2" ]]; then
+    while read -r line; do
+      time=$(date +"%Y-%m-%d %H:%M:%S")
+      message=$(json_escape "${line}")
+      echo -e "${prefix}${color} [${level}] ${DEFAULT} [${time}] ${message} ${NO_COLOR}" >&2
+    done
+  else
+    time=$(date +"%Y-%m-%d %H:%M:%S")
+    message=$(json_escape "${2}")
+    echo -e "${prefix}${color} [${level}] ${DEFAULT} [${time}] ${message} ${NO_COLOR}" >&2
+  fi
+}
+
+la "${@}"

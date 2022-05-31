@@ -1,0 +1,254 @@
+#!/usr/bin/env bash
+# Generate new client certificates signed with CA.
+#
+# Usage: genkey-client [options]
+#
+# Environment Overrie
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+PROJECT_ROOT="$(cd "$APP_DIR"/../ >/dev/null && pwd)"
+export PATH="$PATH:$APP_DIR"
+
+monolog TRACE "Running [$0${1+ }$*]"
+
+CERTS_DIR="${PROJECT_ROOT}/certs"
+CA_CRT="$CERTS_DIR/ca.crt"
+CA_KEY="$CERTS_DIR/ca.key"
+CA_SERIAL="$CERTS_DIR/ca.srl"
+CLIENT_FILE_BASENAME="client"
+DAYS="1"
+PASS="pass:password"
+
+ALG_RSA="rsa"
+ALG_EC="ec"
+RSA_BITSIZE="2048"
+EC_CURVENAME="secp256r1"
+
+ALGS=("$ALG_RSA" "$ALG_EC")
+ALG=$ALG_RSA
+
+CLIENT_UID="${1:-1909}"
+
+PKG=$(basename "$0")
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  shift
+
+  case "$key" in
+    -h | --help)
+      echo "$PKG - generate client keys for PKI"
+      echo ""
+      echo "$PKG [-h | --help] [-a | --alg <algorithm] [-s | --subj <attribute>] [-f | --file-basename <filename>]"
+      echo ""
+      echo "options:"
+      echo "-h, --help                                show brief help"
+      echo "-a, --alg <algorithm>                     certificate algorithm [${ALGS[*]}] (default: '$ALG_RSA')"
+      echo "-s, --subj <attribute>                    certificate subject (default: '/CN=client.<random string>')"
+      echo "-d, --days <days>                        certificate ttl in days (default: '1')"
+      echo "-f, --file-basename <filename>            client file prefix (default: 'client')"
+      echo ""
+      echo "examples:"
+      echo "  Generate RSA client cert (default bitsize $RSA_BITSIZE)"
+      echo "  $PKG -a $ALG_RSA"
+      echo "  $PKG -a $ALG_RSA:$RSA_BITSIZE"
+      echo ""
+      echo "  Generate EC client cert (default curvename $EC_CURVENAME)"
+      echo "  $PKG -a $ALG_EC"
+      echo "  $PKG -a $ALG_EC:$EC_CURVENAME"
+      echo ""
+      echo "  Generate random client cert"
+      echo "  $PKG"
+      echo "    Certificate Subject: /CN=client.xD9s87"
+      echo "  "
+      echo "  Generate random client cert and specify filename"
+      echo "  $PKG -f \"client-one\""
+      echo "    - client-one.crt"
+      echo "    - client-one.csr"
+      echo "    - client-one.key"
+      echo "    - client-one.p12"
+      echo "  "
+      echo "  "
+      echo "  Generate client cert with short subject"
+      echo "  $PKG -s \"/CN=client1@example.com\""
+      echo "  "
+      echo "  Generate client cert with full subject"
+      echo "  $PKG -s \"/C=Acme, Inc/ST=NY/L=New York/O=IT/OU=Eng\""
+      exit 0
+      ;;
+    -a | --alg)
+      ALG=$1
+      shift
+      if [ "$ALG" = "" ]; then
+        monolog ERROR "-a|--alg requires an algorithm"
+        exit 1
+      fi
+      ;;
+    -s | --subj)
+      ATTR_STR=$1
+      shift
+      if [ "$ATTR_STR" = "" ]; then
+        monolog ERROR "-s|--subj requires a certificate subject"
+        exit 1
+      fi
+      ;;
+    -f | --file-basename)
+      CLIENT_FILE_BASENAME=$1
+      shift
+      if [[ ! "$CLIENT_FILE_BASENAME" ]]; then
+        monolog ERROR "Please specify a filename with the -f parameter"
+        exit 1
+      fi
+      ;;
+    -d | --days)
+      DAYS=$1
+      shift
+      if [[ ! "$DAYS" ]]; then
+        monolog ERROR "Please specify the number of days with the -d parameter"
+        exit 1
+      fi
+      ;;
+    -u | --uid)
+      CLIENT_UID=$1
+      shift
+      if [[ ! "$CLIENT_UID" =~ ^[0-9]+$ ]]; then
+        monolog ERROR "-u|--uid requires a numeric argument"
+        exit 1
+      fi
+      ;;
+    *)
+      monolog ERROR "Unrecognized command parameter: [$key]"
+      exit 1
+      ;;
+  esac
+done
+
+## Algorithm
+ALG_TYPE="${ALG%:*}"
+ALG_VARIANT="${ALG#*:}"
+
+case "$ALG_TYPE" in
+  "$ALG_RSA")
+    # Use default bit size
+    if [ "$ALG_VARIANT" = "" ] || [ "$ALG_VARIANT" = "$ALG_TYPE" ]; then
+      ALG_VARIANT="$RSA_BITSIZE"
+    fi
+    if ! [[ "$ALG_VARIANT" -gt '1023' ]]; then
+      monolog ERROR "Unsupported rsa bitsize, $ALG_VARIANT."
+      exit 1
+    fi
+    NEWKEY_ARG="rsa:$ALG_VARIANT"
+    NEWKEY_ARG_LOG="$NEWKEY_ARG"
+    ;;
+
+  "$ALG_EC")
+    # Use default curvename
+    if [ "$ALG_VARIANT" = "" ] || [ "$ALG_VARIANT" = "$ALG_TYPE" ]; then
+      ALG_VARIANT="$EC_CURVENAME"
+    fi
+    CURVE_FILE=$(openssl ecparam -name $ALG_VARIANT 2>/dev/null)
+    if [ "$CURVE_FILE" = "" ]; then
+      monolog ERROR "Unsupported ec curvename, $ALG_VARIANT."
+      exit 1
+    fi
+    NEWKEY_ARG="ec"
+    NEWKEY_ARG_LOG="ec:$ALG_VARIANT"
+    ;;
+
+  *)
+    monolog ERROR "Unsupported alogrithm type, $ALG_TYPE. Please use a supported algorithm [${ALGS[*]}]"
+    exit 1
+    ;;
+esac
+
+# Cert filenames
+CLIENT_CRT="$CERTS_DIR/${CLIENT_FILE_BASENAME}.crt"
+CLIENT_CSR="$CERTS_DIR/${CLIENT_FILE_BASENAME}.csr"
+CLIENT_KEY="$CERTS_DIR/${CLIENT_FILE_BASENAME}.key"
+CLIENT_P12="$CERTS_DIR/${CLIENT_FILE_BASENAME}.p12"
+
+# CA certs must be created
+if [[ ! -f "$CA_KEY" || ! -f "$CA_CRT" ]]; then
+  monolog ERROR "The CA keypair does not exist. Please run \"genkeys.sh\""
+  exit 1
+fi
+
+if [[ ! "${ATTR_STR}" ]]; then
+  # Otherwise generate a random DN. This probably should be added to the EAS db somehow.
+  ATTR_STR="/CN=client.$(openssl rand -base64 6)"
+fi
+
+_fail() {
+  local rvalue=$?
+  monolog ERROR "$1; [$rvalue]"
+  exit $rvalue
+}
+
+monolog INFO "- Generate client certificate [$NEWKEY_ARG_LOG] (for use with PKI) Subj: [$ATTR_STR] Find at: [$CERTS_DIR/${CLIENT_FILE_BASENAME}]"
+monolog DEBUG "-- Create client key and csr at [$CLIENT_KEY] and [$CLIENT_CSR]"
+if [ "$ALG_TYPE" = "$ALG_EC" ]; then
+  args=(req
+    -new
+    -nodes
+    -sha256
+    -subj "$ATTR_STR"
+    -keyout "$CLIENT_KEY"
+    -out "$CLIENT_CSR")
+  monolog TRACE "Running openssl ${args[*]} \n -newkey $NEWKEY_ARG_LOG"
+  openssl "${args[@]}" \
+    -newkey $NEWKEY_ARG:<(openssl ecparam -name $ALG_VARIANT 2>/dev/null)
+  # 2> >(monolog TRACE) ||
+  # _fail "Unable to create client key and csr"
+else
+  args=(
+    req
+    -new
+    -newkey "$NEWKEY_ARG"
+    -nodes
+    -sha256
+    -subj "$ATTR_STR"
+    -keyout "$CLIENT_KEY"
+    -out "$CLIENT_CSR"
+  )
+  monolog TRACE "Running openssl ${args[*]}"
+  openssl "${args[@]}" \
+    2> >(monolog TRACE) ||
+    _fail "Unable to create client key and csr"
+fi
+
+monolog DEBUG "-- Sign client csr as [$CLIENT_CRT]"
+args=(x509
+  -req
+  -sha256
+  -days "$DAYS"
+  -passin "$PASS"
+  -in "$CLIENT_CSR"
+  -CA "$CA_CRT"
+  -CAkey "$CA_KEY"
+  -CAcreateserial
+  -CAserial "$CA_SERIAL"
+  -out "$CLIENT_CRT")
+monolog TRACE "Running openssl ${args[*]}"
+openssl "${args[@]}" \
+  2> >(monolog TRACE) ||
+  _fail "Unable to sign csr"
+
+monolog DEBUG "-- Create pk12 at [$CLIENT_P12]"
+args=(pkcs12
+  -export
+  -password "$PASS"
+  -inkey "$CLIENT_KEY"
+  -in "$CLIENT_CRT"
+  -certfile "$CA_CRT"
+  -out "$CLIENT_P12")
+monolog TRACE "Running openssl ${args[*]}"
+openssl "${args[@]}" \
+  2> >(monolog TRACE) ||
+  _fail "Unable to create pk12"
+
+chown "$CLIENT_UID" "$CLIENT_CRT"
+chown "$CLIENT_UID" "$CLIENT_CSR"
+chown "$CLIENT_UID" "$CLIENT_KEY"
+chown "$CLIENT_UID" "$CLIENT_P12"
+
+monolog TRACE "Finished [$0${1+ }$*]"

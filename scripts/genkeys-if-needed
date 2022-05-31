@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Runs genkeys scripts if not run yet.
+#
+# Wait, why don't we use make or do?
+
+: "${EAS_UID:=908}"
+: "${KAS_UID:=909}"
+: "${CLIENT_UID:=1909}"
+
+BACKEND_SERVICES_HOSTNAME=${BACKEND_SERVICES_HOSTNAME:="opentdf.local"}
+
+TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+PROJECT_ROOT="$(cd "$TOOLS_DIR"/../ >/dev/null && pwd)"
+CERTS_DIR="${PROJECT_ROOT}/certs"
+export PATH="$PATH:$TOOLS_DIR"
+
+monolog TRACE "Running [$0${1+ }$*]"
+
+if ! cd "${PROJECT_ROOT}"; then
+  echo "Unable to navigate to project root from [${TOOLS_DIR}]"
+  exit 1
+fi
+
+mkdir -p "$CERTS_DIR"
+
+if [ -f "$CERTS_DIR/kas-ec.key" ]; then
+  monolog DEBUG "keyfile found"
+else
+  monolog INFO "Generating keys..."
+  mkdir -p certs
+  ENV_FILE="$(pwd)/certs/tmp-$(date "+%Y-%m-%d-%H.%M.%S").env"
+  echo >"$ENV_FILE"
+  if scripts/genkey-reverse-proxy --env-file "$ENV_FILE" "$BACKEND_SERVICES_HOSTNAME" &&
+    scripts/genkey-apps --env-file "$ENV_FILE" --kasuid "$KAS_UID" &&
+    scripts/genkey-client --uid "$CLIENT_UID" --subj /CN=Alice_1234 --file-basename Alice_1234 &&
+    scripts/genkey-client --uid "$CLIENT_UID" --subj /CN=Charlie_1234 --file-basename Charlie_1234 &&
+    scripts/genkey-client --uid "$CLIENT_UID" --subj /CN=bob_5678 --file-basename bob_5678 &&
+    scripts/genkey-client --uid "$KAS_UID" --alg ec --subj /CN=kas --file-basename kas-ec &&
+    scripts/genkey-client --uid "$CLIENT_UID" --alg ec --subj /CN=Alice_1234 --file-basename Alice_1234-ec &&
+    scripts/genkey-client --uid "$CLIENT_UID" --alg ec --subj /CN=Charlie_1234 --file-basename Charlie_1234-ec &&
+    scripts/genkey-client --uid "$CLIENT_UID" --alg ec --subj /CN=bob_5678 --file-basename bob_5678-ec; then
+    echo "KAS_CLIENT_CERTIFICATE=\"$(cat "$CERTS_DIR/kas-ec.crt")\"" >>"$ENV_FILE"
+    echo "KAS_CLIENT_PRIVATE_KEY=\"$(cat "$CERTS_DIR/kas-ec.key")\"" >>"$ENV_FILE"
+    mv "$ENV_FILE" "$CERTS_DIR/.env"
+    monolog TRACE "Finished [$0${1+ }$*]"
+  else
+    monolog ERROR "genkeys-if-needed failed"
+  fi
+fi

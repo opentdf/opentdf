@@ -3,7 +3,7 @@ serverRootPath: /attributes
 serverPublicName: "Attribute Authority"
 oidc:
   clientId: tdf-attributes
-  externalHost: http://localhost:65432/auth
+  externalHost: http://offline.demo.internal/auth
   internalHost: http://keycloak-http/auth
 ingress:
   enabled: true
@@ -15,6 +15,8 @@ ingress:
       "/api/attributes(/|$)(.*)":
         pathType: Prefix
     host.docker.internal: *paths
+    offline.demo.internal: *paths
+    opentdf.local: *paths
 postgres:
   host: postgresql
   port: 5432
@@ -22,4 +24,4 @@ postgres:
   database: tdf_database
   schema: tdf_attribute
 secretRef:
- name: attributes-secrets
+  name: attributes-secrets
