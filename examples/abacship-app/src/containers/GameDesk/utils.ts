@@ -49,7 +49,6 @@ export const hitGridItem = (myGrid: number[][], rowIdx: number, colIdx: number) 
 };
 
 export const sendBoard = async (player: string) => {
-  localStorage.setItem(player, "1");
   const token = sessionStorage.getItem("token") || "";
   const refreshToken = sessionStorage.getItem("refreshToken") || "";
   postBoard(token, refreshToken, TDFDATA);

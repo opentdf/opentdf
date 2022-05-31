@@ -3,7 +3,7 @@ import { GAME_SERVER_BASE_URL } from "../config";
 import { ServerStatus } from "../recoil-atoms/gameDeskData";
 import { ICheckSquareResponse, IGrandAccess, IServerBoards, IServerPostBoardResponse } from "../interfaces/gameData";
 
-export const axiosRequest = async (requestType: "get" | "post", url:string, bodyData?: any) => {
+export const axiosRequest = async (requestType: "get" | "post" | "put", url:string, bodyData?: any) => {
   try {
     const { data } = await axios[requestType](url, bodyData);
 
@@ -32,5 +32,9 @@ export async function postGrandAccess(dataInfo:IGrandAccess): Promise<ServerStat
 
 export async function requestCheckSquare(rowId:number, colId:number, dataInfo:IGrandAccess ): Promise<ICheckSquareResponse> {
   return axiosRequest("post", `${GAME_SERVER_BASE_URL}/check/square?row=${rowId}&col=${colId}`, dataInfo);
+}
+
+export async function putGameReset(dataInfo:IGrandAccess): Promise<ICheckSquareResponse> {
+  return axiosRequest("post", `${GAME_SERVER_BASE_URL}/reset`, dataInfo);
 }
 

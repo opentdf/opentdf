@@ -56,7 +56,6 @@ export function GameDesk() {
 
   useEffect(() => {
     generateGrids();
-    console.log("Start ping");
     startPing();
 
     return function () {
@@ -78,23 +77,17 @@ export function GameDesk() {
 
   useEffect(() => {
     if (currentServerStatus === ServerStatus.p1_victory || currentServerStatus === ServerStatus.p2_victory) {
-      console.log("Stop ping");
       stopPing();
     }
 
     // SETUP
     if (currentServerStatus === ServerStatus.setup) {
       // prevent future boardNewSetup
-      const player1 = () => localStorage.getItem("player1") || "0";
-      const player2 = () => localStorage.getItem("player2") || "0";
-      // PLAYER 1
-      if (playerData.name === "player1" && player1() === "0") {
-        sendBoard("player1");
-      }
-
-      // PLAYER 2
-      if (playerData.name === "player2" && player2() === "0") {
-        sendBoard("player2");
+      const player = () => localStorage.getItem("player");
+      if (playerData.name !== "" && player() === null) {
+        console.log('Board');
+        sendBoard(playerData.name);
+        localStorage.setItem("player", JSON.stringify(playerData));
       }
     }
 
@@ -164,7 +157,7 @@ export function GameDesk() {
   };
 
   if (myGrid === null || opponentGrid === null) {
-    return null;
+    return (<></>);
   }
 
   return (

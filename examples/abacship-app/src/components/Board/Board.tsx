@@ -9,7 +9,7 @@ interface IBoard {
 }
 
 export function Board({ onCellClicked, grid }: IBoard) {
-  const onCellClickedHandler = (rowIdx: number, colIdx: number) => {
+  const onCellClickHandler = (rowIdx: number, colIdx: number) => {
     if (rowIdx < 0 || colIdx < 0) {
       // An indicator was clicked. Ignore it.
       return;
@@ -45,9 +45,9 @@ export function Board({ onCellClicked, grid }: IBoard) {
       <div className="boardRow" key={rowIdx}>
         {row.map((cell, colIdx) => (
           <div
-            className={`boardItem index${colIdx}-${rowIdx} ${isRevealed(rowIdx, colIdx, grid)}`}
+            className={`boardItem index${colIdx}-${rowIdx} ${isRevealed(rowIdx, colIdx, grid)} ${colIdx!==0 && rowIdx!==0?"item":""}`}
             key={colIdx}
-            onClick={() => onCellClickedHandler(rowIdx - 1, colIdx - 1)}
+            onClick={() => onCellClickHandler(rowIdx - 1, colIdx - 1)}
           >
             {cell}
           </div>

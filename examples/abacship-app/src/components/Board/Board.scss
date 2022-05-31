@@ -12,4 +12,14 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
+  img {
+    width: 48px;
+    height: 48px;
+  }
+}
+.item {
+  &:hover{
+    background-color: black;
+  }
 }
