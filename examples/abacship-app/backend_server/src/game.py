@@ -2,6 +2,8 @@ from pydantic import AnyUrl, BaseSettings, Field, Json, ValidationError, conlist
 from pydantic.main import BaseModel
 from enum import Enum
 from typing import Optional, List, Literal
+from fastapi import HTTPException
+from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
 
 import jwt
 import base64
@@ -67,7 +69,7 @@ class GamePlayer:
                 client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
                 client.enable_console_logging(LogLevel.Error)
 
-                # client.add_data_attribute(board_attr, KAS_URL) # dont add until KAS allOf issue is fixed
+                client.add_data_attribute(board_attr, KAS_URL)
                 client.add_data_attribute(attr_base+str(i)+str(j), KAS_URL)
 
                 encrypted_string = base64.b64encode(client.encrypt_string(self.board[i][j]))
@@ -123,23 +125,34 @@ class Game:
     """
     Setup the players, assign player1 or player2, get username, set board
     """
-    def setupPlayer(self, access_token, board_unencrypted, refresh_token=None):
-        if not self.player1 and not self.player2:
-            name = "player1"
+    def setupPlayer(self, access_token, board_unencrypted, name, refresh_token=None):
+        if name=="player1" and self.player1 is not None:
+            raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Player 1 already set",
+        ) 
+        if name=="player2" and self.player2 is not None:
+            raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Player 2 already set",
+        ) 
+        if name == "player1":
             self.player1 = GamePlayer(name, access_token, refresh_token)
             self.player1.board = board_unencrypted
             self.player1.ships = _getShips(self.player1.board)
             self.player1.guesses = []
-            return name, self.player1.player.username
-        elif self.player1 is not None and not self.player2:
-            name="player2"
+            return self.player1.player.username
+        elif name=="player2":
             self.player2 = GamePlayer(name, access_token, refresh_token)
             self.player2.board = board_unencrypted
             self.player2.ships = _getShips(self.player2.board)
             self.player2.guesses = []
-            return name, self.player2.player.username
+            return self.player2.player.username
         else:
-            raise Error("Both players already set")
+            raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Player name must be player1 or player2",
+        )
         
     """
     Check if a player has won
@@ -169,20 +182,20 @@ def _getShips(board):
     ships = []
     for i in range(len(board)):
         for j in range(len(board[i])):
-            if board[i][j] == SHIP:
+            if board[i][j] != OCEAN:
                 ships.append(str(i)+str(j))
     return ships
 
 """
 Check if board is a valid board
-There must be single battleship (size of 4 cells), 2 cruisers (size 3), 3 destroyers (size 2) and 4 submarines (size 1).
-Any additional ships or missing ships are not allowed.
+There must be one aircraft carrier (size 5), one battleship (size 4), one cruiser (size 3), 2 destroyers (size 2) and 2 submarines (size 1).
 """
 def validBoard(board):
     logger.debug("Validating submitted board")
+    simple_board = [[SHIP if x != OCEAN else x for x in row] for row in board]
     ## basic checks
-    _validateBoard(board)
-    return _checkBoard(board, 0)
+    _validateBoard(simple_board)
+    return _checkBoard(simple_board, 0)
 
 def _checkBoard(currentBoard, shipSizePos):
     if (shipSizePos >= len(SHIP_SIZES)):

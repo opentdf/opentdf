@@ -113,6 +113,12 @@ paths:
             type: string
           name: refresh_token
           in: query
+        - required: true
+          schema:
+            title: Player Name
+            type: string
+          name: player_name
+          in: query
       requestBody:
         content:
           application/json:
@@ -192,29 +198,7 @@ paths:
                   name: player1
                   refresh_token: the refresh token ...
                   access_token: the access token ...
-                full_board:
-                  player1:
-                    - - encryptedstring00
-                      - encryptedstring01
-                      - ...
-                    - - encryptedstring10
-                      - encryptedstring11
-                      - ...
-                    - - ...
-                    - - encryptedstring90
-                      - encryptedstring91
-                      - ...
-                  player2:
-                    - - encryptedstring00
-                      - encryptedstring01
-                      - ...
-                    - - encryptedstring10
-                      - encryptedstring11
-                      - ...
-                    - - ...
-                    - - encryptedstring90
-                      - encryptedstring91
-                      - ...
+                encrypted_string: encrypted_stringXY
                 status: 2
         '422':
           description: Validation Error
@@ -222,6 +206,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /reset:
+    put:
+      summary: Reset Game
+      description: |-
+        Resets game
+        Removes all entitlements from users
+      operationId: reset_game_reset_put
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+              example:
+                status: 1
 components:
   schemas:
     HTTPValidationError:

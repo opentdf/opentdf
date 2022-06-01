@@ -208,7 +208,7 @@ async def get_board():
             "status": 2}}}}
     }
 )
-async def post_board(access_token: str, refresh_token: str, board: conlist(conlist(str, min_items=10, max_items=10), min_items=10, max_items=10)):
+async def post_board(access_token: str, refresh_token: str, player_name: str, board: conlist(conlist(str, min_items=10, max_items=10), min_items=10, max_items=10)):
     """
     submit refresh token and 2D array representation of board (unencrypted)
     returns player information including assigned name and new refresh token,
@@ -231,7 +231,7 @@ async def post_board(access_token: str, refresh_token: str, board: conlist(conli
             detail="Invalid board",
         )
     # store the player information in the game (user name [get from access token], current access token and refresh token?)
-    player_name, username = abacship.setupPlayer(access_token, board, refresh_token)
+    username = abacship.setupPlayer(access_token, board, player_name, refresh_token)
     # assign the attributes to this player
     setupUserEntitlements(username, player_name)
     # encrypt this board
@@ -320,17 +320,7 @@ async def post_board(access_token: str, refresh_token: str, board: conlist(conli
             "refresh_token": "the refresh token ...",
             "access_token": "the access token ...",
             },
-            "full_board": {"player1": [
-            ["encryptedstring00", "encryptedstring01", "..."],
-            ["encryptedstring10", "encryptedstring11", "..."],
-            ["..."],
-            ["encryptedstring90", "encryptedstring91", "..."]],
-            "player2":[
-                ["encryptedstring00", "encryptedstring01", "..."],
-            ["encryptedstring10", "encryptedstring11", "..."],
-            ["..."],
-            ["encryptedstring90", "encryptedstring91", "..."]]
-            },
+            "encrypted_string": "encrypted_stringXY",
             "status": 2}}}}
     }
 )
@@ -394,7 +384,7 @@ async def check_square(player: Player, row: int, col: int):
             "refresh_token": abacship.player1.player.refresh_token,
             "access_token": abacship.player1.player.access_token,
             },
-            "full_board": abacship.getWholeBoard(),
+            "encrypted_string": abacship.getWholeBoard()["player2"][row][col],
             "status": abacship.status
         }
     else:
@@ -423,7 +413,7 @@ async def check_square(player: Player, row: int, col: int):
             "refresh_token": abacship.player2.player.refresh_token,
             "access_token": abacship.player2.player.access_token,
             },
-            "full_board": abacship.getWholeBoard(),
+            "encrypted_string": abacship.getWholeBoard()["player1"][row][col],
             "status": abacship.status
         }
     logger.debug(f"Payload: {payload}")

@@ -31,3 +31,14 @@
   justify-content: center;
   margin: 20px;
 }
+
+.rules {
+  display: flex;
+  justify-content: center;
+  
+  h3 {
+    width: 520px;
+    height: 100px;
+    text-align: center;
+  }
+}

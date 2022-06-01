@@ -140,7 +140,7 @@ export function GameDesk() {
       const _data = {
         access_token: data.player_info.access_token,
         refresh_token: data.player_info.refresh_token,
-        cypher_text: data?.full_board[enemyName][rowIdx][colIdx],
+        cypher_text: data?.encrypted_string,
       };
       console.log("Enemy name = ", enemyName);
       setTextToDecrypt(_data);
@@ -170,6 +170,12 @@ export function GameDesk() {
           </div>
         </div>
         <div className="resetGamePanel"><ResetGameButton /></div>
+        <div className="rules">
+          <h3> 
+          There must be one aircraft carrier (size 5), one battleship (size 4), one cruiser (size 3), 2 destroyers (size 2) and 2 submarines (size 1). 
+          Any additional ships or missing ships are not allowed. To win you must sink all of your opponent's ships.
+          </h3>
+        </div>
       </div>
     </div>
   );

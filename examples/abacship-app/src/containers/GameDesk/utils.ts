@@ -20,9 +20,12 @@ export function revealCell(rowIdx: number, colIdx: number) {
   const data = getTDFData(rowIdx, colIdx);
 
   if (data === "ocean") return CELL_TYPE.OCEAN;
-  if (data === "ship") return CELL_TYPE.PLAYER_ONE;
-  if (data === "ship") return CELL_TYPE.PLAYER_TWO; // yeah , i know , prob i'll delete this
-  return CELL_TYPE.PLAYER_TWO;
+  if (data === "aircraft carrier" || data === "battleship" ||
+  data === "cruiser" || data === "destroyer" ||
+  data === "submarine") return CELL_TYPE.PLAYER_ONE;
+  if (data === "aircraft carrier" || data === "battleship" ||
+  data === "cruiser" || data === "destroyer" ||
+  data === "submarine") return CELL_TYPE.PLAYER_TWO; // yeah , i know , prob i'll delete this
 }
 
 export const hitGridItem = (myGrid: number[][], rowIdx: number, colIdx: number) => {
@@ -51,5 +54,5 @@ export const hitGridItem = (myGrid: number[][], rowIdx: number, colIdx: number) 
 export const sendBoard = async (player: string) => {
   const token = sessionStorage.getItem("token") || "";
   const refreshToken = sessionStorage.getItem("refreshToken") || "";
-  postBoard(token, refreshToken, TDFDATA);
+  postBoard(token, refreshToken, player, TDFDATA);
 };

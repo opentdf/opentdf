@@ -22,13 +22,19 @@ BACKEND_CLIENTID = "abacship"
 BACKEND_CLIENT_SECRET = "123-456"
 
 ## board
+AIRCRAFT = "aircraft carrier"
+BATTLESHIP = "battleship"
+CRUISER = "cruiser"
+DESTROYER = "destroyer"
+SUBMARINE = "submarine"
+SHIPS = [AIRCRAFT, BATTLESHIP, CRUISER, DESTROYER, SUBMARINE]
 SHIP = "ship"
 OCEAN = "ocean"
 SIZE = 10
 HORIZONTAL = 0
 VERTICAL = 1
-SHIP_SIZES = [4, 3, 3, 2, 2, 2]
-NR_OF_ONES = 4
+SHIP_SIZES = [5, 4, 3, 2, 2]
+NR_OF_ONES = 2
 
 from pydantic import BaseModel
 

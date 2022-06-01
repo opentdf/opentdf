@@ -22,8 +22,8 @@ export async function getBoard(): Promise<IServerBoards> {
 }
 
 
-export async function postBoard(access_token: string , refresh_token: string, board: string[][] = [] ): Promise<IServerPostBoardResponse> {
-  return axiosRequest("post", `${GAME_SERVER_BASE_URL}/board?access_token=${access_token}&refresh_token=${refresh_token}`, board);
+export async function postBoard(access_token: string , refresh_token: string, player: string, board: string[][] = [] ): Promise<IServerPostBoardResponse> {
+  return axiosRequest("post", `${GAME_SERVER_BASE_URL}/board?access_token=${access_token}&refresh_token=${refresh_token}&player_name=${player}`, board);
 }
 
 export async function postGrandAccess(dataInfo:IGrandAccess): Promise<ServerStatus> {
