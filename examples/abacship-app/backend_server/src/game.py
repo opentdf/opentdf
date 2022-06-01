@@ -40,13 +40,21 @@ class WholeBoard(BaseModel):
     player1: conlist(conlist(str, min_items=10, max_items=10), min_items=10, max_items=10)
     player2: conlist(conlist(str, min_items=10, max_items=10), min_items=10, max_items=10)
 
+class Turn:
+    player = None
+    guess = None
+
+    def __init__(self, player, row, col):
+        self.guess = (row,col)
+        self.player = player
+
 class GamePlayer:
     board = None
     board_encrypted = None
     ships = None
     guesses = None
     ready = False
-
+    
     def __init__(self, name, access_token, refresh_token=None):
         self.player = Player(name=name, access_token=access_token, refresh_token=refresh_token)
         # self.player.name=name
@@ -103,6 +111,7 @@ class Game:
     opentdf_oidccreds = None
     player1 = None
     player2 = None
+    turns =  None
 
     def __init__(self):
         oidc_creds = OIDCCredentials()
@@ -113,6 +122,7 @@ class Game:
             oidc_endpoint=OIDC_ENDPOINT,
         )
         self.opentdf_oidccreds = oidc_creds
+        self.turns = []
 
     """
     Return whole encrypted board -- whats given to front end
@@ -153,6 +163,21 @@ class Game:
             status_code=BAD_REQUEST,
             detail="Player name must be player1 or player2",
         )
+
+    """
+    A player takes a turn
+    """
+    def recordTurn(self, name, row, col):
+        self.turns.append(Turn(name, row, col))
+
+    """
+    Get the last turn taken
+    """
+    def getLastTurn(self):
+        if not self.turns:
+            return None, None, None
+        last_turn = self.turns[-1]
+        return last_turn.player, last_turn.guess[0], last_turn.guess[1]
         
     """
     Check if a player has won

@@ -20,6 +20,21 @@ paths:
               schema: {}
               example:
                 status: 2
+  /previous:
+    get:
+      summary: Get Last Turn
+      description: Return information about the last turn taken
+      operationId: get_last_turn_previous_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+              example:
+                player: player1
+                row: 1
+                col: 2
   /grant:
     post:
       summary: Grant Attribute

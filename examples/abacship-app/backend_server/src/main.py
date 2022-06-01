@@ -142,12 +142,29 @@ async def get_status():
     logger.debug("Get status")
     return abacship.status
 
+@app.get(
+    "/previous",
+    responses={
+        200: {"content": {"application/json": {"example":{
+            "player": "player1", "row": 1, "col": 2}
+            }}}
+    },
+)
+async def get_last_turn():
+    """
+    Return information about the last turn taken
+    """
+    logger.debug("Get last turn")
+    name, row, col = abacship.getLastTurn()
+    return {"player": name, "row": row, "col": col}
+
 
 @app.post(
     "/grant",
     responses={
         200: {"content": {"application/json": {"example":{
-            "status": 2}}}}
+            "status": 2}
+            }}}
     }
 )
 async def grant_attribute(player: Player):
@@ -278,39 +295,6 @@ async def post_board(access_token: str, refresh_token: str, player_name: str, bo
     logger.debug(f"Payload: {payload}")
     return payload
 
-    # # await other players board -- do not reutrn until game has both boards stored (some boolean)
-    # while not (abacship.player1 is not None and abacship.player2 is not None and abacship.player1.ready and abacship.player2.ready):
-    #     await asyncio.sleep(1)
-    # # set status to p1 turn
-    # if abacship.status == Status.setup:
-    #     abacship.status = Status.p1_turn
-    # # return player information and full board and game status
-    # wholeboard = abacship.getWholeBoard()
-    # payload = {}
-    # if player_name == "player1":
-    #     payload = {
-    #         "player_info": {
-    #         "name": player_name,
-    #         "refresh_token": abacship.player1.player.refresh_token,
-    #         "access_token": abacship.player1.player.access_token,
-    #         },
-    #         "full_board": wholeboard,
-    #         "status": abacship.status
-    #         }
-    # else:
-    #     payload = {
-    #         "player_info": {
-    #         "name": player_name,
-    #         "refresh_token": abacship.player2.player.refresh_token,
-    #         "access_token": abacship.player2.player.access_token,
-    #         },
-    #         "full_board": wholeboard,
-    #         "status": abacship.status
-    #     }
-    # logger.debug(f"Payload: {payload}")
-    # return payload
-
-
 @app.post(
     "/check/square",
     responses={
@@ -377,6 +361,8 @@ async def check_square(player: Player, row: int, col: int):
         victory = abacship.victoryCheck()
         if not victory:
             abacship.status = Status.p2_turn
+        #record the turn
+        abacship.recordTurn(player.name, row, col)
         #construct payload
         payload = {
             "player_info": {
@@ -406,6 +392,8 @@ async def check_square(player: Player, row: int, col: int):
         victory = abacship.victoryCheck()
         if not victory:
             abacship.status = Status.p1_turn
+        #record the turn
+        abacship.recordTurn(player.name, row, col)
         #construct payload
         payload = {
             "player_info": {
