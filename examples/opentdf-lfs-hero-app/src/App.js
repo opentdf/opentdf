@@ -56,9 +56,9 @@ function App() {
     {
       title: 'Actions',
       key: 'actions',
-      render: (text, record) => (
+      render: (text, record, index) => (
         <Space size="middle">
-          <Button onClick={handleDownload}>Download</Button>
+          <Button onClick={() => handleDownload(text, record, index)}>Download</Button>
           <Button>Delete</Button>
         </Space>
       ),
@@ -68,9 +68,10 @@ function App() {
   console.log('keycloak: ', keycloak);
   keycloak.onAuthError = console.log;
 
-  const handleDownload = (text, record) => {
+  const handleDownload = (text, record, index) => {
     console.log('handleDownload() record: ', record);
     console.log('handleDownload() text: ', text);
+    console.log('handleDownload() index: ', index);
   }
 
   const validateJsonStr = (jsonString) => {
