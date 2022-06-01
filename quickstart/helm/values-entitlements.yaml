@@ -31,4 +31,5 @@ secretRef:
  name: entitlements-secrets
 
 image:
+  repo: ghcr.io/opentdf/entitlements
   tag: 0.0.3-pdptest

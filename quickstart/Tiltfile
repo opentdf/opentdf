@@ -116,8 +116,6 @@ helm_resource(
         "-f",
         "helm/values-entitlements.yaml",
         "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
-        "--set",
         "oidc.authorizationUrl=%s/auth/realms/tdf/protocol/openid-connect/auth"
         % EXTERNAL_URL,
         "--set",
