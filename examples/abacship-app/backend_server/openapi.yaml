@@ -63,6 +63,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /random:
+    get:
+      summary: Get Random Board
+      description: Get a randomized board
+      operationId: get_random_board_random_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+              example:
+                board:
+                  - - ocean
+                    - battleship
+                    - ocean
+                    - ...
+                  - - ocean
+                    - battleship
+                    - ocean
+                    - ...
+                  - - ocean
+                    - battleship
+                    - ocean
+                    - ...
+                  - - ...
   /board:
     get:
       summary: Get Board
