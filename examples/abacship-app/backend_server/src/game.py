@@ -6,6 +6,7 @@ from fastapi import HTTPException
 from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
 
 import jwt
+import random
 import base64
 import logging
 from logging.config import dictConfig
@@ -57,9 +58,6 @@ class GamePlayer:
     
     def __init__(self, name, access_token, refresh_token=None):
         self.player = Player(name=name, access_token=access_token, refresh_token=refresh_token)
-        # self.player.name=name
-        # self.player.access_token=access_token
-        # self.player.refresh_token=refresh_token
         decoded = jwt.decode(access_token, options={"verify_signature": False})
         self.player.username=decoded["preferred_username"]
 
@@ -236,8 +234,8 @@ def _removeShipFromBoard(board, ship):
     newBoard = [[None]*SIZE for _ in range(SIZE)]
     for r in range(SIZE):
         for c in range(SIZE):
-            if ((ship.orientation == HORIZONTAL and r == ship.row and (c >= ship.col and c < ship.col + ship.size))
-                    or (ship.orientation == VERTICAL and c == ship.col and (r >= ship.row and r < ship.row + ship.size))):
+            if ((ship.orientation == HORIZONTAL and r == ship.row and (c >= ship.col and c < ship.col + ship.type.size))
+                    or (ship.orientation == VERTICAL and c == ship.col and (r >= ship.row and r < ship.row + ship.type.size))):
                 newBoard[r][c] = OCEAN
             else:
                 newBoard[r][c] = board[r][c]
@@ -295,11 +293,49 @@ def _validateBoard(board):
             status_code=BAD_REQUEST,
             detail="Wrong number of ship pieces",
         )
+    
 
-class Ship:
-    def __init__(self, row, col, size, orientation):
-        self.row = row
-        self.col = col
-        self.size = size
-        self.orientation = orientation
+"""
+Create random board
+"""
+def genRandomBoard():
+    logger.debug("Generating random board")
+    board = [[OCEAN for _ in range(SIZE)] for _ in range(SIZE)]
+    for ship in SHIPS:
+        board = _placeRandom(board, ship)
+    return board
+    
+def _place(board, ship, orientation, row, column):
+    for i in range(ship.size):
+      t = board[row][column]
+      if t != OCEAN:
+        raise Exception
+      if orientation==VERTICAL:
+        row += 1
+      else:
+        column += 1
+    for i in range(ship.size):
+      if orientation==VERTICAL:
+        row -= 1
+      else:
+        column -= 1
+      board[row][column] = ship.name
+    return board
+  
+def _placeRandom(board, ship):
+    logger.debug(f"Trying to place {ship.name}")
+    for i in range(200): #200 - just need a big number
+        try:
+            orientation = random.choice([VERTICAL, HORIZONTAL])
+            lx = 1 if orientation==VERTICAL else ship.size
+            ly = ship.size if orientation==VERTICAL else 1
+            r = random.choice(list(range(SIZE - ly)))
+            c = random.choice(list(range(SIZE - lx)))
+            board = _place(board, ship, orientation, r, c)
+            return board
+        except Exception as e:
+            logger.debug(e)
+            continue
+    raise Exception(f"Unable to place {ship.name}")
+
     

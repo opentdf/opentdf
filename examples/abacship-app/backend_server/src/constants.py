@@ -1,4 +1,5 @@
 import os
+from pydantic import BaseModel
 
 # services
 KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", "http://localhost:65432/auth/")
@@ -21,22 +22,43 @@ AUTH_NAMESPACE = "http://ship.fun"
 BACKEND_CLIENTID = "abacship"
 BACKEND_CLIENT_SECRET = "123-456"
 
+class ShipType:
+    def __init__(self, name, size):
+        self.name = name
+        self.size = size
+
+class Ship:
+    def __init__(self, row, col, size, orientation):
+        self.row = row
+        self.col = col
+        self.type = next(ship for ship in SHIPS if ship.size==size)
+        self.orientation = orientation
+
 ## board
-AIRCRAFT = "aircraft carrier"
-BATTLESHIP = "battleship"
-CRUISER = "cruiser"
-DESTROYER = "destroyer"
-SUBMARINE = "submarine"
-SHIPS = [AIRCRAFT, BATTLESHIP, CRUISER, DESTROYER, SUBMARINE]
+# ship types
+SHIP_MAP = {
+    "aircraft carrier": 5,
+    "battleship": 4,
+    "cruiser": 3,
+    "destroyer": 2,
+    "submarine": 1
+}
+AIRCRAFT = ShipType("aircraft carrier", SHIP_MAP["aircraft carrier"])
+BATTLESHIP = ShipType("battleship", SHIP_MAP["battleship"])
+CRUISER = ShipType("cruiser", SHIP_MAP["cruiser"])
+DESTROYER = ShipType("destroyer", SHIP_MAP["destroyer"])
+SUBMARINE = ShipType("submarine", SHIP_MAP["submarine"])
+# required ships
+SHIPS = [AIRCRAFT, BATTLESHIP, CRUISER, DESTROYER, DESTROYER, SUBMARINE, SUBMARINE]
+SHIP_NAMES = [ship.name for ship in SHIPS]
+SHIP_SIZES = [ship.size for ship in SHIPS if ship != SUBMARINE]
+NR_OF_ONES = SHIPS.count(SUBMARINE)
 SHIP = "ship"
 OCEAN = "ocean"
 SIZE = 10
 HORIZONTAL = 0
 VERTICAL = 1
-SHIP_SIZES = [5, 4, 3, 2, 2]
-NR_OF_ONES = 2
 
-from pydantic import BaseModel
 
 class LogConfig(BaseModel):
     """Logging configuration to be set for the server"""

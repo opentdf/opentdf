@@ -32,7 +32,8 @@ from game import (
     Player,
     WholeBoard,
     Game,
-    validBoard
+    validBoard,
+    genRandomBoard
 )
 from services import (
     setupKeycloak,
@@ -182,6 +183,27 @@ async def grant_attribute(player: Player):
         abacship.status = Status.p2_grants_attr_to_p1
 
     return {"status": abacship.status}
+
+
+@app.get(
+    "/random",
+    responses={
+        200: {"content": {"application/json": {"example":{
+            "board": [
+                ["ocean", "battleship", "ocean", "..."],
+                ["ocean", "battleship", "ocean", "..."],
+                ["ocean", "battleship", "ocean", "..."],
+                ["..."]
+            ]}
+            }}}
+    },
+)
+async def get_random_board():
+    """
+    Get a randomized board
+    """
+    logger.debug("Get random board")
+    return {"board": genRandomBoard()}
     
 
 
