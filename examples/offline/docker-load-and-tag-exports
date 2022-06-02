@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+#  Validate the current exported offline bundle
+#    * Makes sure the last run of build-offline-bundle completed successfully
+#    * Makes sure it is up to date (check for git HEAD digest match)
+#    * TK Loads images into docker agent
+#    * TK Helm installs into a kind cluster and runs KUTTL test
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+
+# Are we running in offline mode (from a ./build/export/bundle folder)?
+if [ -f "${APP_DIR}"/monolog ]; then
+  : "${EXPORT_ROOT:="$(cd "${APP_DIR}/../" >/dev/null && pwd)"}"
+else
+  : "${EXPORT_ROOT:="$(git rev-parse --show-toplevel)/build/export/bundle"}"
+fi
+
+export PATH="$PATH:$EXPORT_ROOT/scripts"
+
+monolog TRACE "Running [$0${1+ }$*] within EXPORT_ROOT=[${EXPORT_ROOT}]"
+
+: "${CONTAINERS_DIR:="${EXPORT_ROOT}/containers"}"
+: "${LOCAL_TOOL:="kind"}"
+
+export LOCAL_TOOL
+
+suffix="$(<"${EXPORT_ROOT}"/BUNDLE_TAG)"
+if [[ ! ${suffix} ]]; then
+  monolog ERROR "Bundle is missing required label metadata"
+  exit 1
+fi
+
+docker-load-from() {
+  prefix="$1"
+  monolog TRACE "docker-load-from [${prefix}]"
+  if ! docker load -i "${prefix}.tar"; then
+    monolog ERROR "offline bundle for [${first}] failed to load"
+    exit 1
+  fi
+  meta=$(<"${prefix}.meta")
+  reponame=${meta%%[:@ ]*}
+  prettytag=${meta##*:}
+  monolog TRACE "docker-load-from [docker tag ${reponame}:{${prettytag},offline}]"
+  if ! docker tag "$reponame:$prettytag" "$reponame:offline"; then
+    monolog ERROR "1st party bundle [${first}] failed to [docker tag $reponame:$prettytag $reponame:offline]"
+    exit 1
+  fi
+}
+
+for first in abacus attributes claims entitlements kas keycloak-bootstrap keycloak; do
+  docker-load-from "${CONTAINERS_DIR}/opentdf-${first}-${suffix}"
+done
+
+for third in kind postgresql ingress-nginx; do
+  docker-load-from "${CONTAINERS_DIR}/third-party-image-${third}-${suffix}"
+done

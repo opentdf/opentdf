@@ -16,7 +16,9 @@ To get started with OpenTDF, check out the [Quickstart](quickstart).
 
 ## Quickstart
 
-Do you want a quick, local demonstration of OpenTDF? See [Quickstart](quickstart)
+Do you want a quick, local demonstration of OpenTDF? See [Quickstart](quickstart).
+
+Do you need to install on an isolated cluster (i.e. an air-gapped intranet)? See [Offline](examples/offline).
 
 ## Integrate
 

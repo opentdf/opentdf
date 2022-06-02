@@ -4,6 +4,15 @@ load("ext://min_tilt_version", "min_tilt_version")
 # The helm_resource extension uses the 'new extensions api' introduced in tilt 0.25
 min_tilt_version("0.25")
 
+# Where the redirect URI should go to, for example
+EXTERNAL_URL = "http://localhost:65432"
+
+# Versions of things backend to pull (attributes, kas, etc)
+BACKEND_IMAGE_TAG = "main"
+BACKEND_CHART_TAG = "0.0.0-sha-e58137b"
+FRONTEND_IMAGE_TAG = "main"
+FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
+
 k8s_yaml(
     helm(
         "./helm/secrets",
@@ -53,7 +62,16 @@ helm_resource(
 helm_resource(
     "attributes",
     "oci://ghcr.io/opentdf/charts/attributes",
-    flags=["--version", "0.0.0-sha-0b804dd", "-f", "helm/values-attributes.yaml"],
+    flags=[
+        "--version",
+        BACKEND_CHART_TAG,
+        "-f",
+        "helm/values-attributes.yaml",
+        "--set",
+        "image.tag=%s" % BACKEND_IMAGE_TAG,
+        "--set",
+        "oidc.externalHost=%s/auth/" % EXTERNAL_URL,
+    ],
     labels="backend",
     resource_deps=["postgresql"],
 )
@@ -61,7 +79,14 @@ helm_resource(
 helm_resource(
     "claims",
     "oci://ghcr.io/opentdf/charts/claims",
-    flags=["--version", "0.0.0-sha-0b804dd", "-f", "helm/values-claims.yaml"],
+    flags=[
+        "--version",
+        BACKEND_CHART_TAG,
+        "-f",
+        "helm/values-claims.yaml",
+        "--set",
+        "image.tag=%s" % BACKEND_IMAGE_TAG,
+    ],
     labels="backend",
     resource_deps=["postgresql"],
 )
@@ -69,7 +94,19 @@ helm_resource(
 helm_resource(
     "entitlements",
     "oci://ghcr.io/opentdf/charts/entitlements",
-    flags=["--version", "0.0.0-sha-0b804dd", "-f", "helm/values-entitlements.yaml"],
+    flags=[
+        "--version",
+        BACKEND_CHART_TAG,
+        "-f",
+        "helm/values-entitlements.yaml",
+        "--set",
+        "image.tag=%s" % BACKEND_IMAGE_TAG,
+        "--set",
+        "oidc.authorizationUrl=%s/auth/realms/tdf/protocol/openid-connect/auth"
+        % EXTERNAL_URL,
+        "--set",
+        "oidc.tokenUrl=%s/auth/realms/tdf/protocol/openid-connect/token" % EXTERNAL_URL,
+    ],
     labels="backend",
     resource_deps=["postgresql"],
 )
@@ -85,7 +122,14 @@ helm_resource(
 helm_resource(
     "kas",
     "oci://ghcr.io/opentdf/charts/kas",
-    flags=["--version", "0.0.0-sha-0b804dd", "-f", "helm/values-kas.yaml"],
+    flags=[
+        "--version",
+        BACKEND_CHART_TAG,
+        "-f",
+        "helm/values-kas.yaml",
+        "--set",
+        "image.tag=%s" % BACKEND_IMAGE_TAG,
+    ],
     labels="backend",
     resource_deps=["attributes", "keycloak"],
 )
@@ -93,15 +137,37 @@ helm_resource(
 helm_resource(
     "keycloak-bootstrap",
     "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
-    flags=["--version", "0.0.0-sha-0b804dd", "-f", "helm/values-bootstrap.yaml"],
+    flags=[
+        "--version",
+        BACKEND_CHART_TAG,
+        "-f",
+        "helm/values-keycloak-bootstrap.yaml",
+        "--set",
+        "externalUrl=%s/" % EXTERNAL_URL,
+        "--set",
+        "image.tag=%s" % BACKEND_IMAGE_TAG,
+    ],
     labels="utility",
     resource_deps=["attributes", "entitlements", "keycloak"],
 )
 
 helm_resource(
     "abacus",
-    "./helm/abacus",
-    flags=["-f", "helm/values-abacus.yaml"],
+    "oci://ghcr.io/opentdf/charts/abacus",
+    flags=[
+        "--version",
+        FRONTEND_CHART_TAG,
+        "-f",
+        "helm/values-abacus.yaml",
+        "--set",
+        "attributes.serverUrl=%s/api/attributes" % EXTERNAL_URL,
+        "--set",
+        "entitlements.serverUrl=%s/api/entitlements" % EXTERNAL_URL,
+        "--set",
+        "image.tag=%s" % FRONTEND_IMAGE_TAG,
+        "--set",
+        "oidc.serverUrl=%s/auth/" % EXTERNAL_URL,
+    ],
     labels="frontend",
     resource_deps=["keycloak-bootstrap"],
 )
@@ -114,5 +180,3 @@ if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
         labels="tests",
         resource_deps=["ingress-nginx", "kas", "keycloak-bootstrap"],
     )
-
-

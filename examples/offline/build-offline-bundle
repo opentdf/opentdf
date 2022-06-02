@@ -1,0 +1,298 @@
+#!/usr/bin/env bash
+# Generate `offline-bundle` zipfile for installing OpenTDF cluster in an intranet.
+#
+# This bundle contains:
+#   * opentdf-service-images.tar, containing all microservices
+#   * third-party-images.tar, useful third party images
+#   * Client libraries and scripts
+#   * TK Helm charts for deploying the servicesin a k8s cluster
+#
+# Parameters:
+#    MONOLOG_LEVEL: 0 = Debug logging
+#    BACKEND_IMAGE_TAG: tag to apply to all backend images (kas, attribute and entity services)
+#    BACKEND_CHART_TAG: tag to apply to all backend charts
+#    FRONTEND_IMAGE_TAG: tag to apply to all frontend images (abacus)
+#    FRONTEND_CHART_TAG: tag to apply to all backend charts
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+PROJECT_ROOT="$(git rev-parse --show-toplevel)"
+export PATH="$PATH:$APP_DIR:$PROJECT_ROOT/scripts"
+
+monolog TRACE "Running [$0${1+ }$*]"
+
+clean_first=
+build_total_image=
+no_first_party=
+no_third_party=
+no_zip=
+
+while [[ $# -gt 0 ]]; do
+  key="$1"
+  shift
+
+  case "$key" in
+    --clean)
+      monolog TRACE "--clean"
+      clean_first=1
+      ;;
+    --oci)
+      monolog TRACE "--oci"
+      build_total_image=1
+      ;;
+    --no-first-party)
+      monolog TRACE "--no-first-party"
+      no_first_party=1
+      ;;
+    --no-third-party)
+      monolog TRACE "--no-third-party"
+      no_third_party=1
+      ;;
+    --no-zip)
+      monolog TRACE "--no-zip"
+      no_zip=1
+      ;;
+    *)
+      monolog ERROR "Unrecognized option: [$key]"
+      exit 1
+      ;;
+  esac
+done
+
+if ! cd "$PROJECT_ROOT"; then
+  monolog ERROR "Unable to find project root [${PROJECT_ROOT}] from APP_DIR=[${APP_DIR}]"
+  exit 1
+fi
+
+today="$(date +%Y-%m-%d)"
+digest="$(git rev-parse --short HEAD)"
+suffix="${today}-${digest}"
+: "${OUTPUT_DIRECTORY:="${PROJECT_ROOT}/build/export"}"
+
+: "${BACKEND_IMAGE_TAG:="main"}"
+: "${BACKEND_CHART_TAG:="0.0.0-sha-e58137b"}"
+: "${FRONTEND_IMAGE_TAG:="main"}"
+: "${FRONTEND_CHART_TAG:="0.0.0-sha-93bb332"}"
+
+OUT_DIR="${OUTPUT_DIRECTORY}/bundle"
+
+if [[ $clean_first ]]; then
+  monolog INFO "Cleaning old bundle folder, [${OUT_DIR}]"
+  if [ ! -d "${OUT_DIR}" ]; then
+    monolog INFO "Directory not found (already clean): [${OUT_DIR}]"
+    exit 1
+  elif ! rm -r "${OUT_DIR}"; then
+    monolog ERROR "Failure when deleting [${OUT_DIR}]"
+    exit 1
+  fi
+fi
+
+mkdir -p "${OUT_DIR}/charts"
+mkdir -p "${OUT_DIR}/lib"
+mkdir -p "${OUT_DIR}/containers"
+
+export BACKEND_IMAGE_TAG
+
+echo "${suffix}" >"$OUT_DIR/BUNDLE_TAG"
+
+# Save an image to a file: repo tag outfile-prefix
+save-image() {
+  monolog TRACE "save-image [$*]"
+  local short_name
+  local name_tag
+  local image
+  short_name="$1"
+  name_tag="$2"
+  image="${short_name}:${name_tag}"
+
+  monolog TRACE "save-image [docker pull $image]"
+  if ! docker pull "$image"; then
+    monolog ERROR "Failed to pull docker image ${image}"
+    exit 1
+  fi
+
+  local outprefix
+  outprefix="$3"
+
+  local path
+  local tar_path
+  local version
+
+  path="${OUT_DIR}/containers/${outprefix}-${suffix}"
+  tar_path="${path}.tar"
+  version="$(docker inspect --format='{{index .RepoDigests 0}}' "${image}")"
+  monolog TRACE "save-image [docker save -o ${tar_path} ${image}]"
+  if ! docker save -o "${tar_path}" "${image}"; then
+    monolog ERROR "Failed to save docker image [${image}] as [${tar_path}]"
+    exit 1
+  fi
+  # Required information for tagging image locally
+  monolog TRACE "save-image [echo $version $image >${path}.meta]"
+  if ! echo "$version" "$image" >"${path}.meta"; then
+    monolog ERROR "Failed to save tag metadata for docker image [${image}] to [${path}.meta]"
+    exit 1
+  fi
+}
+
+export save-image
+
+# TODO(PLAT-1417) add 'storage' once published to ghcr.io
+if [[ ! $no_first_party ]]; then
+  for x in attributes claims entitlements kas keycloak keycloak-bootstrap; do
+    save-image "ghcr.io/opentdf/${x}" "${BACKEND_IMAGE_TAG}" "opentdf-${x}"
+  done
+  # shellcheck disable=SC2043 # Keep this similar to the backend loop
+  for x in abacus; do
+    save-image "ghcr.io/opentdf/${x}" "${FRONTEND_IMAGE_TAG}" "opentdf-${x}"
+  done
+fi
+
+# NOTE: Configure third party bundles to use the latest version manually.
+# To do this, search for the version you want of each of the following pacakges
+# on Docker Hub
+if [[ ! $no_third_party ]]; then
+  # KIND: https://kind.sigs.k8s.io/docs/user/working-offline/
+  # Update URI: https://hub.docker.com/r/kindest/node/tags
+  save-image kindest/node v1.23.5 third-party-image-kind
+
+  # postgresql
+  # Update URI: https://hub.docker.com/r/bitnami/postgresql/tags
+  save-image bitnami/postgresql 12.8.0 third-party-image-postgresql
+  # Keycloak: Since we are bulding a custom image, we don't include that in thirdparty but in primary bundle
+
+  # nginx ingress
+  save-image k8s.gcr.io/ingress-nginx/controller v1.1.1 third-party-image-ingress-nginx
+
+  save-image maven 3.6-jdk-11 third-party-image-maven
+  if ! (save-image virtru/openfire 0.1 third-party-image-openfire); then
+    monolog WARN "Unable to pull openfire. Have you logged in as a virtru user to docker.io?"
+  fi
+fi
+
+# Third party helm charts
+if ! helm pull --repo https://kubernetes.github.io/ingress-nginx --version 4.0.16 --destination "${OUT_DIR}/charts" ingress-nginx; then
+  monolog ERROR "Unable to helm pull ingress-nginx"
+  exit 1
+fi
+if ! helm pull --repo https://codecentric.github.io/helm-charts --version 17.0.1 --destination "${OUT_DIR}/charts" keycloak; then
+  monolog ERROR "Unable to helm pull keycloak"
+  exit 1
+fi
+if ! helm pull --repo https://charts.bitnami.com/bitnami --version 10.16.2 --destination "${OUT_DIR}/charts" postgresql; then
+  monolog ERROR "Unable to helm pull postgresql"
+  exit 1
+fi
+
+# First party helm charts
+for x in attributes claims entitlements kas keycloak-bootstrap; do
+  i="oci://ghcr.io/opentdf/charts/${x}"
+  if ! helm pull "${i}" --version "${BACKEND_CHART_TAG}" --destination "${OUT_DIR}/charts"; then
+    monolog ERROR "Failed to [helm pull ${i} --version $BACKEND_CHART_TAG]"
+    exit 1
+  fi
+done
+# shellcheck disable=SC2043 # Keep this similar to the backend loop
+for x in abacus; do
+  i="oci://ghcr.io/opentdf/charts/${x}"
+  if ! helm pull "${i}" --version "${FRONTEND_CHART_TAG}" --destination "${OUT_DIR}/charts"; then
+    monolog ERROR "Failed to [helm pull ${i} --version $FRONTEND_CHART_TAG]"
+    exit 1
+  fi
+done
+
+# Include an example deployment
+if ! rsync -lmr --safe-links --executability --force quickstart "${OUT_DIR}"; then
+  monolog ERROR "Unable to update quickstart"
+  exit 1
+fi
+
+# Include scripts for helping with things
+if ! rsync -lmr --safe-links --executability --force scripts "${OUT_DIR}"; then
+  monolog ERROR "Unable to update scripts folder"
+  exit 1
+fi
+
+if ! cp examples/offline/docker-load-and-tag-exports "${OUT_DIR}"/scripts; then
+  monolog ERROR "Unable to update image load script"
+  exit 1
+fi
+
+maybe-exit() {
+  local err="$?"
+  if [[ ! $err ]]; then
+    monolog ERROR "$1; err=$err"
+    exit 1
+  fi
+}
+
+# # # DOWNLOAD SOME SDKS
+# TODO(PLAT-1417) Get @opentdf/client from npm
+npm-latest() {
+  local project
+  project="$1"
+  shift
+
+  local NPM_LATEST
+  NPM_LATEST=$(curl -s http://registry.npmjs.org/"${project}"/latest/ | sed 's/.*"tarball":"\([^"]*\).*/\1/')
+
+  local NPM_TGZ
+  NPM_TGZ=$(echo "$NPM_LATEST" | sed 's/.*-\/\(.*\.tgz\)$/\1/')
+  curl -s "https://registry.npmjs.org/${project}/-/$NPM_TGZ" --output "${OUT_DIR}/lib/sdk-$NPM_TGZ"
+  maybe-exit "Failed to get latest of ${project} (${NPM_LATEST}) from NPM, expected at [${NPM_TGZ}]"
+}
+# # TODO: Release client to npm
+# npm-latest @opentdf/client
+
+pip-latest() {
+  local project
+  project="$1"
+  shift
+
+  local deets
+  deets="$(curl -s "https://pypi.org/pypi/${project}/json")"
+  maybe-exit "Getting details of [${project}] failed with $?"
+
+  local version
+  version="$(jq -r '.info.version' <<<"${deets}")"
+  maybe-exit "Getting latest version of [${project}] failed"
+
+  local variants
+  variants=$(jq -r --arg version "$version" '.releases[$version]' <<<"${deets}")
+  maybe-exit "Getting latest version of [${project}] failed"
+
+  local len
+  len=$(jq -r 'length' <<<"$variants")
+  maybe-exit "Surprising variants object"
+  [[ $len ]]
+  maybe-exit "len=[$len]"
+  monolog INFO "Found $len variants of $project $version"
+
+  local filename
+  local url
+  for ((i = 0; i < len; i++)); do
+    filename=$(jq -r --argjson i "$i" '.[$i].filename' <<<"${variants}")
+    url=$(jq -r --argjson i "$i" '.[$i].url' <<<"${variants}")
+    [[ $filename && $url ]]
+    maybe-exit "filename=[$filename] url=[$url]"
+    monolog INFO "Downloading $filename from $url"
+    curl -s "${url}" >"${OUT_DIR}/lib/${filename}"
+    maybe-exit "Failed downloading [$url]"
+  done
+}
+
+pip-latest opentdf
+
+# BUNDLE THAT STUFF UP
+if [[ ! $no_zip ]]; then
+  fname="offline-bundle-${suffix}.tgz"
+  if ! (cd "${OUTPUT_DIRECTORY}" && tar -czf "${fname}" bundle); then
+    monolog ERROR "Failed to export as tgz file"
+    exit 1
+  fi
+  monolog DEBUG "Saved stuff as ${OUTPUT_DIRECTORY}/${fname}"
+fi
+
+echo "${suffix}" >"${OUT_DIR}"/COMPLETED_TAG
+
+if [[ $build_total_image ]]; then
+  docker buildx build -t opentdf/offline-demo:"${suffix}" -f examples/offline/Dockerfile "${OUT_DIR}"
+fi
