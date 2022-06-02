@@ -33,4 +33,5 @@ docker_build(
         sync(".", "/app"),
         run("cd /app && pip install -r requirements.txt", trigger = "./requirements.txt"),
     ],
+    port_forwards=3000,
 )
