@@ -35,7 +35,7 @@ const buttonStyle = {
 };
 
 const getStartedButtonStyle = {
-  marginRight: "1vw",
+  marginRight: "2vw",
   backgroundColor: "white",
   color: "#04A777",
   ...buttonStyle,
@@ -49,7 +49,7 @@ const learnMoreButtonStyle = {
 
 const wrapperStyle = {
   backgroundImage: "linear-gradient(to right, #5EB29E, #1C4880)",
-  padding: "26vh 20vw",
+  padding: "22vh 20vw",
   height: "82vh",
 };
 

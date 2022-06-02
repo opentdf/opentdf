@@ -27,10 +27,12 @@ function NavigationBar() {
   );
 }
 
-const navPadding = { paddingTop: "1vh" };
+const navPadding = { padding: "1vh" };
 
 const rightNavStyle = {
-  padding: "1vh",
+  ...navPadding,
+  paddingRight: "2vh",
+  align: "center",
   color: "white",
   fontWeight: "bold",
   fontSize: "2vh",

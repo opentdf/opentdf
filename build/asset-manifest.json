@@ -1,16 +1,15 @@
 {
   "files": {
-    "main.css": "/static/css/main.d1d1cfa5.css",
-    "main.js": "/static/js/main.475ea3a5.js",
-    "static/js/787.d37de791.chunk.js": "/static/js/787.d37de791.chunk.js",
-    "static/media/opentdf_banner.jpeg": "/static/media/opentdf_banner.3ded8fd1a8da2556229c.jpeg",
-    "index.html": "/index.html",
-    "main.d1d1cfa5.css.map": "/static/css/main.d1d1cfa5.css.map",
-    "main.475ea3a5.js.map": "/static/js/main.475ea3a5.js.map",
-    "787.d37de791.chunk.js.map": "/static/js/787.d37de791.chunk.js.map"
+    "main.css": "/opentdf/static/css/main.1c3bbff2.css",
+    "main.js": "/opentdf/static/js/main.c6761312.js",
+    "static/js/787.d37de791.chunk.js": "/opentdf/static/js/787.d37de791.chunk.js",
+    "index.html": "/opentdf/index.html",
+    "main.1c3bbff2.css.map": "/opentdf/static/css/main.1c3bbff2.css.map",
+    "main.c6761312.js.map": "/opentdf/static/js/main.c6761312.js.map",
+    "787.d37de791.chunk.js.map": "/opentdf/static/js/787.d37de791.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.d1d1cfa5.css",
-    "static/js/main.475ea3a5.js"
+    "static/css/main.1c3bbff2.css",
+    "static/js/main.c6761312.js"
   ]
 }
