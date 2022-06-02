@@ -1,8 +1,8 @@
 export const serverData = {
-  attributes: "https://opentdf.us/v2/attributes",
-  entitlements: "https://opentdf.us/v2/entitlements",
-  access: "https://opentdf.us/kas",
-  authority: "https://keycloak.opentdf.us/auth/",
-  clientId: "localhost-abacus",
-  realm: "opentdf-realm",
+  attributes: "https://localhost:65432/api/attributes",
+  entitlements: "https://localhost:65432/api/entitlements",
+  access: "https://localhost:65432/api/kas",
+  authority: "https://localhost:65432/auth/",
+  clientId: "abacus-web",
+  realm: "tdf",
 };
