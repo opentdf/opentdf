@@ -2,30 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { useKeycloak } from '@react-keycloak/web';
 import { Client, FileClient } from '@opentdf/client';
-import { Button, Input, Layout, Menu, message, Space, Table, Tooltip, Upload } from 'antd';
+import { Button, Divider, Input, Layout, Select, Space, Table, Tooltip, Typography, Upload } from 'antd';
 import { ToolOutlined } from '@ant-design/icons';
-import { UploadOutlined } from '@ant-design/icons';
+import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import fileReaderStream from 'filereader-stream';
-import openTDFLogoRound from './assets/images/opentdf-logo-final-03.png';
-import openTDFLogoText from './assets/images/logo-masked-group.png';
-
+import openTDFLogo from './assets/images/logo-masked-group.png';
+import './App.css';
 
 const { Header, Footer, Content } = Layout;
 const { TextArea } = Input;
 
-
-
-
-
-function App() {
+const App = () => {
   const { keycloak, initialized } = useKeycloak();
   const [opentdfClient, setOpentdfClient] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [columns, setColumns] = useState(tableColumns);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [s3Config, setS3Config] = useState({});
+  const [savedS3Configs, setSavedS3Configs] = useState([{data: 'hi', key: 1},{data: 'there', key: 2}]);
 
-  const CLIENT_CONFIG = {
+  const CLIENT_CONFIG = { // TODO: set this as env vars .etc
     clientId: keycloak.clientId,
     organizationName: keycloak.realm,
     exchange: 'refresh',
@@ -34,18 +29,17 @@ function App() {
     kasEndpoint: 'http://localhost:65432/api/kas',
   };
 
-  const REMOTE_PARAMS = {
-    Bucket: 'tdfcftbucket',
-    credentials: {
-      accessKeyId: 'AKIAVKIEUD7U65JHJJES',
-      secretAccessKey: 'B0SHJZwNQQ7iqVr/c8PnrKryq7hSQbnCjVueRXLo'
+  const tooltipExampleText = `Example: \n\n
+  {
+    "Bucket": "myBucketName",
+    "credentials": {
+      "accessKeyId": "IELVUWIEUD7U99JHPPES",
+      "secretAccessKey": "N7RTPIqNRR7iqRo/a9WnrXryq7hSQvpCjVueRXLo"
     },
-    region: 'us-east-2',
-    signatureVersion: 'v4',
-    s3ForcePathStyle: true
-  };
-
-
+    "region": "us-east-2",
+    "signatureVersion": "v4",
+    "s3ForcePathStyle": true
+  }`;
 
   const tableColumns = [
     {
@@ -58,130 +52,114 @@ function App() {
       key: 'actions',
       render: (text, record, index) => (
         <Space size="middle">
-          <Button onClick={() => handleDownload(text, record, index)}>Download</Button>
-          <Button>Delete</Button>
+          <Button onClick={() => lfsDownload(text, record, index)}>Download/Decrypt</Button>
         </Space>
       ),
     }
   ];
 
-  console.log('keycloak: ', keycloak);
   keycloak.onAuthError = console.log;
-
-  const handleDownload = (text, record, index) => {
-    console.log('handleDownload() record: ', record);
-    console.log('handleDownload() text: ', text);
-    console.log('handleDownload() index: ', index);
-  }
 
   const validateJsonStr = (jsonString) => {
     try {
-      console.log('about to parse: ', jsonString);
       var o = JSON.parse(jsonString);
-      console.log('parsed it: ', o);
       // Handle non-exception-throwing cases:
-      // Neither JSON.parse(false) or JSON.parse(1234) throw errors, hence the type-checking,
+      // Neither JSON.parse(false), JSON.parse(1234), or JSON.parse({}) throw errors, hence the type-checking,
       // but... JSON.parse(null) returns null, and typeof null === "object",
       // so we must check for that, too. Thankfully, null is falsey, so this suffices:
-      if (o && typeof o === "object") {
-          setS3Config(o);
+      if (o && typeof o === "object" && Object.keys(o).length) {
           return o;
       }
     }
     catch (e) {
-      console.log(e);
+      console.error(e);
     }
 
     return false;
   };
 
+
   const handleFileSelect = (file) => {
-    console.log('file: ', file);
     setSelectedFile(file);
     return false;
   }
 
+  const handleS3ConfigSelect = (e) => {
+    console.log('s3 config drop down selection change: ', e);
+  };
+
+  const handleTextBoxChange = async (e) => {
+    await setS3Config(e.target.textContent);
+  }
+
+  const handleSaveS3Config = (e) => {
+    e.preventDefault();
+    console.log('handleSaveS3Config: ', e);
+  };
+
+  const lfsDownload = async (text, record, index) => {
+    toast.success('Download/Decryption started');
+
+    const fileToDecryptName = record.name;
+
+    const s3ConfigJson = validateJsonStr(s3Config);
+
+    const decryptParams = await new Client.DecryptParamsBuilder().setRemoteStore(
+      fileToDecryptName,
+      s3ConfigJson
+    );
+
+    const decryptedFileName = `${fileToDecryptName}.decrypted`;
+
+    const client = new Client.Client(CLIENT_CONFIG);
+
+    let plainTextStream = await client.decrypt(decryptParams);
+
+    plainTextStream
+      .toFile(decryptedFileName)
+      .then(() => {
+        toast.success('Download/Decryption complete');
+      });
+  };
+
   const lfsUpload = async () => {
     try {
       const s3ConfigJson = validateJsonStr(s3Config);
-      console.log('S3 config right after validate: ', s3ConfigJson);
 
       // Checks for falsey values, empty valid objects, and invalid objects
-      if(!s3ConfigJson || (typeof s3ConfigJson === "object" && !Object.keys(s3ConfigJson).length)) {
+      if(!s3ConfigJson) {
         toast.error('Please enter a valid S3 compatible json object.');
       }
       else{
         toast.success('Valid S3 config loaded.');
-        console.log('s3 config: ', s3ConfigJson["a"]);
       }
 
       const client = new Client.Client(CLIENT_CONFIG);
 
       const encryptParams = new Client.EncryptParamsBuilder()
-        // .withStringSource('hello world')
         .withStreamSource(fileReaderStream(selectedFile))
         .withOffline()
         .build();
 
       const cipherTextStream = await client.encrypt(encryptParams);
 
-      cipherTextStream.toRemoteStore(`${selectedFile.name}.tdf`, REMOTE_PARAMS).then(data => {
-        console.log('Upload complete');
-        console.log(data);
+      cipherTextStream.toRemoteStore(`${selectedFile.name}.tdf`, s3ConfigJson).then(data => {
         setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
       });
 
       cipherTextStream.on('progress', progress => {
         console.log(`Uploaded ${progress.loaded} bytes`);
-        console.log(progress);
       });
     } catch (e) {
-
+      console.error(e);
     }
   };
-
-
-  const testClient = async () => {
-    console.log('sah 1');
-    try {
-      console.log('oidcOrigin from app: ', keycloak.authServerUrl);
-
-      const client = new Client.Client(CLIENT_CONFIG);
-      console.log('sah 2');
-      // setOpentdfClient(client);
-      console.log('sah 3');
-      console.log('OpenTDF client: ', client);
-
-      const encryptParams = new Client.EncryptParamsBuilder()
-        .withStringSource('hello world')
-        .withOffline()
-        .build();
-      console.log('sah 4');
-      const cipherTextStream = await client.encrypt(encryptParams);
-      console.log('sah 5');
-      const decryptParams = new Client.DecryptParamsBuilder()
-        .withStreamSource(cipherTextStream)
-        .build();
-      console.log('sah 6');
-      const plainTextStream = await client.decrypt(decryptParams);
-      console.log('sah 7');
-      console.log('Decrypted text: ', await plainTextStream.toString());
-    } catch (err) {
-      console.log(err);
-    }
-  }
 
   useEffect(() => {
     if (initialized) {
       toast.success(`Authenticated: ${keycloak.idToken}`);
-      console.log('keycloak idToken: ', keycloak.idToken);
       sessionStorage.setItem('keycloak', keycloak.token || '');
       const tmp = localStorage.getItem('realm-tmp');
-      console.log('realm: ', keycloak.realm);
-
-      if(keycloak.authenticated) {
-        // testClient();
-      }
 
       if (!keycloak.authenticated && tmp) {
         localStorage.setItem('realm', tmp);
@@ -191,48 +169,80 @@ function App() {
     }
   }, [initialized, keycloak]);
 
-  // useEffect(() => {
-  //   console.log('config log: ', s3Config);
-  // }, [s3Config]);
-
-
-
   return (
     <React.StrictMode>
       <Layout>
         <Header>
           <div>
-            <img className='logo' src={openTDFLogoText} style={{ width: '180px', height: '50px'}} />
+            <img className='logo' src={openTDFLogo} style={{ width: '180px', height: '50px'}} />
             <span style={{ color: 'white', fontSize: 'large' }}> - Remote File Upload</span>
           </div>
         </Header>
         <Content style={{ textAlign: 'center' }}>
-          <div>
-            <br/>
-            <h4>Upload a file as an encrypted TDF to an S3 compatible remote store</h4><br/>
-            {/* <Button type='text' onClick={testClient}>Test</Button> */}
-            <Upload style={{ width: 'calc(20%)' }} multiple={false} maxCount={1} showUploadList={{showRemoveIcon: true}} removeIcon={true} beforeUpload={handleFileSelect}>
-              <Button type='upload' icon={<UploadOutlined />}>Select File</Button>
-            </Upload>
-            <br/>
-            <Input.Group compact>
-              <Tooltip title="prompt text">
-                <Space style={{ display: 'inline-flex'}}>
-                  <span>Enter an S3 compatible configuration object</span>
-                  <ToolOutlined />
+          <br/>
+          <h4>Upload a file as an encrypted TDF to an S3 compatible remote store</h4><br/>
+          {/* <Button type='text' onClick={testClient}>Test</Button> */}
+          <Upload style={{ width: 'calc(20%)' }} multiple={false} maxCount={1} showUploadList={{showRemoveIcon: true}} removeIcon={true} beforeUpload={handleFileSelect}>
+            <Button type='upload' icon={<UploadOutlined />}>Select File</Button>
+          </Upload>
+          <br/>
+          <Input.Group compact style={{ margin: 'auto', width: '80%' }}>
+            <Tooltip title={tooltipExampleText}>
+              <Space style={{ display: 'inline-flex', width: 'calc(50%)', margin: 'auto', justifyContent: 'center' }}>
+                <span>Enter an S3 compatible configuration object</span>
+                <ToolOutlined />
+              </Space>
+            </Tooltip>
+            <TextArea rows={4} style={{ textAlign: 'left', width: 'calc(50%)', display: 'block', margin: 'auto'}} onBlur={(e) => {handleTextBoxChange(e)}} />
+          </Input.Group>
+          <h3 style={{margin: '2px', display: 'inline'}}><span style={{ color: 'red', fontWeight: 'bold' }}>*</span></h3>
+          <Select
+            style={{
+              width: 309,
+            }}
+            placeholder="Add or select remote store"
+            dropdownRender={(menu) => (
+              <>
+                {menu}
+                <Divider
+                  style={{
+                    margin: '8px 0',
+                  }}
+                />
+                <Space
+                  align="center"
+                  style={{
+                    padding: '0 8px 4px',
+                  }}
+                >
+                  <Input placeholder="Remote store name" value={name} onChange={handleS3ConfigSelect} />
+                  <Typography.Link
+                    onClick={handleSaveS3Config}
+                    style={{
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    <PlusOutlined /> Save remote store
+                  </Typography.Link>
                 </Space>
-              </Tooltip>
-              <TextArea rows={4} style={{ width: 'calc(20%)' }} onChange={(e) => setS3Config(e.target.textContent)} placeholder='Enter an S3 compatible configuration object' />
-            </Input.Group>
-            <Button type='primary' onClick={lfsUpload} >Encrypt and Upload</Button>
-            <br/>
-            Uploaded files
-            <Table style={{ width: 'calc(80%)' }} dataSource={uploadedFiles} columns={tableColumns} />;
-          </div>
+              </>
+            )}
+          >
+            {savedS3Configs.map((s3Config) => (
+              <Select.Option key={s3Config.key}>{s3Config.data}</Select.Option>
+            ))}
+          </Select>
+          <br/>
+          <br/>
+          <Button type='primary' onClick={lfsUpload} >Encrypt and Upload</Button>
+          <br/>
+          <Divider plain>Uploaded Files</Divider>
+          <Table locale={{ emptyText: 'No uploaded files' }} style={{ margin: 'auto', width: 'calc(60%)' }} dataSource={uploadedFiles} columns={tableColumns} />
         </Content>
         <Footer>
         </Footer>
       </Layout>
+      <h3 style={{margin: '20px'}}><span style={{ color: 'red', fontWeight: 'bold' }}>*</span> = Optional</h3>
       <ToastContainer
         position="bottom-center"
         autoClose={5000}
