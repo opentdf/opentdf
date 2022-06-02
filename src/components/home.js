@@ -9,7 +9,7 @@ function Home() {
         </p>
         <a
           style={getStartedButtonStyle}
-          href="https://github.com/opentdf/documentation/tree/main/quickstart#opentdf-quickstart"
+          href="https://github.com/opentdf/opentdf/tree/main/quickstart#opentdf-quickstart"
         >
           Get Started
         </a>
