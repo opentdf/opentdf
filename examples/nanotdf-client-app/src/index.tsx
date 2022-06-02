@@ -1,35 +1,20 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.scss';
-import App from './App';
+import React from "react";
+import { createRoot } from 'react-dom/client';
+import "./index.scss";
+import { App } from "./App";
+import reportWebVitals from "./reportWebVitals";
 
-import Keycloak from "keycloak-js";
-import { ReactKeycloakProvider } from "@react-keycloak/web";
-import {serverData} from "./configs";
-// @ts-ignore
-const keycloak = new Keycloak({
-    url: serverData.authority,
-    clientId: serverData.clientId,
-    realm: serverData.realm,
-});
-
-ReactDOM.render(
-  <React.StrictMode>
-      <ReactKeycloakProvider
-          authClient={keycloak}
-          initOptions={{
-              checkLoginIframe: false,
-              responseType: "code id_token token",
-          }}
-          onEvent={(event: unknown, error: unknown) => {
-              console.log("onKeycloakEvent", event, error);
-          }}
-          onTokens={(tokens) => {
-              sessionStorage.setItem("keycloak", tokens.token || "");
-          }}
-      >
-          <App />
-      </ReactKeycloakProvider>
-  </React.StrictMode>,
-  document.getElementById('root')
+const root = createRoot(
+  document.getElementById("root") as HTMLElement
 );
+
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
