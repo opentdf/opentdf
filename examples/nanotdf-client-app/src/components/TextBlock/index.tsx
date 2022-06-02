@@ -1,6 +1,5 @@
 import "./TextBlock.scss";
 import { useEffect, useState } from "react";
-// @ts-ignore
 import { AuthProviders, NanoTDFClient } from "@opentdf/client";
 import { serverData } from "../../configs";
 import { RefreshTokenCredentials } from "@opentdf/client/dist/types/src/nanotdf/types/OIDCCredentials";
@@ -49,7 +48,6 @@ function TextBlock() {
   const [outputText, setOutputText] = useState("");
 
   const { keycloak, initialized } = useKeycloak();
-  // @ts-ignore
   useEffect(() => {
     const { refreshToken } = keycloak;
     if (!client && refreshToken) {
