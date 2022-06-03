@@ -161,11 +161,6 @@ if [[ ! $no_third_party ]]; then
 
   # nginx ingress
   save-image k8s.gcr.io/ingress-nginx/controller v1.1.1 third-party-image-ingress-nginx
-
-  save-image maven 3.6-jdk-11 third-party-image-maven
-  if ! (save-image virtru/openfire 0.1 third-party-image-openfire); then
-    monolog WARN "Unable to pull openfire. Have you logged in as a virtru user to docker.io?"
-  fi
 fi
 
 # Third party helm charts
