@@ -37,5 +37,10 @@ rm -rf backend_server/src/venv
 kind delete cluster --name opentdf
 ```
 
+### Troubleshooting
+- You will need to use 2 seperate windows, one for each player
+- If you get stuck on "Generating board...", hit "Reset Game" in both windows
+- For issues with kind, tilt, or backend services, please see the [troubleshooting section in Quickstart](../../quickstart/README.md#208)
+
 ### Quickstart
 Do you want a quick, local demonstration of OpenTDF? See [Quickstart](../../quickstart)
