@@ -22,4 +22,11 @@
 
 - Install dependencies: `npm i`
 - Start app in local development mode: `npm run serve`
+
+   - Application will be hosted at `http://localhost:3001`
+   - Authenticate via the app's login flow with
+
+      - UserName: `user1`
+      - Password: `testuser123`
+
 - Generate a production bundle: `npm run build`
