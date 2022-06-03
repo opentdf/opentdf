@@ -15,8 +15,9 @@ tilt up
 ```
 
 ### Now you can use Abacship
-Front-end [Link](http://localhost:65432/abacship/).
-</br>
+[Let's go!](http://localhost:65432/abacship/)
+
+
 Use user1 for player 1 :
     </br>- login: user1
     </br>- password: testuser123
