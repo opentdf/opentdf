@@ -1,0 +1,38 @@
+import React from 'react';
+import { useKeycloak } from "@react-keycloak/web";
+import {Avatar, Button} from "antd";
+import { UserOutlined } from '@ant-design/icons';
+import './UserStatus.css';
+
+const UserStatus = () => {
+  const { keycloak } = useKeycloak();
+
+  return (
+    <React.Fragment>
+      {/* <SelectRealm/> */}
+      {keycloak.authenticated && (
+        <>
+          <Avatar className='keycloak-avatar' size={32} icon={<UserOutlined />} />
+          <Button
+            onClick={() => keycloak.logout()}
+            data-test-id="logout-button"
+          >
+            Log out
+          </Button>
+        </>
+      )}
+
+      {!keycloak.authenticated && (
+        <Button
+          type="primary"
+          onClick={() => keycloak.login()}
+          data-test-id="login-button"
+        >
+          Log in
+        </Button>
+      )}
+    </React.Fragment>
+  );
+};
+
+export default UserStatus;

@@ -16,7 +16,6 @@ ReactDom.render(
   <ReactKeycloakProvider
     authClient={keycloak}
     initOptions={{
-      onLoad: 'login-required',
       checkLoginIframe: false,
       responseType: "code id_token token",
     }}

@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { useKeycloak } from '@react-keycloak/web';
 import { Client, FileClient } from '@opentdf/client';
-import { Button, Divider, Input, Layout, Select, Space, Table, Tooltip, Typography, Upload } from 'antd';
+import { Button, Divider, Input, Layout, Select, Space, Spin, Table, Tooltip, Typography, Upload } from 'antd';
 import { ToolOutlined } from '@ant-design/icons';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import fileReaderStream from 'filereader-stream';
+import UserStatus from "./components/UserStatus";
 import openTDFLogo from './assets/images/logo-masked-group.png';
 import './App.css';
 
@@ -17,8 +18,12 @@ const App = () => {
   const [opentdfClient, setOpentdfClient] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [s3Config, setS3Config] = useState({});
-  const [savedS3Configs, setSavedS3Configs] = useState([{data: 'hi', key: 1},{data: 'there', key: 2}]);
+  const [s3Config, setS3Config] = useState('');
+  const [showUploadSpinner, setShowUploadSpinner] = useState(false);
+  const [showDownloadSpinner, setShowDownloadSpinner] = useState(false);
+  const [uploadFileList, setUploadFileList] = useState([]);
+  const [savedS3Configs, setSavedS3Configs] = useState([{name: 'name1', data: 'hi', key: 1},{name: 'name2', data: 'there', key: 2}]);
+  const [newS3Name, setNewS3Name] = useState('');
 
   const CLIENT_CONFIG = { // TODO: set this as env vars .etc
     clientId: keycloak.clientId,
@@ -51,9 +56,11 @@ const App = () => {
       title: 'Actions',
       key: 'actions',
       render: (text, record, index) => (
-        <Space size="middle">
-          <Button onClick={() => lfsDownload(text, record, index)}>Download/Decrypt</Button>
-        </Space>
+        <div className="spinnerContainer">
+          <Spin spinning={showDownloadSpinner}>
+            <Button onClick={() => lfsDownload(text, record, index)}>Download/Decrypt</Button>
+          </Spin>
+        </div>
       ),
     }
   ];
@@ -79,30 +86,58 @@ const App = () => {
   };
 
 
-  const handleFileSelect = (file) => {
+  const handleFileSelect = (file, fileList) => {
     setSelectedFile(file);
+    setUploadFileList(fileList);
     return false;
   }
 
-  const handleS3ConfigSelect = (e) => {
-    console.log('s3 config drop down selection change: ', e);
-  };
 
   const handleTextBoxChange = async (e) => {
-    await setS3Config(e.target.textContent);
+    await setS3Config(e.target.value);
   }
+
+  const handleNewS3ConfigName = async (e) => {
+    await setNewS3Name(e.target.value);
+  };
+
+  const handleS3ConfigSelect = (selectedKey, option) => {
+    const selectedOption = savedS3Configs.find(({key}) => key === parseInt(selectedKey));
+    setS3Config(selectedOption.data);
+  };
 
   const handleSaveS3Config = (e) => {
     e.preventDefault();
-    console.log('handleSaveS3Config: ', e);
+
+    if(!keycloak.authenticated) {
+      toast.error('You must login to perform this action.');
+      return;
+    }
+
+    const s3ConfigJson = validateJsonStr(s3Config);
+
+    // Checks for falsey values, empty valid objects, and invalid objects
+    if(!s3ConfigJson) {
+      toast.error('Please enter a valid S3 compatible json object.');
+      return;
+    }
+
+    setSavedS3Configs([...savedS3Configs, {name: newS3Name, data: s3Config, key: savedS3Configs.length + 1}]);
+    setNewS3Name('');
   };
 
   const lfsDownload = async (text, record, index) => {
-    toast.success('Download/Decryption started');
+
+    if(!keycloak.authenticated) {
+      toast.error('You must login to perform this action.');
+      return;
+    }
 
     const fileToDecryptName = record.name;
 
     const s3ConfigJson = validateJsonStr(s3Config);
+
+    setShowDownloadSpinner(true);
 
     const decryptParams = await new Client.DecryptParamsBuilder().setRemoteStore(
       fileToDecryptName,
@@ -118,12 +153,17 @@ const App = () => {
     plainTextStream
       .toFile(decryptedFileName)
       .then(() => {
-        toast.success('Download/Decryption complete');
+        setShowDownloadSpinner(false);
       });
   };
 
   const lfsUpload = async () => {
     try {
+      if(!keycloak.authenticated) {
+        toast.error('You must login to perform this action.');
+        return;
+      }
+
       const s3ConfigJson = validateJsonStr(s3Config);
 
       // Checks for falsey values, empty valid objects, and invalid objects
@@ -131,8 +171,10 @@ const App = () => {
         toast.error('Please enter a valid S3 compatible json object.');
       }
       else{
-        toast.success('Valid S3 config loaded.');
+        // toast.success('Valid S3 config loaded.');
       }
+
+      setShowUploadSpinner(true);
 
       const client = new Client.Client(CLIENT_CONFIG);
 
@@ -144,6 +186,8 @@ const App = () => {
       const cipherTextStream = await client.encrypt(encryptParams);
 
       cipherTextStream.toRemoteStore(`${selectedFile.name}.tdf`, s3ConfigJson).then(data => {
+        setShowUploadSpinner(false);
+        setUploadFileList([]);
         setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
       });
 
@@ -157,7 +201,7 @@ const App = () => {
 
   useEffect(() => {
     if (initialized) {
-      toast.success(`Authenticated: ${keycloak.idToken}`);
+      keycloak.idToken ? toast.success(`Authenticated: ${keycloak.idToken}`) : null;
       sessionStorage.setItem('keycloak', keycloak.token || '');
       const tmp = localStorage.getItem('realm-tmp');
 
@@ -173,76 +217,68 @@ const App = () => {
     <React.StrictMode>
       <Layout>
         <Header>
-          <div>
-            <img className='logo' src={openTDFLogo} style={{ width: '180px', height: '50px'}} />
-            <span style={{ color: 'white', fontSize: 'large' }}> - Remote File Upload</span>
+          <div className='headerContainer'>
+            <img className='logo' src={openTDFLogo} />
+            <span className='logoTitle'> - Remote File Upload</span>
+            <div className="userStatusContainer">
+              <UserStatus />
+            </div>
           </div>
         </Header>
-        <Content style={{ textAlign: 'center' }}>
+        <Content className='contentContainer'>
           <br/>
           <h4>Upload a file as an encrypted TDF to an S3 compatible remote store</h4><br/>
           {/* <Button type='text' onClick={testClient}>Test</Button> */}
-          <Upload style={{ width: 'calc(20%)' }} multiple={false} maxCount={1} showUploadList={{showRemoveIcon: true}} removeIcon={true} beforeUpload={handleFileSelect}>
+          <Upload className='upload' multiple={false} maxCount={1} fileList={uploadFileList} beforeUpload={handleFileSelect} removeIcon={true}>
             <Button type='upload' icon={<UploadOutlined />}>Select File</Button>
           </Upload>
           <br/>
-          <Input.Group compact style={{ margin: 'auto', width: '80%' }}>
+          <Input.Group className='newS3ConfigInputContainer' compact>
             <Tooltip title={tooltipExampleText}>
-              <Space style={{ display: 'inline-flex', width: 'calc(50%)', margin: 'auto', justifyContent: 'center' }}>
+              <Space className='newS3Tooltip'>
                 <span>Enter an S3 compatible configuration object</span>
                 <ToolOutlined />
               </Space>
             </Tooltip>
-            <TextArea rows={4} style={{ textAlign: 'left', width: 'calc(50%)', display: 'block', margin: 'auto'}} onBlur={(e) => {handleTextBoxChange(e)}} />
+            <TextArea className='newS3TextArea' rows={5} value={s3Config} onChange={handleTextBoxChange}  />
           </Input.Group>
-          <h3 style={{margin: '2px', display: 'inline'}}><span style={{ color: 'red', fontWeight: 'bold' }}>*</span></h3>
+          <h3 className='optionalWarningContainer'><span className='asterisk'>*</span></h3>
           <Select
-            style={{
-              width: 309,
-            }}
+            className='selectDropdown'
             placeholder="Add or select remote store"
+            onSelect={handleS3ConfigSelect}
             dropdownRender={(menu) => (
-              <>
+              <React.Fragment>
                 {menu}
-                <Divider
-                  style={{
-                    margin: '8px 0',
-                  }}
-                />
-                <Space
-                  align="center"
-                  style={{
-                    padding: '0 8px 4px',
-                  }}
-                >
-                  <Input placeholder="Remote store name" value={name} onChange={handleS3ConfigSelect} />
-                  <Typography.Link
-                    onClick={handleSaveS3Config}
-                    style={{
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    <PlusOutlined /> Save remote store
-                  </Typography.Link>
+                <Divider className='divider' />
+                <Space align="center" className='space'>
+                  <Input placeholder="Remote store name" value={newS3Name} onChange={handleNewS3ConfigName} />
+                  <Typography.Link onClick={handleSaveS3Config} className='saveRemoteStoreButton'> <PlusOutlined /> Save remote store</Typography.Link>
                 </Space>
-              </>
+              </React.Fragment>
             )}
           >
             {savedS3Configs.map((s3Config) => (
-              <Select.Option key={s3Config.key}>{s3Config.data}</Select.Option>
+              <Select.Option title={s3Config.name} key={s3Config.key}>{s3Config.name}</Select.Option>
             ))}
           </Select>
           <br/>
           <br/>
-          <Button type='primary' onClick={lfsUpload} >Encrypt and Upload</Button>
+          <div className="spinnerContainer">
+            <Spin spinning={showUploadSpinner}>
+              <Button type='primary' onClick={lfsUpload} >
+                Encrypt and Upload
+              </Button>
+            </Spin>
+          </div>
           <br/>
           <Divider plain>Uploaded Files</Divider>
-          <Table locale={{ emptyText: 'No uploaded files' }} style={{ margin: 'auto', width: 'calc(60%)' }} dataSource={uploadedFiles} columns={tableColumns} />
+          <Table locale={{ emptyText: 'No uploaded files' }} className='uploadedFilesTable' dataSource={uploadedFiles} columns={tableColumns} />
         </Content>
         <Footer>
         </Footer>
       </Layout>
-      <h3 style={{margin: '20px'}}><span style={{ color: 'red', fontWeight: 'bold' }}>*</span> = Optional</h3>
+      <h3 className='optionalWarning'><span className='asterisk'>*</span> = Optional</h3>
       <ToastContainer
         position="bottom-center"
         autoClose={5000}
