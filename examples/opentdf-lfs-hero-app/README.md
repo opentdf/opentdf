@@ -9,7 +9,7 @@
 
 - Once all services are up and running open the `Keycloak` console at `http://localhost:65432/auth` to configure the browser client to support this app
 
-   - UserName: `keycloakadmin`
+   - Username: `keycloakadmin`
    - Password: `mykeycloakpassword`
 
 - Navigate to the `abacus-web` client in the `tdf` realm of `Keycloak` and add `http://localhost:3001/*` to the list of `Valid Redirect URIs`. Be sure to save your changes at the bottom of the form.
@@ -26,7 +26,7 @@
    - Application will be hosted at `http://localhost:3001`
    - Authenticate via the app's login flow with
 
-      - UserName: `user1`
+      - Username: `user1`
       - Password: `testuser123`
 
 - Generate a production bundle: `npm run build`
