@@ -1,17 +1,22 @@
-import logo from './opentdf_banner.jpeg';
-import './App.css';
+import Home from "./components/home";
+import Info from "./components/info";
+import NavigationBar from "./components/nav-bar";
+import { Container, Header, Content, Footer } from "rsuite";
+import "rsuite/dist/rsuite.min.css";
+import { headerFooterStyle as footerStyle } from "./styles";
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <h1>
-          Coming Soon
-        </h1>
-        <p>Our website is under construction. Stay tuned!</p>
-      </header>
-    </div>
+    <Container>
+      <Header>
+        <NavigationBar />
+      </Header>
+      <Content>
+        <Home />
+        <Info className="info-section" />
+      </Content>
+      <Footer style={footerStyle} />
+    </Container>
   );
 }
 
