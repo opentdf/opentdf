@@ -44,7 +44,7 @@ const getStartedButtonStyle = {
 const learnMoreButtonStyle = {
   color: "white",
   backgroundColor: "transparent",
-  "-webkit-appearance": "none",
+  webkitAppearance: "none",
   ...buttonStyle,
 };
 
