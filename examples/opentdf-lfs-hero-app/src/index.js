@@ -20,10 +20,8 @@ ReactDom.render(
       responseType: "code id_token token",
     }}
     onEvent={(event, error) => {
-      console.log('onKeycloakEvent', event, error);
     }}
     onTokens={(tokens) => {
-      console.log('onTokens', tokens);
       sessionStorage.setItem('keycloak', tokens.token || '');
     }}
   >

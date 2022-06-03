@@ -17,12 +17,13 @@ const App = () => {
   const { keycloak, initialized } = useKeycloak();
   const [opentdfClient, setOpentdfClient] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedS3Config, setSelectedS3Config] = useState();
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [s3Config, setS3Config] = useState('');
   const [showUploadSpinner, setShowUploadSpinner] = useState(false);
   const [showDownloadSpinner, setShowDownloadSpinner] = useState(false);
   const [uploadFileList, setUploadFileList] = useState([]);
-  const [savedS3Configs, setSavedS3Configs] = useState([{name: 'name1', data: 'hi', key: 1},{name: 'name2', data: 'there', key: 2}]);
+  const [savedS3Configs, setSavedS3Configs] = useState([{name: 'preloaded test store', data: '{ test store config object }', key: 1}]);
   const [newS3Name, setNewS3Name] = useState('');
 
   const CLIENT_CONFIG = { // TODO: set this as env vars .etc
@@ -102,12 +103,14 @@ const App = () => {
   };
 
   const handleS3ConfigSelect = (selectedKey, option) => {
+    console.log('hi');
     const selectedOption = savedS3Configs.find(({key}) => key === parseInt(selectedKey));
     setS3Config(selectedOption.data);
   };
 
-  const handleSaveS3Config = (e) => {
+  const handleSaveS3Config = async (e) => {
     e.preventDefault();
+    console.log('there');
 
     if(!keycloak.authenticated) {
       toast.error('You must login to perform this action.');
@@ -122,8 +125,8 @@ const App = () => {
       return;
     }
 
-    setSavedS3Configs([...savedS3Configs, {name: newS3Name, data: s3Config, key: savedS3Configs.length + 1}]);
-    setNewS3Name('');
+    await setSavedS3Configs([...savedS3Configs, {name: newS3Name, data: s3Config, key: savedS3Configs.length + 1}])
+    await setNewS3Name('');
   };
 
   const lfsDownload = async (text, record, index) => {
@@ -137,24 +140,34 @@ const App = () => {
 
     const s3ConfigJson = validateJsonStr(s3Config);
 
-    setShowDownloadSpinner(true);
+    if(!s3ConfigJson) {
+      toast.error('Please enter a valid S3 compatible json object.');
+      return;
+    }
 
-    const decryptParams = await new Client.DecryptParamsBuilder().setRemoteStore(
-      fileToDecryptName,
-      s3ConfigJson
-    );
+    try {
+      setShowDownloadSpinner(true);
 
-    const decryptedFileName = `${fileToDecryptName}.decrypted`;
+      const decryptParams = await new Client.DecryptParamsBuilder().setRemoteStore(
+        fileToDecryptName,
+        s3ConfigJson
+      );
 
-    const client = new Client.Client(CLIENT_CONFIG);
+      const decryptedFileName = `${fileToDecryptName}.decrypted`;
 
-    let plainTextStream = await client.decrypt(decryptParams);
+      const client = new Client.Client(CLIENT_CONFIG);
 
-    plainTextStream
-      .toFile(decryptedFileName)
-      .then(() => {
-        setShowDownloadSpinner(false);
-      });
+      let plainTextStream = await client.decrypt(decryptParams);
+
+      plainTextStream
+        .toFile(decryptedFileName)
+        .then(() => {
+          setShowDownloadSpinner(false);
+        });
+    } catch (e) {
+      setShowDownloadSpinner(false);
+      console.error(e);
+    }
   };
 
   const lfsUpload = async () => {
@@ -164,14 +177,17 @@ const App = () => {
         return;
       }
 
+      if(!selectedFile) {
+        toast.error('Please select a file to upload/encrypt.');
+        return;
+      }
+
       const s3ConfigJson = validateJsonStr(s3Config);
 
       // Checks for falsey values, empty valid objects, and invalid objects
       if(!s3ConfigJson) {
         toast.error('Please enter a valid S3 compatible json object.');
-      }
-      else{
-        // toast.success('Valid S3 config loaded.');
+        return;
       }
 
       setShowUploadSpinner(true);
@@ -188,6 +204,7 @@ const App = () => {
       cipherTextStream.toRemoteStore(`${selectedFile.name}.tdf`, s3ConfigJson).then(data => {
         setShowUploadSpinner(false);
         setUploadFileList([]);
+        setSelectedFile(null);
         setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
       });
 
@@ -195,6 +212,7 @@ const App = () => {
         console.log(`Uploaded ${progress.loaded} bytes`);
       });
     } catch (e) {
+      setShowUploadSpinner(false);
       console.error(e);
     }
   };
@@ -213,6 +231,7 @@ const App = () => {
     }
   }, [initialized, keycloak]);
 
+  // TODO: remove <br>'s
   return (
     <React.StrictMode>
       <Layout>
@@ -227,9 +246,10 @@ const App = () => {
         </Header>
         <Content className='contentContainer'>
           <br/>
-          <h4>Upload a file as an encrypted TDF to an S3 compatible remote store</h4><br/>
+          <br/>
+          <h3>Upload a file as an encrypted TDF to an S3 compatible remote store</h3><br/>
           {/* <Button type='text' onClick={testClient}>Test</Button> */}
-          <Upload className='upload' multiple={false} maxCount={1} fileList={uploadFileList} beforeUpload={handleFileSelect} removeIcon={true}>
+          <Upload className='upload' multiple={false} maxCount={1} fileList={uploadFileList} beforeUpload={handleFileSelect} onRemove={e => setUploadFileList([])} removeIcon={true}>
             <Button type='upload' icon={<UploadOutlined />}>Select File</Button>
           </Upload>
           <br/>
@@ -247,12 +267,14 @@ const App = () => {
             className='selectDropdown'
             placeholder="Add or select remote store"
             onSelect={handleS3ConfigSelect}
+            value={selectedS3Config}
+            onChange={val => {setSelectedS3Config(val)}}
             dropdownRender={(menu) => (
               <React.Fragment>
                 {menu}
                 <Divider className='divider' />
                 <Space align="center" className='space'>
-                  <Input placeholder="Remote store name" value={newS3Name} onChange={handleNewS3ConfigName} />
+                  <Input placeholder="Remote store name" onPressEnter={handleSaveS3Config} value={newS3Name} onChange={handleNewS3ConfigName} />
                   <Typography.Link onClick={handleSaveS3Config} className='saveRemoteStoreButton'> <PlusOutlined /> Save remote store</Typography.Link>
                 </Space>
               </React.Fragment>

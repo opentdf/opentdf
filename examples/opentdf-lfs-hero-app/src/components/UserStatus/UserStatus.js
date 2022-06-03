@@ -1,15 +1,20 @@
 import React from 'react';
 import { useKeycloak } from "@react-keycloak/web";
-import {Avatar, Button} from "antd";
+import { Avatar, Button, Spin } from "antd";
 import { UserOutlined } from '@ant-design/icons';
 import './UserStatus.css';
 
 const UserStatus = () => {
-  const { keycloak } = useKeycloak();
+  const { keycloak, initialized } = useKeycloak();
 
   return (
     <React.Fragment>
       {/* <SelectRealm/> */}
+      {!initialized && (
+        <>
+          <Spin size="large" spinning={true} />
+        </>
+      )}
       {keycloak.authenticated && (
         <>
           <Avatar className='keycloak-avatar' size={32} icon={<UserOutlined />} />
@@ -21,8 +26,7 @@ const UserStatus = () => {
           </Button>
         </>
       )}
-
-      {!keycloak.authenticated && (
+      {!keycloak.authenticated && initialized && (
         <Button
           type="primary"
           onClick={() => keycloak.login()}
