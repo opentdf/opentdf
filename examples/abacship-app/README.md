@@ -1,8 +1,6 @@
-## Quickstart
+# ABACship
+ABACship is a two-player battleship-like game implemented using opentdf and ABAC (attribute based access control). The visibility of each square on the board is controlled using attributes and entitlements. 
 
-Do you want a quick, local demonstration of OpenTDF? See [Quickstart](../../quickstart)
-
-### Spinning Up the Game
 ### Create cluster
 
 ```
@@ -16,19 +14,16 @@ kind create cluster --name opentdf
 tilt up
 ```
 
-### Start backend
-Follow game server steps [Link](backend_server).
-
 ### Now you can use Abacship
 Front-end [Link](http://localhost:65432/abacship/).
 </br>
 Use user1 for player 1 :
-</br>login: user1
-</br>password: testuser123
+    </br>- login: user1
+    </br>- password: testuser123
 
 Use user2 for player 2 :
-</br>login: user2
-</br>password: testuser123
+    </br>- login: user2
+    </br>- password: testuser123
 
 
 ### Clean up
@@ -39,5 +34,7 @@ NOTE: Running kind delete will wipe your local cluster and any data associated w
 tilt down
 rm -rf backend_server/src/venv
 kind delete cluster --name opentdf
-pip3 uninstall opentdf
 ```
+
+### Quickstart
+Do you want a quick, local demonstration of OpenTDF? See [Quickstart](../../quickstart)
