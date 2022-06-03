@@ -53,4 +53,4 @@ watchgod==0.8.1
 websockets==10.2
 python-keycloak==0.27.0
 
-opentdf
+opentdf==0.7.3
