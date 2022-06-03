@@ -65,7 +65,7 @@ class LogConfig(BaseModel):
 
     LOGGER_NAME: str = "abacship"
     LOG_FORMAT: str = "%(levelprefix)s | %(asctime)s | %(message)s"
-    LOG_LEVEL: str = "DEBUG"
+    LOG_LEVEL: str = os.getenv("SERVER_LOG_LEVEL", "DEBUG")
 
     # Logging config
     version = 1

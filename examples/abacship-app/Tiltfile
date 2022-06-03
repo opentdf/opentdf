@@ -11,10 +11,33 @@ k8s_yaml("kubernetes.yaml")
 k8s_resource(
     "opentdf-abacship",
     resource_deps = ["keycloak-bootstrap"],
-    labels="frontend",
+    labels="abacship",
 )
 
 docker_build(
     "opentdf/abacship",
     "."
 )
+
+local_resource(
+    "opentdf-abacship-backend",
+    cmd = "./backend_server/setup_venv.sh",
+    serve_cmd = "cd backend_server/src && \
+    source ./venv/bin/activate && \
+    python3 -m uvicorn main:app --reload --port 4060",
+    labels="abacship",
+    resource_deps = ["keycloak-bootstrap"],
+    allow_parallel=True
+)
+
+# k8s_yaml("backend_server/kubernetes.yaml")
+# k8s_resource(
+#     "opentdf-abacship-backend",
+#     resource_deps = ["keycloak-bootstrap"],
+#     labels="abacship",
+# )
+
+# docker_build(
+#     "opentdf/abacship-backend",
+#     "./backend_server"
+# )
