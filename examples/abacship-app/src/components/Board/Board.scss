@@ -1,0 +1,25 @@
+.boardRow{
+  display: flex;
+}
+.boardItem {
+  height: 50px;
+  width: 50px;
+  transition: transform 1s;
+  transform-style: preserve-3d;
+  cursor: pointer;
+  backface-visibility: hidden;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  img {
+    width: 48px;
+    height: 48px;
+  }
+}
+.item {
+  &:hover{
+    background-color: black;
+  }
+}

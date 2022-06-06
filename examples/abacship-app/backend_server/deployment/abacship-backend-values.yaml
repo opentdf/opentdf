@@ -1,0 +1,35 @@
+logLevel: DEBUG
+serverPublicName: "ABACship Backend"
+serverRootPath: /
+
+image:
+  pullPolicy: IfNotPresent
+  name: opentdf/abacship-backend
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+
+service:
+  type: ClusterIP
+  port: 4060
+
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  className: nginx
+  hosts:
+    localhost: &paths
+      "/abacship-backend(/|$)(.*)":
+        pathType: Prefix
+    host.docker.internal: *paths
+
+# ingress:
+#   enabled: true
+#   className: nginx
+#   hosts:
+#     - host: localhost
+#       paths:
+#         - path: /abacship-backend(/|$)(.*)
+#           pathType: Prefix

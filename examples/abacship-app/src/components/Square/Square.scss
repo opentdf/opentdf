@@ -1,0 +1,19 @@
+.unknown-value {
+    opacity: 1;
+    display: block;
+}
+
+.revealed {
+    transform: rotateY(360deg);
+}
+
+
+.value-hidden {
+    opacity: 0;
+    display: none;
+}
+
+.actual-value {
+    opacity: 1;
+    transform: rotateY(360deg);
+}

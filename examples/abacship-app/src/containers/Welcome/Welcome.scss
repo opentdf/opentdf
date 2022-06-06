@@ -1,0 +1,58 @@
+.container {
+  display: grid;
+  grid-template-columns: 1fr 500px 1fr;
+  grid-template-rows: 1fr 400px 1fr;
+  height: 100%;
+
+  h1 {
+    font-size: 42px;
+  }
+
+  h2 {
+    font-size: 32px;
+  }
+
+  .content {
+    grid-column: 2/3;
+    grid-row: 2/3;
+    justify-self: center;
+    align-self: center;
+    text-align: center;
+
+    p {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 24px;
+    }
+
+    footer {
+      button {
+        padding: 16px 36px;
+        margin: 5px;
+        color: #FFFFFF;
+        border: 0;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .player1 {
+        background-color: #459AE2;
+      }
+
+      .player2 {
+        background-color: #5EB29E;
+      }
+    }
+  }
+
+  .logo {
+    display: flex;
+    justify-content: center;
+
+    img {
+      width: 520px;
+      height: 100px;
+    }
+    margin-bottom: 60px;
+  }
+}
