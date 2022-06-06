@@ -15,7 +15,6 @@ export function Square({type}:{type:number}) {
             <img alt="Unknown" src={IMAGES.unknown_img} className={type === CELL_TYPE.UNKNOWN ? "unknown-value" : "unknown-value value-hidden"} />
             <img alt="Ocean" src={IMAGES.ocean_img} className={type === CELL_TYPE.OCEAN ? "actual-value" : "value-hidden"} />
             <img alt="Player One" src={IMAGES.player_one_img} className={type === CELL_TYPE.PLAYER_ONE ? "actual-value" : "value-hidden"} />
-            <img alt="Player Two" src={IMAGES.player_two_img} className={type === CELL_TYPE.PLAYER_TWO ? "actual-value" : "value-hidden"} />
         </>
     );
 }
