@@ -1,9 +1,9 @@
 import { atom } from "recoil";
 
 export interface IPlayerState {
-  id:string;
-  name:string;
-  enemyName:string;
+  id: string;
+  name: string;
+  enemyName: string;
 }
 
 export const playerState = atom({
@@ -11,7 +11,7 @@ export const playerState = atom({
   default: {
     id: "",
     name: "",
-    enemyName:"",
+    enemyName: "",
   },
 });
 

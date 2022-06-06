@@ -6,13 +6,13 @@ import { postBoard } from "../../services/axios";
 const { SOUNDS } = ASSETS_LIST;
 
 export function getAudioForCell(cell: number) {
-    if (cell === CELL_TYPE.OCEAN) {
-        return new Audio(`${SOUNDS.splash_sound}`);
-    }
-    if (cell === CELL_TYPE.PLAYER_ONE || cell === CELL_TYPE.PLAYER_TWO) {
-        return new Audio(`${SOUNDS.explosion_sound}`);
-    }
-    return null;
+  if (cell === CELL_TYPE.OCEAN) {
+    return new Audio(`${SOUNDS.splash_sound}`);
+  }
+  if (cell === CELL_TYPE.PLAYER_ONE || cell === CELL_TYPE.PLAYER_TWO) {
+    return new Audio(`${SOUNDS.explosion_sound}`);
+  }
+  return null;
 }
 
 export function revealCell(rowIdx: number, colIdx: number) {
@@ -56,3 +56,14 @@ export const sendBoard = async (player: string) => {
   const refreshToken = sessionStorage.getItem("refreshToken") || "";
   postBoard(token, refreshToken, player, TDFDATA);
 };
+
+
+function check() {
+  // const urksib = 7.62;
+  // const privat = 6.822;
+  const pr = 1000 * privat;
+  const uk = 1000 * urksib;
+
+  console.log("Ukrsib 1000zl =", uk, " UAH");
+  console.log("Privat 1000zl =", pr, " UAH + %transfer = ", pr*0.01);
+}

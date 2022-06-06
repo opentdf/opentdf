@@ -14,8 +14,8 @@ COPY public/ public/
 COPY src/ src/
 COPY tsconfig.json/ .
 COPY webpack.config.js/ .
-RUN npm run build
-#COPY dist/ dist/
+#RUN npm run build
+COPY dist/ dist/
 
 # server - nginx alpine
 FROM nginx:stable-alpine as server

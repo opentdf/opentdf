@@ -155,9 +155,6 @@ export function GameDesk() {
   return (
     <div className="mainContainer centered">
       <div className="wrapper">
-        <div className="logo">
-          <img alt="ABACShip" src={IMAGES.abacship_img} />
-        </div>
         <ServerModeStatus />
         <div className="boardsDesk">
           <div className="board1">

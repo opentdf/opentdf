@@ -1,5 +1,5 @@
 {
-  "name": "hackathon_2021_2",
+  "name": "Abacship",
   "version": "1.0.0",
   "description": "",
   "main": "./dist/main.*.bundle.js",
@@ -20,6 +20,7 @@
     "babel-loader": "^8.2.3",
     "css-loader": "^6.7.1",
     "html-webpack-plugin": "^5.5.0",
+    "prettier": "^2.6.2",
     "sass": "^1.51.0",
     "sass-loader": "^12.6.0",
     "style-loader": "^3.3.1",

@@ -17,13 +17,42 @@
     grid-row: 2/3;
     justify-self: center;
     align-self: center;
+    text-align: center;
+
+    p {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 24px;
+    }
 
     footer {
       button {
-        padding: 10px 20px;
+        padding: 16px 36px;
         margin: 5px;
-        // background-color: white;
+        color: #FFFFFF;
+        border: 0;
+        cursor: pointer;
+        font-size: 16px;
+      }
+
+      .player1 {
+        background-color: #459AE2;
+      }
+
+      .player2 {
+        background-color: #5EB29E;
       }
     }
+  }
+
+  .logo {
+    display: flex;
+    justify-content: center;
+
+    img {
+      width: 520px;
+      height: 100px;
+    }
+    margin-bottom: 60px;
   }
 }
