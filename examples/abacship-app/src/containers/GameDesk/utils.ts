@@ -56,14 +56,3 @@ export const sendBoard = async (player: string) => {
   const refreshToken = sessionStorage.getItem("refreshToken") || "";
   postBoard(token, refreshToken, player, TDFDATA);
 };
-
-
-function check() {
-  // const urksib = 7.62;
-  // const privat = 6.822;
-  const pr = 1000 * privat;
-  const uk = 1000 * urksib;
-
-  console.log("Ukrsib 1000zl =", uk, " UAH");
-  console.log("Privat 1000zl =", pr, " UAH + %transfer = ", pr*0.01);
-}
