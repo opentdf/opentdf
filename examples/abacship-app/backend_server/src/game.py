@@ -9,6 +9,7 @@ import jwt
 import random
 import base64
 import logging
+import requests
 from logging.config import dictConfig
 import sys
 from opentdf import NanoTDFClient, OIDCCredentials, LogLevel
@@ -69,18 +70,27 @@ class GamePlayer:
         encrypted_board = []
         attr_base = f"{AUTH_NAMESPACE}/attr/{self.player.name}/value/"
         board_attr = attr_base + "board"
+
+        #get kas public key
+        resp = requests.get(KAS_URL+KAS_PUB_KEY_URL)
+        kas_key_string = resp.json()
+        kas_key_string = kas_key_string.replace("\\n", "\n")
+
         for i in range(len(self.board)):
             encrypted_board.append([])
             for j in range(len(self.board[i])):
-                client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
+                client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=EXTERNAL_KAS_URL)
                 client.enable_console_logging(LogLevel.Error)
 
-                client.add_data_attribute(board_attr, KAS_URL)
-                client.add_data_attribute(attr_base+str(i)+str(j), KAS_URL)
+                client.add_data_attribute(board_attr, EXTERNAL_KAS_URL)
+                client.add_data_attribute(attr_base+str(i)+str(j), EXTERNAL_KAS_URL)
 
-                encrypted_string = base64.b64encode(client.encrypt_string(self.board[i][j]))
+                client.set_decrypter_public_key(kas_key_string)
 
-                encrypted_board[i].append(encrypted_string)
+                encrypt_string = client.encrypt_string(self.board[i][j])
+                encoded_string = base64.b64encode(encrypt_string)
+
+                encrypted_board[i].append(encoded_string)
 
         self.board_encrypted = encrypted_board
         self.ready = True

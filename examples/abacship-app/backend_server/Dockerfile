@@ -27,6 +27,7 @@ ENV ATTRIBUTES_URL "http://attributes:4020"
 ENV OIDC_ENDPOINT "http://keycloak-http"
 ENV KAS_URL "http://kas:8000"
 ENV KEYCLOAK_URL "http://keycloak-http/auth/"
+ENV EXTERNAL_KAS_URL "http://localhost:65432/api/kas"
 
 
 ENTRYPOINT python3 -m uvicorn \

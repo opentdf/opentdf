@@ -12,6 +12,9 @@ ENTITLEMENTS_URL = os.getenv("ENTITLEMENTS_URL", "http://localhost:65432/api/ent
 ATTRIBUTES_URL = os.getenv("ATTRIBUTES_URL","http://localhost:65432/api/attributes")
 OIDC_ENDPOINT = os.getenv("OIDC_ENDPOINT", "http://localhost:65432")
 KAS_URL = os.getenv("KAS_URL", "http://localhost:65432/api/kas")
+EXTERNAL_KAS_URL = os.getenv("EXTERNAL_KAS_URL", "http://localhost:65432/api/kas")
+
+KAS_PUB_KEY_URL = "/kas_public_key?algorithm=ec:secp256r1"
 
 # to get authToken for posting attributes and entitlements
 SAMPLE_USER = "testuser@virtru.com"
