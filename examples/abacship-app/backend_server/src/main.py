@@ -67,7 +67,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origin_regex="http://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -126,7 +126,8 @@ class ProbeType(str, Enum):
 
 @app.get("/healthz", status_code=NO_CONTENT, include_in_schema=False)
 async def read_liveness(probe: ProbeType = ProbeType.liveness):
-    pass
+    if probe == ProbeType.readiness:
+        logger.info("Readiness")
 
 @app.get(
     "/status",

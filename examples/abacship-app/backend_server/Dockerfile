@@ -5,7 +5,7 @@ ARG ALPINE_VERSION=3.15
 
 # stage - build
 # FROM python:${PY_VERSION}-alpine${ALPINE_VERSION} AS build
-FROM python:${PY_VERSION}-slim-buster as build
+FROM python:${PY_VERSION} as build
 
 WORKDIR /build
 
@@ -22,27 +22,12 @@ ENV SERVER_PUBLIC_NAME ""
 ENV SERVER_LOG_LEVEL "DEBUG"
 
 #Endpoints
-# ENV ENTITLEMENTS_URL "http://entitlements:4030"
-# ENV ATTRIBUTES_URL "http://attributes:4020" 
-# ENV OIDC_ENDPOINT "http://keycloak-http"
-# ENV KAS_URL "http://kas:8000"
-# ENV KEYCLOAK_URL "http://keycloak-http/auth"
+ENV ENTITLEMENTS_URL "http://entitlements:4030"
+ENV ATTRIBUTES_URL "http://attributes:4020" 
+ENV OIDC_ENDPOINT "http://keycloak-http"
+ENV KAS_URL "http://kas:8000"
+ENV KEYCLOAK_URL "http://keycloak-http/auth/"
 
-# ENV ENTITLEMENTS_URL "http://localhost:65432/api/entitlements"
-# ENV ATTRIBUTES_URL "http://localhost:65432/api/attributes"
-# ENV OIDC_ENDPOINT "http://localhost:65432"
-# ENV KAS_URL "http://localhost:65432/api/kas"
-# ENV KEYCLOAK_URL "http://localhost:65432/auth/"
-
-
-ENV ENTITLEMENTS_URL "http://host.docker.internal:65432/api/entitlements"
-ENV ATTRIBUTES_URL "http://host.docker.internal:65432/api/attributes"
-ENV OIDC_ENDPOINT "http://host.docker.internal:65432"
-ENV KAS_URL "http://host.docker.internal:65432/api/kas"
-ENV KEYCLOAK_URL "http://host.docker.internal:65432/auth/"
-
-
-EXPOSE 4060
 
 ENTRYPOINT python3 -m uvicorn \
     --host 0.0.0.0 \
