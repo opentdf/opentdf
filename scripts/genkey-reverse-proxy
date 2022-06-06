@@ -1,0 +1,200 @@
+#!/usr/bin/env bash
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+PROJECT_ROOT="$(cd "$APP_DIR"/../ >/dev/null && pwd)"
+export PATH="$PATH:$APP_DIR"
+
+monolog TRACE "Running [$0${1+ }$*]"
+
+CERTS_DIR="${PROJECT_ROOT}/certs"
+ENV_FILE="$CERTS_DIR/.env"
+
+CA_CRT="$CERTS_DIR/ca.crt"
+CA_KEY="$CERTS_DIR/ca.key"
+CA_SERIAL="$CERTS_DIR/ca.srl"
+PROXY_CRT="$CERTS_DIR/reverse-proxy.crt"
+PROXY_CSR="$CERTS_DIR/reverse-proxy.csr"
+PROXY_KEY="$CERTS_DIR/reverse-proxy.key"
+
+PKG=$(basename "$0")
+while test $# -gt 0; do
+  case "$1" in
+    -h | --help)
+      echo "$PKG - generate self-signed keys for reverse proxy and CA and sign with CA"
+      echo ""
+      echo "$PKG [-s|--subj <attribute>] [-c|--ca-cn] [--no-ca] hostname"
+      echo ""
+      echo "options:"
+      echo "-h, --help                                show brief help"
+      echo "-s, --subj <attribute>                    certificate subject (CN will be appended)"
+      echo "-c, --ca-cn                               set the CA common name"
+      echo "--no-ca                                   do not create CA (will not sign)"
+      echo ""
+      echo "arguments:"
+      echo "hostname                                  the hostname of the reverse proxy"
+      echo ""
+      echo "examples:"
+      echo "Generate server keys for example.com and ca for ca.example.com"
+      echo "$PKG \"example.com\""
+      echo ""
+      echo "Generate server and CA keys with attribute string"
+      echo "$PKG --subj \"/C=Acme, Inc/ST=NY/L=New York/O=IT/OU=Eng\" example.com"
+      echo ""
+      echo "Generate server keys for example.com and CA for ca-example.com"
+      echo "$PKG -ca-cn ca-example.com \"example.com\""
+      echo ""
+      echo "Generate server with no CA"
+      echo "$PKG --no-ca example.com"
+      exit 0
+      ;;
+    --env-file)
+      ENV_FILE="$2"
+      shift 2
+      ;;
+    -s | --subj)
+      shift
+      ATTR_STR=$1
+      REGEX="/CN=.*$"
+      if [[ "$ATTR_STR" =~ $REGEX ]]; then
+        monolog ERROR "Do not include Common Name in attribute string. Url will be used."
+        exit 1
+      fi
+      if [ "$ATTR_STR" = "" ]; then
+        monolog ERROR "-s|--subj requires a certificate subject"
+        exit 1
+      fi
+      shift
+      ;;
+    -c | --ca-cn)
+      shift
+      CA_CN=$1
+      if [ "$CA_CN" = "" ]; then
+        monolog ERROR "--ca-cn requires a common name"
+        exit 1
+      fi
+      shift
+      ;;
+    --no-ca)
+      NO_CA=true
+      shift
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+# Get argument
+if [ "$1" = "" ]; then
+  monolog ERROR "Missing reverse-proxy hostname (e.g. example.com)"
+  exit 1
+fi
+CN=$1
+
+# If CA common name is not set
+if [ ! "$CA_CN" ]; then
+  CA_CN="ca.$CN"
+fi
+
+_fail() {
+  local rvalue=$?
+  monolog ERROR "$1; [$rvalue]"
+  exit $rvalue
+}
+
+# If CA is needed
+if [ "$NO_CA" != true ]; then
+  monolog INFO "- Generate CA for PKI ($CA_CN)"
+  monolog TRACE "-- Subj: [$ATTR_STR/CN=$CA_CN], Key: [$CA_KEY], CRT: [$CA_CRT]"
+  args=(req
+    -x509
+    -nodes
+    -newkey rsa:2048
+    -subj "$ATTR_STR/CN=$CA_CN"
+    -keyout "$CA_KEY"
+    -out "$CA_CRT"
+    -days 365)
+  monolog TRACE "Running openssl [${args[*]}]"
+  openssl "${args[@]}" \
+    2> >(monolog DEBUG) ||
+    _fail "Unable to generate CA for PKI"
+  if [[ $ENV_FILE ]]; then
+    echo "CA_CERTIFICATE=\"$(cat "$CA_CRT")\"" >>"$ENV_FILE"
+  fi
+else
+  monolog WARN "CA was not generated"
+fi
+
+monolog INFO "- Generate reverse proxy self-signed certificates"
+monolog TRACE "-- Subj: [$ATTR_STR/CN=$CN], Key: [$PROXY_KEY], CSR: [$PROXY_CSR], CRT: [$PROXY_CRT], NO_CA: [$NO_CA]"
+
+# Multi line string for openssl conf
+read -r -d '' CONF <<END
+[req]
+distinguished_name	= req_distinguished_name
+[req_distinguished_name]
+[v3_req]
+# TLS server certificates must contain an ExtendedKeyUsage (EKU) extension containing the id-kp-serverAuth OID.
+extendedKeyUsage       = serverAuth
+subjectAltName         = DNS:$CN
+END
+
+# Sign with CA
+if [ "$NO_CA" != true ]; then
+  monolog INFO "-- Generate private key"
+  args=(genrsa -out "$PROXY_KEY" 2048)
+  monolog TRACE "Running openssl [${args[*]}]"
+  openssl "${args[@]}" \
+    2> >(monolog DEBUG) ||
+    _fail "Unable to generate private key"
+
+  monolog INFO "-- Generate csr"
+  openssl req \
+    -new \
+    -sha256 \
+    -subj "$ATTR_STR/CN=$CN" \
+    -reqexts v3_req \
+    -extensions v3_req \
+    -config <(printf '%s' "$CONF") \
+    -key "$PROXY_KEY" \
+    -out "$PROXY_CSR" \
+    2> >(monolog DEBUG) ||
+    _fail "Unable to generate csr"
+
+  monolog INFO "-- Generate crt signed with CA"
+  openssl x509 \
+    -req \
+    -sha256 \
+    -days 365 \
+    -in "$PROXY_CSR" \
+    -extensions "v3_req" \
+    -extfile <(printf '%s' "$CONF") \
+    -CA "$CA_CRT" \
+    -CAkey "$CA_KEY" \
+    -CAcreateserial \
+    -CAserial "$CA_SERIAL" \
+    -out "$PROXY_CRT" \
+    2> >(monolog DEBUG) ||
+    _fail "Unable to sign crt"
+else
+  monolog INFO "-- Generate key and crt (not signed with CA)"
+  openssl req \
+    -x509 \
+    -nodes \
+    -sha256 \
+    -newkey rsa:4096 \
+    -days 365 \
+    -subj "$ATTR_STR/CN=$CN" \
+    -reqexts "v3_req" \
+    -extensions "v3_req" \
+    -config <(printf '%s' "$CONF") \
+    -keyout "$PROXY_KEY" \
+    -out "$PROXY_CRT" \
+    2> >(monolog DEBUG) ||
+    _fail "Unable to generate key and cert"
+fi
+
+# Sleep a bit to allow openssl's error stream to flush
+sleep 0.1 || usleep 100
+
+monolog TRACE "Finished [$0${1+ }$*]"

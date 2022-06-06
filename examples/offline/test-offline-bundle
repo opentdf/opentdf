@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+#  Validate the current exported offline bundle
+#    * Makes sure the last run of build-offline-bundle completed successfully
+#    * Makes sure it is up to date (check for git HEAD digest match)
+#    * TK Loads images into docker agent
+#    * TK Helm installs into a kind cluster and runs KUTTL test
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+export PATH="$PATH:$APP_DIR/../../scripts"
+
+monolog TRACE "Running [$0${1+ }$*]"
+
+: "${LOCAL_TOOL:="kind"}"
+: "${EXPORT_ROOT:="$(git rev-parse --show-toplevel)/build/export/bundle"}"
+export LOCAL_TOOL
+
+if [[ $1 ]]; then
+  if ! tar -xzvf "$1"; then
+    monolog ERROR "Unable to untar bundle [${1}]"
+    exit 1
+  fi
+
+  if ! cd bundle; then
+    monolog ERROR "Bundle [${1}] did not create expected folder, [bundle]"
+    exit 1
+  fi
+else
+  # Validating a local run of build-offline-bundle; no need to untar
+  if ! cd "$EXPORT_ROOT"; then
+    monolog ERROR "Unable to find export root [${EXPORT_ROOT}] from APP_DIR=[${APP_DIR}]"
+    exit 1
+  fi
+
+  if ! diff BUNDLE_TAG COMPLETED_TAG; then
+    monolog ERROR "build-offline-bundle did not complete successfully"
+    exit 1
+  fi
+fi
+
+CHARTS_DIR="${EXPORT_ROOT}/charts"
+CONTAINERS_DIR="${EXPORT_ROOT}/containers"
+LIB_DIR="${EXPORT_ROOT}/lib"
+QUICKSTART_DIR="${EXPORT_ROOT}/quickstart"
+TOOLS_DIR="${EXPORT_ROOT}/scripts"
+
+export EXPORT_ROOT
+export CHARTS_DIR
+export CONTAINERS_DIR
+export LIB_DIR
+export QUICKSTART_DIR
+export TOOLS_DIR
+
+if ! "${APP_DIR}/docker-load-and-tag-exports"; then
+  monolog ERROR "Images failed to load"
+  exit 1
+fi
+
+if ! quickstart/start.sh --offline; then
+  monolog ERROR "offline services failed to install"
+  exit 1
+fi
+
+# TODO Validate with KUTTL

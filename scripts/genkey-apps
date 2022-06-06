@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+# Generate new eas and kas keys in the certs folder for use in testing.
+# Usage: genkey-apps [options] [algorithm]
+set -x
+
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+PROJECT_ROOT="$(cd "$APP_DIR"/../ >/dev/null && pwd)"
+export PATH="$PATH:$APP_DIR"
+
+monolog TRACE "Running [$0${1+ }$*]"
+
+: "${ALG:="RSA"}"
+: "${RSA_BITSIZE:=2048}"
+
+# This is the UID that the certs will be owned by - must match the ones set in the Dockerfile for eas/kas or the --user value passed to docker at runtime
+: "${EAS_UID:=908}"
+: "${KAS_UID:=909}"
+
+CERTS_DIR="${PROJECT_ROOT}/certs"
+ENV_FILE="$CERTS_DIR/.env"
+PKG=$(basename "$0")
+while test $# -gt 0; do
+  case "$1" in
+    -h | --help)
+      echo "$PKG - generate keypairs for EAS and KAS"
+      echo ""
+      echo "$PKG [-h | --help] [<algorithm>]"
+      echo ""
+      echo "options:"
+      echo "-h, --help                                show brief help"
+      echo "-k nnn, --kasuid nnn                      set UID for KAS keyfile (default: $KAS_UID)"
+      echo ""
+      echo "arguments:"
+      echo "algorithm                                 optional algorithm (default: $ALG)"
+      echo "                                            - RSA[:BITSIZE=$RSA_BITSIZE]"
+      echo ""
+      echo "examples:"
+      echo "Generate keypair with default algorithm"
+      echo "    $PKG"
+      echo ""
+      echo "Generate keypair with RSA with default bitsize"
+      echo "    $PKG RSA"
+      echo ""
+      echo "Generate keypair with RSA with 4096 bitsize"
+      echo "    $PKG RSA 4096"
+      exit 0
+      ;;
+    --env-file)
+      ENV_FILE="$2"
+      shift 2
+      ;;
+    -k | --kasuid)
+      KAS_UID="$2"
+      shift 2
+      ;;
+    *)
+      echo "breaking"
+      break
+      ;;
+  esac
+done
+
+ALG_RSA="RSA"
+ALGS="$ALG_RSA"
+
+PRV_SUFFIX="private"
+PUB_SUFFIX="public"
+KAS="kas"
+SERVICES="${GENKEYS_FOR_APPS:-$KAS}"
+
+if [ $ALG = $ALG_RSA ]; then
+  NEWKEY_TYP="rsa:$RSA_BITSIZE"
+else
+  monolog ERROR "Unsupported algorithm format, $ALG. Please use [$ALGS]"
+  exit 1
+fi
+
+do_fail() {
+  local rvalue=$?
+  monolog ERROR "Failed to create x509 cert; [$rvalue]"
+  exit $rvalue
+}
+
+gen_keys() {
+  PRV_NAME="$1-$PRV_SUFFIX.pem"
+  PUB_NAME="$1-$PUB_SUFFIX.pem"
+  PRV_PEM="$CERTS_DIR/$PRV_NAME"
+  PUB_PEM="$CERTS_DIR/$PUB_NAME"
+  monolog INFO "--- Create $1 x509 cert ($NEWKEY_TYP)"
+  monolog DEBUG "- Private: [$PRV_PEM], Public: [$PUB_PEM]"
+  local args=(req
+    -x509
+    -nodes
+    -newkey "$NEWKEY_TYP"
+    -subj "/CN=$1"
+    -keyout "$PRV_PEM"
+    -out "$PUB_PEM"
+    -days 365)
+  monolog TRACE "Running openssl ${args[*]}"
+  openssl "${args[@]}" \
+    2> >(monolog TRACE) ||
+    do_fail
+  if [ "$1" = "$KAS" ]; then
+    if [[ $ENV_FILE ]]; then
+      echo "KAS_PRIVATE_KEY=\"$(cat "$PRV_PEM")\"" >>"$ENV_FILE"
+      echo "KAS_CERTIFICATE=\"$(cat "$PUB_PEM")\"" >>"$ENV_FILE"
+    fi
+    if [[ -n $KAS_UID ]]; then
+      chown "$KAS_UID" "$PRV_PEM"
+      chown "$KAS_UID" "$PUB_PEM"
+    fi
+  fi
+  if [[ kas == "$1" ]]; then
+    # generate ecc curve keys
+    monolog INFO "Gen keys for EC"
+    SUPPORTED_EC_CURVE="prime256v1"
+    EC_NAME="secp256r1"
+    PRV_PEM="$CERTS_DIR/$KAS-ec-$EC_NAME-$PRV_SUFFIX.pem"
+    PUB_PEM="$CERTS_DIR/$KAS-ec-$EC_NAME-$PUB_SUFFIX.pem"
+    openssl req \
+      -x509 \
+      -nodes \
+      -newkey ec:<(openssl ecparam -name $SUPPORTED_EC_CURVE) \
+      -subj "/CN=kas" \
+      -keyout "$PRV_PEM" \
+      -out "$PUB_PEM" \
+      -days 365 \
+      2> >(monolog TRACE) ||
+      do_fail
+    if [[ $ENV_FILE ]]; then
+      echo "KAS_EC_SECP256R1_PRIVATE_KEY=\"$(cat "$PRV_PEM")\"" >>"$ENV_FILE"
+      echo "KAS_EC_SECP256R1_CERTIFICATE=\"$(cat "$PUB_PEM")\"" >>"$ENV_FILE"
+    fi
+    if [[ -n $KAS_UID ]]; then
+      chown "$KAS_UID" "$PRV_PEM"
+      chown "$KAS_UID" "$PUB_PEM"
+    fi
+  fi
+}
+
+for SERVICE in $SERVICES; do
+  monolog INFO "Gen keys for $SERVICE"
+  gen_keys "$SERVICE"
+done
+
+if [[ -n $KAS_UID ]]; then
+  chown "$KAS_UID" "$PRV_PEM"
+  chown "$KAS_UID" "$PUB_PEM"
+fi
+
+monolog TRACE "Finished [$0${1+ }$*]"

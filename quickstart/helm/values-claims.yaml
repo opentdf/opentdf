@@ -1,5 +1,5 @@
 secretRef:
- name: claims-secrets
+  name: claims-secrets
 service:
   port: 5000
 postgres:

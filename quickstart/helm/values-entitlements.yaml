@@ -12,11 +12,11 @@ oidc:
   clientId: tdf-entitlement
   clientSecret: myclientsecret
   realm: tdf
-#    trailing / is required
+  #    trailing / is required
   serverUrl: http://keycloak-http/auth/
   configurationUrl: http://keycloak-http/auth/realms/tdf/.well-known/openid-configuration
-  authorizationUrl: http://localhost:65432/auth/realms/tdf/protocol/openid-connect/auth
-  tokenUrl: http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token
+  authorizationUrl: http://offline.demo.internal/auth/realms/tdf/protocol/openid-connect/auth
+  tokenUrl: http://offline.demo.internal/auth/realms/tdf/protocol/openid-connect/token
 ingress:
   enabled: true
   annotations:
@@ -27,5 +27,7 @@ ingress:
       "/api/entitlements(/|$)(.*)":
         pathType: Prefix
     host.docker.internal: *paths
+    offline.demo.internal: *paths
+    opentdf.local: *paths
 secretRef:
- name: entitlements-secrets
+  name: entitlements-secrets

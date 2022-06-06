@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Installs pre-requisites for local containers
+#
+# Usage: scripts/pre-req [apps]
+#
+# Examples:
+#   Install conventional list of pre-reqs for your platform, if needed
+#     scripts/pre-reqs
+#   Install specific of pre-reqs for your platform
+#     scripts/pre-reqs kind helm kuttl kubectl
+#
+
+TOOLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+export PATH="$PATH:$TOOLS_DIR"
+
+monolog TRACE "pre-reqs: [$0 $*]"
+
+: "${HELM_VERSION:=3.8.1}"
+: "${KIND_VERSION:=0.13.0}"
+: "${KUTTL_VERSION:=0.12.1}"
+: "${TILT_VERSION:=0.29.0}"
+
+export HELM_VERSION
+export KIND_VERSION
+export KUTTL_VERSION
+export TILT_VERSION
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  # shellcheck disable=SC1091
+  . "$TOOLS_DIR/pre-reqs-linux.sh" "${@}"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+  # shellcheck disable=SC1091
+  . "$TOOLS_DIR/pre-reqs-macos.sh" "${@}"
+else
+  monolog ERROR "Unknown OS [${OSTYPE}]"
+  exit 1
+fi
