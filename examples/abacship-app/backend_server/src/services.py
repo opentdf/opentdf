@@ -28,7 +28,7 @@ keycloak_openid = KeycloakOpenID(
 ########################## Setup ##############################
 
 def setupKeycloak():
-    logger.debug("Setting up keycloak")
+    logger.debug(f"Setting up keycloak {KEYCLOAK_URL}")
     keycloak_admin = KeycloakAdmin(
     server_url=KEYCLOAK_URL,
     username=KC_ADMIN_USER,
@@ -40,12 +40,14 @@ def setupKeycloak():
 
 def setupAttributes():
     logger.debug("Setting up attributes")
+    teardownAttributes()
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
     createAbacshipAuthority(authToken)
     createAbacshipAttributes(authToken) 
 
 def setupEntitlements():
     logger.debug("Setting up entitlements")
+    teardownClientEntitlements()
     keycloak_admin = KeycloakAdmin(
     server_url=KEYCLOAK_URL,
     username=KC_ADMIN_USER,
@@ -65,6 +67,7 @@ def setupUserEntitlements(username, player_name):
     realm_name=REALM,
     user_realm_name="master",
     )
+    teardownUserEntitlements(username)
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
     addGameUserAttrs(username, player_name, authToken, keycloak_admin)
 

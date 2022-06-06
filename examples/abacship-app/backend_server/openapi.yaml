@@ -20,6 +20,21 @@ paths:
               schema: {}
               example:
                 status: 2
+  /previous:
+    get:
+      summary: Get Last Turn
+      description: Return information about the last turn taken
+      operationId: get_last_turn_previous_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+              example:
+                player: player1
+                row: 1
+                col: 2
   /grant:
     post:
       summary: Grant Attribute
@@ -48,6 +63,32 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /random:
+    get:
+      summary: Get Random Board
+      description: Get a randomized board
+      operationId: get_random_board_random_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+              example:
+                board:
+                  - - ocean
+                    - battleship
+                    - ocean
+                    - ...
+                  - - ocean
+                    - battleship
+                    - ocean
+                    - ...
+                  - - ocean
+                    - battleship
+                    - ocean
+                    - ...
+                  - - ...
   /board:
     get:
       summary: Get Board
@@ -112,6 +153,12 @@ paths:
             title: Refresh Token
             type: string
           name: refresh_token
+          in: query
+        - required: true
+          schema:
+            title: Player Name
+            type: string
+          name: player_name
           in: query
       requestBody:
         content:
@@ -192,29 +239,7 @@ paths:
                   name: player1
                   refresh_token: the refresh token ...
                   access_token: the access token ...
-                full_board:
-                  player1:
-                    - - encryptedstring00
-                      - encryptedstring01
-                      - ...
-                    - - encryptedstring10
-                      - encryptedstring11
-                      - ...
-                    - - ...
-                    - - encryptedstring90
-                      - encryptedstring91
-                      - ...
-                  player2:
-                    - - encryptedstring00
-                      - encryptedstring01
-                      - ...
-                    - - encryptedstring10
-                      - encryptedstring11
-                      - ...
-                    - - ...
-                    - - encryptedstring90
-                      - encryptedstring91
-                      - ...
+                encrypted_string: encrypted_stringXY
                 status: 2
         '422':
           description: Validation Error
@@ -222,6 +247,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HTTPValidationError'
+  /reset:
+    put:
+      summary: Reset Game
+      description: |-
+        Resets game
+        Removes all entitlements from users
+      operationId: reset_game_reset_put
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+              example:
+                status: 1
 components:
   schemas:
     HTTPValidationError:

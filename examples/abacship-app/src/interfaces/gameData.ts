@@ -21,6 +21,6 @@ export interface IGrandAccess extends IPlayerServerInfo {
 
 export interface ICheckSquareResponse {
   "player_info": IPlayerServerInfo;
-  "full_board": IServerBoards;
+  "encrypted_string": string;
   "status": ServerStatus;
 }
