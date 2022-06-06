@@ -6,7 +6,7 @@ import player_one_img from "./images/player-one.jpg";
 // @ts-ignore
 import unknown_img from "./images/unknown.jpg";
 // @ts-ignore
-import abacship_img from "./images/abacship.jpg";
+import abacship_img from "./images/abacship-blackopsone.jpg";
 
 // MUSIC
 // @ts-ignore

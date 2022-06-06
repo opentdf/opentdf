@@ -19,9 +19,16 @@ interface IArea extends IPoint {
 type ShipType = string;
 export function generateRandomBoard(boardSize: number): ShipType[][] {
   // 1 battleship (size of 4 cells), 2 cruisers (size 3), 3 destroyers (size 2) and 4 submarines (size 1)
-  const ships = [4, 3, 3, 2, 2, 2, 1, 1, 1, 1];
+  const ships = [5, 4, 3, 2, 2, 1, 1];
   const emptyCell = "ocean";
-  const shipCell = "ship";
+  // const shipCell = "ship";
+  let shipMap = new Map<number, string>([
+    [1, "submarine"],
+    [2, "destroyer"],
+    [3, "cruiser"],
+    [4, "battleship"],
+    [5, "aircraft carrier"]
+  ]);
 
   let board = Array.from({ length: boardSize }, () => Array(boardSize).fill(emptyCell));
   const checkArea = (board: ShipType[][], size = 0, row: number, col: number): ICheckedArea[] => {
@@ -29,7 +36,7 @@ export function generateRandomBoard(boardSize: number): ShipType[][] {
     let result = { valid, position: Position.Top };
     let list = [];
     let boardLastIndex = board.length;
-    if (board[row][col] === shipCell) return [result];
+    if (board[row][col] !== emptyCell) return [result];
 
     // Right
     const rightLastIndex = col + size;
@@ -115,14 +122,14 @@ export function generateRandomBoard(boardSize: number): ShipType[][] {
       for (let i = min; i < min + ship; i++) {
         let _row = position === Position.Right ? row : i,
           _col = position === Position.Right ? i : col;
-        board[_row][_col] = shipCell;
+        board[_row][_col] = shipMap.get(ship);
       }
     } else {
       const max = position === Position.Left ? col : row;
       for (let i = max; i > max - ship; i--) {
         let _row = position === Position.Left ? row : i,
           _col = position === Position.Left ? i : col;
-        board[_row][_col] = shipCell;
+        board[_row][_col] = shipMap.get(ship);
       }
     }
   };
