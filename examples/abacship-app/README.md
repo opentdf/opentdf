@@ -40,7 +40,12 @@ kind delete cluster --name opentdf
 ### Troubleshooting
 - You will need to use 2 seperate windows, one for each player
 - If you get stuck on "Generating board...", hit "Reset Game" in both windows
-- For issues with kind, tilt, or backend services, please see the [troubleshooting section in Quickstart](../../quickstart/README.md#208)
+- If you get an "Invalid parameter: redirect_uri" error from keycloak:
+    - Login to Keycloak admin portal with admin credentials found [here](../../quickstart/helm/values-keycloak-bootstrap.yaml#L45-L46)
+    - On the left, click on `clients`-> from the list, select `browsertest`
+    - Modify `Valid Redirect URLs` property to be: `http://localhost:65432/*`
+    - Scroll to the bottom of the page and click `Save` 
+- For issues with kind, tilt, or backend services, please see the [troubleshooting section in Quickstart](../../quickstart/README.md#troubleshoot)
 
 ### Quickstart
 Do you want a quick, local demonstration of OpenTDF? See [Quickstart](../../quickstart)
