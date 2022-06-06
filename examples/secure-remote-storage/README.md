@@ -8,7 +8,7 @@
 
 - An overview of the different UI features is listed below using the red annotated numbers in the image below.
 ![Annotated UI Overview](./resource/uiOverview.png)
-1. Login/logout button, credentials for logging in are described below in the portion of the README titled [Starting Application](###StartingApplication).
+1. Login/logout button, credentials for logging in are described below in the portion of the README titled [Starting Application](#starting-infrastructure).
 2. Local file selection button, this selects a file to encrypt/upload to an S3 compatible remote store.
 3. Remote store configuration object text box, here a user enters an S3 compatible configuration object in JSON format, this configuration defines the location where files will be encrypted and uploaded to.
 4. An optional dropdown menu that allows users to save a S3 compatible configuration object for future reference, this enables easy and fast switching between multiple bucket locations. To use this feature enter a compatible configuration object in the text box as described on step 3, and in the drop down enter a name to reference the bucket as. After clicking `+ Save remote store` your remote store will be listed in the dropdown menu as a selectable store.
