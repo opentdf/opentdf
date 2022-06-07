@@ -91,7 +91,7 @@ jobs:
         run: tilt ci
         working-directory: quickstart
 
-  offline-start-test:
+  offline-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -199,19 +199,11 @@ jobs:
     needs:
       - deltas
       - quickstart-test
-      - offline-start-test
+      - offline-test
       - nanotdf-client-app-test
       - scripts-test
     if: always()
     runs-on: ubuntu-latest
     steps:
       - run: exit 1
-        if: ${{ needs.deltas.result == 'failure' }}
-      - run: exit 1
-        if: ${{ needs.quickstart-test.result == 'failure' }}
-      - run: exit 1
-        if: ${{ needs.offline-start-test.result == 'failure' }}
-      - run: exit 1
-        if: ${{ needs.nanotdf-client-app-test.result == 'failure' }}
-      - run: exit 1
-        if: ${{ needs.scripts-test.result == 'failure' }}
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}
