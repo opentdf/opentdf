@@ -30,7 +30,7 @@ A quick (less than 10 minutes) and easy process to protect data with TDF using t
   - On Linux or WSL2 for Windows: `curl -LO https://get.helm.sh/helm-v3.8.2-linux-amd64.tar.gz && tar -zxvf helm-v3.8.2-linux-amd64.tar.gz && chmod +x linux-amd64/helm && sudo mv linux-amd64/helm /usr/local/bin/helm`
   - Others see https://helm.sh/docs/intro/install/
 
-- Install [Tilt](https://tilt.dev/) (Optional)
+- Install [Tilt](https://tilt.dev/)
   - On macOS via Homebrew: `brew install tilt-dev/tap/tilt`
   - On Linux or WSL2 for Windows: `curl -fsSL https://github.com/tilt-dev/tilt/releases/download/v0.27.2/tilt.0.27.2.linux.x86_64.tar.gz | tar -xzv tilt && sudo mv tilt /usr/local/bin/tilt`
   - Others see https://docs.tilt.dev/install.html
