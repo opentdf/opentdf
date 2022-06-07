@@ -46,5 +46,7 @@ keycloak:
   password: mykeycloakpassword
   realm: tdf
 
+externalUrl: http://localhost:65432
+
 job:
-  backoffLimit: 2
+  backoffLimit: 3

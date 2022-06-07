@@ -63,7 +63,7 @@ try:
 
     plain_text = "Hello world!!"
     nan_tdf_data = nano_tdf_client.encrypt_string(plain_text)
-    nano_tdf_client = nano_tdf_client.decrypt_string(nan_tdf_data)
+    decrypted_plain_text = nano_tdf_client.decrypt_string(nan_tdf_data).decode('utf-8')
 
     if plain_text == decrypted_plain_text:
         print("Nano TDF Encrypt/Decrypt is successful!!")

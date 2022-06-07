@@ -1,0 +1,44 @@
+.centered {}
+
+.logo {
+  display: flex;
+  justify-content: center;
+
+  img {
+    width: 520px;
+    height: 100px;
+  }
+}
+
+.wrapper {}
+
+.boardStatus {
+  text-align: center;
+}
+
+.boardsDesk {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+
+  h1 {
+    text-align: center;
+  }
+}
+
+.resetGamePanel {
+  display: flex;
+  justify-content: center;
+  margin: 20px;
+}
+
+.rules {
+  display: flex;
+  justify-content: center;
+  
+  h3 {
+    width: 520px;
+    height: 100px;
+    text-align: center;
+  }
+}
