@@ -27,4 +27,7 @@ Full-motion video with OpenTDF
 6. Create attribute in Abacus
    1. Name `X-ContentExclusivity`, Rule `Hierarchy`, Order `Premier` and `Basic`
    2. Name `X-AudienceGuidance`, Rule `Hierarchy`, Order `Restricted`, `Parental`, and `All`
-7. `npm run start` - follow Steps above
+7. Entitle client `localhost-webcam-app` with `X-ContentExclusivity`: `Premier` and `X-AudienceGuidance`: `Restricted`
+8. Entitle user alice with `X-ContentExclusivity`: `Premier` and `X-AudienceGuidance`: `Restricted`
+9. Entitle user bob with `X-ContentExclusivity`: `Premier` and `X-AudienceGuidance`: `All`
+10. `npm run start` - follow Steps above 
