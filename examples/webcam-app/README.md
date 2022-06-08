@@ -21,4 +21,10 @@ Full-motion video with OpenTDF
 2. Go to Abacus, http://localhost:65432/auth/ , login keycloakadmin/mykeycloakpassword
 3. Create users: alice, bob, eve with password testuser123
 4. Create client `localhost-webcam-app`, add root url `http://localhost:3000`, add "Virtru OIDC to Entity Claim Mapper"
-5. `npm run start` - follow Steps above
+5. Create attribute authority in Abacus
+   1. Login user1/testuser123 
+   2. Namespace `https://opentdf.us`
+6. Create attribute in Abacus
+   1. Name `X-ContentExclusivity`, Rule `Hierarchy`, Order `Premier` and `Basic`
+   2. Name `X-AudienceGuidance`, Rule `Hierarchy`, Order `Restricted`, `Parental`, and `All`
+7. `npm run start` - follow Steps above
