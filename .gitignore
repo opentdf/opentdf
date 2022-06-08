@@ -58,7 +58,6 @@ settings.json
 ignore*
 *.tdf
 *.tdf.html
-*.html
 *decrypted*
 virtru-tdf3-lib-python*
 .DS_Store

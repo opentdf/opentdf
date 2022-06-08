@@ -1,6 +1,6 @@
-var webpack = require('webpack')
-const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
+var webpack = require('webpack');
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   output: {
@@ -46,4 +46,4 @@ module.exports = {
     extensions: ['.js'],
   },
   devtool: 'source-map',
-}
+};
