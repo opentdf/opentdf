@@ -20,16 +20,10 @@
 ### Starting Infrastructure
 - Follow the instructions at [documentation/quickstart](https://github.com/opentdf/opentdf/tree/main/quickstart) to start the required backend services.
 
-- Once all services are up and running open the `Keycloak` console at `http://localhost:65432/auth` to configure the browser client to support this app.
+- Once all services are up and running execute the following commands in the root folder of this application (opentdf/examples/secure-remote-storage) to seed Keycloak with the appropriate client information.
 
-   - Username: `keycloakadmin`
-   - Password: `mykeycloakpassword`
-
-- Navigate to the `abacus-web` client in the `tdf` realm of `Keycloak` and add `http://localhost:3001/*` to the list of `Valid Redirect URIs`. Be sure to save your changes at the bottom of the form.
-![Valid Redirect URI added to client](./resource/redirectUrl.png)
-
-- Navigate to the `Mappers` tab of the `abacus-web` client in the realm `tdf`. Here we'll add the appropriate mapper for the client to be able to apply claims.
-![Add mapper to client](./resource/clientMapper.png)
+  - `pipenv install --dev`
+  - `pipenv run bootstrap`
 
 ### Starting Application
 
