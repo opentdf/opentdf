@@ -167,9 +167,7 @@ fi
 if [[ $USE_KEYCLOAK ]]; then
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching locally-built development opentdf Keycloak in dev cluster"
-    for s in keycloak; do
-      maybe_load ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}
-    done
+    maybe_load ghcr.io/opentdf/keycloak:${SERVICE_IMAGE_TAG}
   fi
 
   monolog INFO --- "Installing Virtru-ified Keycloak"
