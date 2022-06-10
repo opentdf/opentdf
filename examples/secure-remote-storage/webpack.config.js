@@ -1,6 +1,7 @@
 var webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 module.exports = {
   output: {
@@ -41,6 +42,7 @@ module.exports = {
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
     }),
+    new NodePolyfillPlugin(),
   ],
   resolve: {
     extensions: ['.js'],
