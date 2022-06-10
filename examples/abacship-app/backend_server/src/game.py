@@ -224,63 +224,65 @@ Check if board is a valid board
 There must be one aircraft carrier (size 5), one battleship (size 4), one cruiser (size 3), 2 destroyers (size 2) and 2 submarines (size 1).
 """
 def validBoard(board):
-    logger.debug("Validating submitted board")
     simple_board = [[SHIP if x != OCEAN else x for x in row] for row in board]
-    ## basic checks
     _validateBoard(simple_board)
-    return _checkBoard(simple_board, 0)
-
-def _checkBoard(currentBoard, shipSizePos):
-    if (shipSizePos >= len(SHIP_SIZES)):
-        return True
-    currentSizeShips = _findPossibleShips(currentBoard, SHIP_SIZES[shipSizePos])
-    valid = False
-    for ship in currentSizeShips:
-        if (_checkBoard(_removeShipFromBoard(currentBoard, ship), shipSizePos + 1)):
-            return True
+    valid = _checkBoard(board)
+    if not valid:
+        raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Invalid board",
+        )
     return valid
 
-def _removeShipFromBoard(board, ship):
-    newBoard = [[None]*SIZE for _ in range(SIZE)]
-    for r in range(SIZE):
-        for c in range(SIZE):
-            if ((ship.orientation == HORIZONTAL and r == ship.row and (c >= ship.col and c < ship.col + ship.type.size))
-                    or (ship.orientation == VERTICAL and c == ship.col and (r >= ship.row and r < ship.row + ship.type.size))):
-                newBoard[r][c] = OCEAN
-            else:
-                newBoard[r][c] = board[r][c]
-    return newBoard
+def _checkBoard(board):
+    return findCarrier(board) and findBattleship(board) and findCruiser(board) and findDestroyer(board) and findSubmarine(board)
 
-def _findPossibleShips(board, size):
-    ships = []
-    for r in range(SIZE):
-        for c in range(SIZE):
-            if (board[r][c] == SHIP):
-                if (_isPossibleHorizontalShip(board, size, r, c)):
-                    ships.append(Ship(r, c, size, HORIZONTAL))
-                if (_isPossibleVerticalShip(board, size, r, c)):
-                    ships.append(Ship(r, c, size, VERTICAL))
-    return ships
+def findShips(board, length, title, total, total_found):
+    if total == total_found:
+        # make sure there are no more
+        if any(title in row for row in board):
+            print("extra")
+            return False
+        return True
+    # look through the board row by row to find the name
+    for row_num in range(SIZE):
+        for pos_num in range(SIZE):
+            if board[row_num][pos_num]==title:
+                valid_ship = False
+                # check if it could be horizontal
+                if (pos_num + length - 1) <= (SIZE - 1):
+                    #could be horizontal
+                    if [title for _ in range(length)] == board[row_num][pos_num:pos_num+length]:
+                        valid_ship = True
+                        # remove the ship
+                        new_board = board.copy()
+                        new_board[row_num][pos_num:pos_num+length] = [OCEAN for _ in range(length)]
+                # check if it could be vertical
+                if (not valid_ship) and (row_num + length - 1) <= (SIZE - 1):
+                    if [title for _ in range(length)] == [board[x][pos_num] for x in range(row_num, row_num+length)]:
+                        valid_ship = True
+                        # remove the ship
+                        new_board = board.copy()
+                        for row in range(row_num, row_num+length):
+                            new_board[row][pos_num] = OCEAN
+                if valid_ship:
+                    return findShips(new_board, length, title, total, total_found+1)
+    return False
 
-def _isPossibleHorizontalShip(board, size, row, col):
-    if (SIZE - col < size):
-        return False
-    c_end = SIZE-1
-    for c in range(col, SIZE):
-        if board[row][c] != SHIP:
-            c_end = c
-            break
-    return ((c_end - col) >= size)
+def findCarrier(board):
+    return findShips(board, AIRCRAFT.size, AIRCRAFT.name, SHIPS.count(AIRCRAFT), 0)
 
-def _isPossibleVerticalShip(board, size, row, col):
-    if (SIZE - col < size):
-        return False
-    r_end = SIZE-1
-    for r in range(row, SIZE):
-        if board[r][col] != SHIP:
-            r_end = r
-            break
-    return ((r_end - row) >= size)
+def findBattleship(board):
+    return findShips(board, BATTLESHIP.size, BATTLESHIP.name, SHIPS.count(BATTLESHIP), 0)
+
+def findCruiser(board):
+    return findShips(board, CRUISER.size, CRUISER.name, SHIPS.count(CRUISER), 0)
+
+def findDestroyer(board):
+    return findShips(board, DESTROYER.size, DESTROYER.name, SHIPS.count(DESTROYER), 0)
+
+def findSubmarine(board):
+    return findShips(board, SUBMARINE.size, SUBMARINE.name, SHIPS.count(SUBMARINE), 0)
 
 def _countShips(board):
     ones = 0
