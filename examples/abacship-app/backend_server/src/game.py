@@ -226,7 +226,8 @@ There must be one aircraft carrier (size 5), one battleship (size 4), one cruise
 def validBoard(board):
     simple_board = [[SHIP if x != OCEAN else x for x in row] for row in board]
     _validateBoard(simple_board)
-    valid = _checkBoard(board)
+    board_dup = [row[:] for row in board]
+    valid = _checkBoard(board_dup)
     if not valid:
         raise HTTPException(
             status_code=BAD_REQUEST,
@@ -235,9 +236,9 @@ def validBoard(board):
     return valid
 
 def _checkBoard(board):
-    return findCarrier(board) and findBattleship(board) and findCruiser(board) and findDestroyer(board) and findSubmarine(board)
+    return _findCarrier(board) and _findBattleship(board) and _findCruiser(board) and _findDestroyer(board) and _findSubmarine(board)
 
-def findShips(board, length, title, total, total_found):
+def _findShips(board, length, title, total, total_found):
     if total == total_found:
         # make sure there are no more
         if any(title in row for row in board):
@@ -266,23 +267,23 @@ def findShips(board, length, title, total, total_found):
                         for row in range(row_num, row_num+length):
                             new_board[row][pos_num] = OCEAN
                 if valid_ship:
-                    return findShips(new_board, length, title, total, total_found+1)
+                    return _findShips(new_board, length, title, total, total_found+1)
     return False
 
-def findCarrier(board):
-    return findShips(board, AIRCRAFT.size, AIRCRAFT.name, SHIPS.count(AIRCRAFT), 0)
+def _findCarrier(board):
+    return _findShips(board, AIRCRAFT.size, AIRCRAFT.name, SHIPS.count(AIRCRAFT), 0)
 
-def findBattleship(board):
-    return findShips(board, BATTLESHIP.size, BATTLESHIP.name, SHIPS.count(BATTLESHIP), 0)
+def _findBattleship(board):
+    return _findShips(board, BATTLESHIP.size, BATTLESHIP.name, SHIPS.count(BATTLESHIP), 0)
 
-def findCruiser(board):
-    return findShips(board, CRUISER.size, CRUISER.name, SHIPS.count(CRUISER), 0)
+def _findCruiser(board):
+    return _findShips(board, CRUISER.size, CRUISER.name, SHIPS.count(CRUISER), 0)
 
-def findDestroyer(board):
-    return findShips(board, DESTROYER.size, DESTROYER.name, SHIPS.count(DESTROYER), 0)
+def _findDestroyer(board):
+    return _findShips(board, DESTROYER.size, DESTROYER.name, SHIPS.count(DESTROYER), 0)
 
-def findSubmarine(board):
-    return findShips(board, SUBMARINE.size, SUBMARINE.name, SHIPS.count(SUBMARINE), 0)
+def _findSubmarine(board):
+    return _findShips(board, SUBMARINE.size, SUBMARINE.name, SHIPS.count(SUBMARINE), 0)
 
 def _countShips(board):
     ones = 0
