@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-python-keycloak = "*"
 
 [dev-packages]
 python-keycloak = "*"
