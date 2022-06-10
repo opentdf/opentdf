@@ -3,7 +3,7 @@
 #
 # Usage: genkey-client [options]
 #
-# Environment Overrie
+# Environment Override
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 PROJECT_ROOT="$(cd "$APP_DIR"/../ >/dev/null && pwd)"
@@ -156,7 +156,7 @@ case "$ALG_TYPE" in
     ;;
 
   *)
-    monolog ERROR "Unsupported alogrithm type, $ALG_TYPE. Please use a supported algorithm [${ALGS[*]}]"
+    monolog ERROR "Unsupported algorithm type, $ALG_TYPE. Please use a supported algorithm [${ALGS[*]}]"
     exit 1
     ;;
 esac

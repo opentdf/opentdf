@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 """
 This module configures a locally running Keycloak instance from OpenTDF/documentation/quickstart
 to support the secure-remote-storage sample application
@@ -55,3 +56,15 @@ keycloak_admin.add_mapper_to_client(keycloak_client_id,
     "protocolMapper": "virtru-oidc-protocolmapper",
   },
 )
+=======
+from keycloak import KeycloakAdmin
+
+keycloak_admin = KeycloakAdmin(server_url="http://localhost:65432/auth/",
+                               username='keycloakadmin',
+                               password='mykeycloakpassword',
+                               realm_name="tdf",
+                               user_realm_name="master"
+)
+
+new_client = keycloak_admin.create_client()
+>>>>>>> 4d130cb7b0deb81c40d4494a48e8b09627000fcb
