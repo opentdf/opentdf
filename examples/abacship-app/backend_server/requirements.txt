@@ -15,7 +15,7 @@ httptools==0.4.0
 markupsafe==2.0.1; python_version >= '3.6'
 # psycopg2-binary==2.9.3
 pydantic==1.8.2; python_full_version >= '3.6.1'
-pyjwt==2.3.0
+pyjwt==2.4.0
 python-dotenv==0.20.0
 python-editor==1.0.4
 # pyyaml==6.0
