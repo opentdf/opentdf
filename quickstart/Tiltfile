@@ -129,7 +129,14 @@ helm_resource(
 helm_resource(
     "keycloak",
     "codecentric/keycloak",
-    flags=["--version", "17.0.1", "-f", "helm/values-keycloak.yaml"],
+    flags=[
+        "--version",
+        "17.0.1",
+        "-f",
+        "helm/values-keycloak.yaml",
+        "--set",
+        "image.tag=%s" % BACKEND_IMAGE_TAG,
+    ],
     labels="third-party",
     resource_deps=["opentdf-entitlement-pdp", "codecentric"],
 )
