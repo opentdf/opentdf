@@ -46,7 +46,7 @@ docker-load-from() {
   fi
 }
 
-for first in abacus attributes claims entitlements kas keycloak-bootstrap keycloak; do
+for first in abacus attributes entitlement-store entitlement-pdp entitlements kas keycloak-bootstrap keycloak; do
   docker-load-from "${CONTAINERS_DIR}/opentdf-${first}-${suffix}"
 done
 

@@ -18,6 +18,9 @@ e() {
 }
 
 : "${SERVICE_IMAGE_TAG:="offline"}"
+
+BACKEND_CHART_TAG="0.0.0-sha-eb68a90"
+FRONTEND_CHART_TAG="0.0.0-sha-93bb332"
 LOAD_IMAGES=1
 LOAD_SECRETS=1
 START_CLUSTER=1
@@ -114,7 +117,7 @@ if [[ $LOAD_IMAGES ]]; then
   monolog INFO "Caching locally-built development opentdf/backend images in dev cluster"
   # Cache locally-built `latest` images, bypassing registry.
   # If this fails, try running 'docker-compose build' in the repo root
-  for s in abacus attributes claims entitlements kas; do
+  for s in abacus attributes entitlement-store entitlement-pdp entitlements kas; do
     maybe_load ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}
   done
 else
@@ -125,19 +128,22 @@ if [[ $LOAD_SECRETS ]]; then
   "$TOOLS_ROOT"/genkeys-if-needed || e "Unable to generate keys"
 
   monolog TRACE "Creating 'kas-secrets'..."
-  kubectl create secret generic kas-secrets \
+  kubectl create secret generic opentdf-kas-secrets \
     "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
     "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
     "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
     "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
     "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt" || e "create kas-secrets failed"
 
-  monolog TRACE "Creating 'attributes-secrets'..."
-  kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
-  monolog TRACE "Creating 'claims-secrets'..."
-  kubectl create secret generic claims-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create claims secrets failed"
-  monolog TRACE "Creating 'entitlements-secrets'..."
-  kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
+  monolog TRACE "Creating 'opentdf-attributes-secrets'..."
+  kubectl create secret generic opentdf-attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
+  monolog TRACE "Creating 'opentdf-entitlement-store-secrets'..."
+  kubectl create secret generic opentdf-entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ent-store secrets failed"
+  monolog TRACE "Creating 'opentdf-entitlement-pdp-secrets'..."
+  # If CR_PAT is undefined and the entitlement-pdp is configured to use the policy bundle baked in at container build time, this does not need to be set/this can be undefined
+  kubectl create secret generic opentdf-entitlement-pdp-secrets --from-literal=opaPolicyPullSecret=${CR_PAT} || e "create ent-pdp secrets failed"
+  monolog TRACE "Creating 'opentdf-entitlements-secrets'..."
+  kubectl create secret generic opentdf-entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
   monolog TRACE "Creating 'keycloak-secrets'..."
   kubectl create secret generic keycloak-secrets \
     --from-literal=DB_USER=postgres \
@@ -161,7 +167,7 @@ fi
 if [[ $USE_KEYCLOAK ]]; then
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching locally-built development opentdf Keycloak in dev cluster"
-    for s in claims keycloak; do
+    for s in keycloak; do
       maybe_load ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}
     done
   fi
@@ -232,10 +238,10 @@ load-chart() {
 
 if [[ $INIT_OPENTDF ]]; then
   monolog INFO --- "OpenTDF charts"
-  for s in attributes claims entitlements kas; do
-    load-chart "${s}" "0.0.0-sha-0b804dd"
+  for s in attributes entitlement-store entitlement-pdp entitlements kas; do
+    load-chart "opentdf-${s}" ${BACKEND_CHART_TAG}
   done
-  load-chart abacus "0.0.0-sha-fe676f4"
+  load-chart opentdf-abacus ${FRONTEND_CHART_TAG}
 fi
 
 if [[ $INIT_SAMPLE_DATA ]]; then
@@ -243,5 +249,5 @@ if [[ $INIT_SAMPLE_DATA ]]; then
     monolog INFO "Caching bootstrap image in cluster"
     maybe_load ghcr.io/opentdf/keycloak-bootstrap:${SERVICE_IMAGE_TAG}
   fi
-  load-chart keycloak-bootstrap "0.0.0-sha-0b804dd"
+  load-chart keycloak-bootstrap ${BACKEND_CHART_TAG}
 fi
