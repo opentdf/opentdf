@@ -147,7 +147,7 @@ if [[ ! $no_first_party ]]; then
 fi
 
 # NOTE: Configure third party bundles to use the latest version manually.
-# To do this, search for the version you want of each of the following pacakges
+# To do this, search for the version you want of each of the following packages
 # on Docker Hub
 if [[ ! $no_third_party ]]; then
   # KIND: https://kind.sigs.k8s.io/docs/user/working-offline/
@@ -157,7 +157,7 @@ if [[ ! $no_third_party ]]; then
   # postgresql
   # Update URI: https://hub.docker.com/r/bitnami/postgresql/tags
   save-image bitnami/postgresql 12.8.0 third-party-image-postgresql
-  # Keycloak: Since we are bulding a custom image, we don't include that in thirdparty but in primary bundle
+  # Keycloak: Since we are building a custom image, we don't include that in thirdparty but in primary bundle
 
   # nginx ingress
   save-image k8s.gcr.io/ingress-nginx/controller v1.1.1 third-party-image-ingress-nginx

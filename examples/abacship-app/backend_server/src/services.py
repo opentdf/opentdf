@@ -308,7 +308,7 @@ def createAuthority(authority, authToken):
             detail="Failed to create authority",
         )
 
-def createAttibuteDefinition(definition, authToken):
+def createAttributeDefinition(definition, authToken):
     loc = f"{ATTRIBUTES_URL}/definitions/attributes"
     logger.debug(f"Adding attribute definition {definition}")
     response = requests.get(loc, headers={"Authorization": f"Bearer {authToken}"})
@@ -390,8 +390,8 @@ def createAbacshipAuthority(authToken):
     createAuthority(AUTH_NAMESPACE, authToken)
 
 def createAbacshipAttributes(authToken):
-    createAttibuteDefinition(player1_definition, authToken)
-    createAttibuteDefinition(player2_definition, authToken)
+    createAttributeDefinition(player1_definition, authToken)
+    createAttributeDefinition(player2_definition, authToken)
 
 def deleteAbacshipAttrDefinitions(authToken):
     deleteAttributeDefinition(player1_definition, authToken)
