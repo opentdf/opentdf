@@ -225,7 +225,7 @@ load-chart() {
   svc="$1"
   repo="$2"
   version="$3"
-  val_file="${DEPLOYMENT_DIR}/values-${svc}.yaml"
+  val_file="${DEPLOYMENT_DIR}/values-${repo}.yaml"
   if [[ $RUN_OFFLINE ]]; then
     monolog TRACE "helm upgrade --install ${svc} ${CHART_ROOT}/${repo}-*.tgz -f ${val_file} --set image.tag=${SERVICE_IMAGE_TAG}"
     helm upgrade --install "opentdf-${svc}" "${CHART_ROOT}"/"${repo}"-*.tgz -f "${val_file}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to install chart for ${svc}"
