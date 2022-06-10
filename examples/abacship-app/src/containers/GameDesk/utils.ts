@@ -16,7 +16,7 @@ export function getAudioForCell(cell: number) {
   return null;
 }
 
-export function revealCell(value: string, rowIdx: number, colIdx: number) {
+export function revealCell(value: string) {
   if (value === "ocean") return CELL_TYPE.OCEAN;
   if (Object.values(ShipType).includes(value as unknown as ShipType)) return CELL_TYPE.PLAYER_ONE;
   // if (Object.values(ShipType).includes(data as unknown as ShipType)) return CELL_TYPE.PLAYER_TWO; // todo player two
@@ -28,7 +28,7 @@ export const hitGridItem = (statusBoard: number[][], rowIdx: number, colIdx: num
       if (rowIdx === oldRowIdx && colIdx === oldColIdx) {
         // This is the cell we are revealing.
         // const _secret_board = getBoard<>();
-        const cell = revealCell(secretValue, rowIdx, colIdx);
+        const cell = revealCell(secretValue);
         const audioForCell = getAudioForCell(cell);
         if (audioForCell !== null) {
           audioForCell.play();
@@ -53,7 +53,7 @@ export const getMyGrid = async (): Promise<number[][]> => {
     board = localBoard;
   }
 
-  return board.map((row, rowIdx) => row.map((cell, colIdx) => revealCell(localBoard[rowIdx][colIdx], rowIdx, colIdx)));
+  return board.map((row, rowIdx) => row.map((cell, colIdx) => revealCell(cell)));
 }
 
 export const getOpponentGrid = async (): Promise<number[][]> => {

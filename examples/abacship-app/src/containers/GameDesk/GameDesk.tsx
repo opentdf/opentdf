@@ -19,7 +19,7 @@ export function GameDesk() {
   const { status: currentServerStatus } = useRecoilValue(boardState);
   const setServerStatus = useSetRecoilState(boardState)
   const { startPing, stopPing } = usePingServer();
-  const { setTextToDecrypt, decryptedText, decryptString} = useClientTDF();
+  const { setTextToDecrypt, decryptedText, decryptString } = useClientTDF();
   const playerData = useRecoilValue(playerState);
 
   const setPlayer1Board = useSetRecoilState(player1Board);
