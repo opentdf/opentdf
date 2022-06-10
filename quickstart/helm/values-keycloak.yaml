@@ -14,7 +14,7 @@ externalDatabase:
   database: keycloak_database
 extraEnv: |
   - name: CLAIMS_URL
-    value: http://claims:5000/claims
+    value: http://opentdf-entitlement-pdp:3355/entitlements
   - name: JAVA_OPTS_APPEND
     value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
 # - name: DB_VENDOR
