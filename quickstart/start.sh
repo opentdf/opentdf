@@ -223,23 +223,24 @@ fi
 
 load-chart() {
   svc="$1"
-  version="$2"
+  repo="$2"
+  version="$3"
   val_file="${DEPLOYMENT_DIR}/values-${svc}.yaml"
   if [[ $RUN_OFFLINE ]]; then
-    monolog TRACE "helm upgrade --install ${svc} ${CHART_ROOT}/${svc}-*.tgz -f ${val_file} --set image.tag=${SERVICE_IMAGE_TAG}"
-    helm upgrade --install "${svc}" "${CHART_ROOT}"/"${svc}"-*.tgz -f "${val_file}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to install chart for ${svc}"
+    monolog TRACE "helm upgrade --install ${svc} ${CHART_ROOT}/${repo}-*.tgz -f ${val_file} --set image.tag=${SERVICE_IMAGE_TAG}"
+    helm upgrade --install "opentdf-${svc}" "${CHART_ROOT}"/"${repo}"-*.tgz -f "${val_file}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to install chart for ${svc}"
   else
-    monolog TRACE "helm upgrade --version ${version} --install ${svc} oci://ghcr.io/opentdf/charts/${svc} -f ${val_file}"
-    helm upgrade --version "${version}" --install "${svc}" "oci://ghcr.io/opentdf/charts/${svc}" -f "${val_file}" || e "Unable to install $svc chart"
+    monolog TRACE "helm upgrade --version ${version} --install ${svc} oci://ghcr.io/opentdf/charts/${repo} -f ${val_file}"
+    helm upgrade --version "${version}" --install "${svc}" "oci://ghcr.io/opentdf/charts/${repo}" -f "${val_file}" || e "Unable to install $svc chart"
   fi
 }
 
 if [[ $INIT_OPENTDF ]]; then
   monolog INFO --- "OpenTDF charts"
   for s in attributes entitlement-store entitlement-pdp entitlements kas; do
-    load-chart "opentdf-${s}" ${BACKEND_CHART_TAG}
+    load-chart "opentdf-${s}" "${s}" ${BACKEND_CHART_TAG}
   done
-  load-chart opentdf-abacus ${FRONTEND_CHART_TAG}
+  load-chart opentdf-abacus abacus ${FRONTEND_CHART_TAG}
 fi
 
 if [[ $INIT_SAMPLE_DATA ]]; then
@@ -247,5 +248,5 @@ if [[ $INIT_SAMPLE_DATA ]]; then
     monolog INFO "Caching bootstrap image in cluster"
     maybe_load ghcr.io/opentdf/keycloak-bootstrap:${SERVICE_IMAGE_TAG}
   fi
-  load-chart keycloak-bootstrap ${BACKEND_CHART_TAG}
+  load-chart keycloak-bootstrap keycloak-bootstrap ${BACKEND_CHART_TAG}
 fi
