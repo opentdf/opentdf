@@ -1,5 +1,5 @@
 endpoints:
-  attrHost: http://attributes:4020
+  attrHost: http://opentdf-attributes:4020
   oidcPubkeyEndpoint: http://keycloak-http
 ingress:
   enabled: true
@@ -14,4 +14,4 @@ ingress:
     offline.demo.internal: *paths
     opentdf.local: *paths
 secretRef:
-  name: kas-secrets
+  name: opentdf-kas-secrets

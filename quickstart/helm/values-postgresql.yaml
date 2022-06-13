@@ -71,7 +71,7 @@ initdbScripts:
     GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entitlement TO tdf_entitlement_manager;
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_entitlement TO tdf_entitlement_manager;
 
-    -- claims
+    -- entitlement-store
     CREATE ROLE tdf_entitlement_reader WITH LOGIN PASSWORD 'myPostgresPassword';
     GRANT USAGE ON SCHEMA tdf_entitlement TO tdf_entitlement_reader;
     GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entitlement TO tdf_entitlement_reader;
