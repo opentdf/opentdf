@@ -165,7 +165,7 @@ helm_resource(
         "-f",
         "helm/values-keycloak-bootstrap.yaml",
         "--set",
-        "externalUrl=%s/" % EXTERNAL_URL,
+        "externalUrl=%s" % EXTERNAL_URL,
         "--set",
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
