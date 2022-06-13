@@ -9,7 +9,7 @@ EXTERNAL_URL = "http://localhost:65432"
 
 # Versions of things backend to pull (attributes, kas, etc)
 BACKEND_IMAGE_TAG = "main"
-BACKEND_CHART_TAG = "0.0.0-sha-f5bd4ef"
+BACKEND_CHART_TAG = "0.0.0-sha-eb68a90"
 FRONTEND_IMAGE_TAG = "main"
 FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
 
@@ -60,7 +60,7 @@ helm_resource(
 )
 
 helm_resource(
-    "attributes",
+    "opentdf-attributes",
     "oci://ghcr.io/opentdf/charts/attributes",
     flags=[
         "--version",
@@ -77,13 +77,13 @@ helm_resource(
 )
 
 helm_resource(
-    "claims",
-    "oci://ghcr.io/opentdf/charts/claims",
+    "opentdf-entitlement-store",
+    "oci://ghcr.io/opentdf/charts/entitlement-store",
     flags=[
         "--version",
         BACKEND_CHART_TAG,
         "-f",
-        "helm/values-claims.yaml",
+        "helm/values-entitlement-store.yaml",
         "--set",
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
@@ -92,7 +92,22 @@ helm_resource(
 )
 
 helm_resource(
-    "entitlements",
+    "opentdf-entitlement-pdp",
+    "oci://ghcr.io/opentdf/charts/entitlement-pdp",
+    flags=[
+        "--version",
+        BACKEND_CHART_TAG,
+        "-f",
+        "helm/values-entitlement-pdp.yaml",
+        "--set",
+        "image.tag=%s" % BACKEND_IMAGE_TAG,
+    ],
+    labels="backend",
+    resource_deps=["opentdf-entitlement-store"],
+)
+
+helm_resource(
+    "opentdf-entitlements",
     "oci://ghcr.io/opentdf/charts/entitlements",
     flags=[
         "--version",
@@ -114,13 +129,20 @@ helm_resource(
 helm_resource(
     "keycloak",
     "codecentric/keycloak",
-    flags=["--version", "17.0.1", "-f", "helm/values-keycloak.yaml"],
+    flags=[
+        "--version",
+        "17.0.1",
+        "-f",
+        "helm/values-keycloak.yaml",
+        "--set",
+        "image.tag=%s" % BACKEND_IMAGE_TAG,
+    ],
     labels="third-party",
-    resource_deps=["claims", "codecentric"],
+    resource_deps=["opentdf-entitlement-pdp", "codecentric"],
 )
 
 helm_resource(
-    "kas",
+    "opentdf-kas",
     "oci://ghcr.io/opentdf/charts/kas",
     flags=[
         "--version",
@@ -131,7 +153,7 @@ helm_resource(
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
     labels="backend",
-    resource_deps=["attributes", "keycloak"],
+    resource_deps=["opentdf-attributes", "keycloak"],
 )
 
 helm_resource(
@@ -148,11 +170,11 @@ helm_resource(
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
     labels="utility",
-    resource_deps=["attributes", "entitlements", "keycloak"],
+    resource_deps=["opentdf-attributes", "opentdf-entitlements", "keycloak"],
 )
 
 helm_resource(
-    "abacus",
+    "opentdf-abacus",
     "oci://ghcr.io/opentdf/charts/abacus",
     flags=[
         "--version",
@@ -178,5 +200,5 @@ if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
         "passed-in-test-script",
         os.environ.get("TEST_SCRIPT"),
         labels="tests",
-        resource_deps=["ingress-nginx", "kas", "keycloak-bootstrap"],
+        resource_deps=["ingress-nginx", "opentdf-kas", "keycloak-bootstrap"],
     )

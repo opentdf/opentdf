@@ -215,9 +215,13 @@ Manage assignment of attributes to entities
 
 <!-- http://localhost:65432/api/entitlements/docs -->
 
-#### claims
+#### entitlement-store
 
-Read the attributes that have been assigned to an entity
+Read-only access to the attributes that have been assigned to an entity in the static database store
+
+#### entitlement-pdp
+
+Generate entitlements on-demand (using OpenPolicyAgent and pluggable Rego policy) for entities.
 
 #### key-access
 
