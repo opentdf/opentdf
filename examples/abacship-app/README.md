@@ -37,7 +37,7 @@ kind delete cluster --name opentdf
 ```
 
 ### Troubleshooting
-- You will need to use 2 seperate windows, one for each player
+- You will need to use 2 separate windows, one for each player
 - If you get stuck on "Generating board...", hit "Reset Game" in both windows, then reselect each player
 - If you get an "Invalid parameter: redirect_uri" error from keycloak:
     - Login to Keycloak admin portal with admin credentials found [here](../../quickstart/helm/values-keycloak-bootstrap.yaml#L45-L46)
@@ -45,7 +45,7 @@ kind delete cluster --name opentdf
     - Modify `Valid Redirect URLs` property to be: `http://localhost:65432/*`
     - Scroll to the bottom of the page and click `Save`
 - If you see a "Realm does not exist error", trigger an update for keycloak-bootstrap, wait for it to run, then trigger an update for abacship-backend. Once the backend is running, click "Reset Game" in both windows, then reselect each player.
-- If keycloak crashes, retrigger keycloak, then retrigger keycloak-boostrap and wait for it to run, then retrigger abacship-backend and wait for it to run. Once the backend is running, click "Reset Game" in both windows, then reselect each player.
+- If keycloak crashes, retrigger keycloak, then retrigger keycloak-bootstrap and wait for it to run, then retrigger abacship-backend and wait for it to run. Once the backend is running, click "Reset Game" in both windows, then reselect each player.
 - For issues with kind, tilt, or backend services, please see the [troubleshooting section in Quickstart](../../quickstart/README.md#troubleshoot)
 
 ### Quickstart

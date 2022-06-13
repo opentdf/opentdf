@@ -166,7 +166,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       - run: npm test
-      - run: npm audit --audit-level high && npm audit --production
+      - run: npm audit --audit-level critical && npm audit --production
 
   ci:
     needs:

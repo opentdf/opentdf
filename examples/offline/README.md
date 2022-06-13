@@ -29,7 +29,7 @@ created and can start, using a local k8s cluster created with kind.
 ### NB: Including Third Party Libraries
 
 The current third party bundles, kind and postgresql, may require manual
-editing of the `build-offline-bundle` script to get the appripriate tag and
+editing of the `build-offline-bundle` script to get the appropriate tag and
 SHA hash. See within the script for notes.
 
 ## Using the offline bundle
