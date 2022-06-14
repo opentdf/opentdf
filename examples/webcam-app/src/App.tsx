@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {useState} from 'react';
 import './App.css';
 import {AuthProviders, NanoTDFDatasetClient} from "@opentdf/client";
+import jwt_decode from "jwt-decode";
 
 const mediaConstraints = {
     audio: false,
@@ -13,9 +14,12 @@ const OIDC_CLIENT_ID = "localhost-webcam-app";
 const KAS_URL = "http://localhost:65432/api/kas";
 
 function App() {
-    let refreshTokenAlice = "";
-    let refreshTokenBob = "";
-    let refreshTokenEve = "";
+    const [entitlementsAlice, setEntitlementsAlice] = useState([]);
+    const [entitlementsBob, setEntitlementsBob] = useState([]);
+    const [entitlementsEve, setEntitlementsEve] = useState([]);
+    const [clientAlice, setClientAlice] = useState<NanoTDFDatasetClient>();
+    const [clientBob, setClientBob] = useState<NanoTDFDatasetClient>();
+    const [clientEve, setClientEve] = useState<NanoTDFDatasetClient>();
     let dataAttributes: string[] = [];
 
     const start = async () => {
@@ -30,35 +34,8 @@ function App() {
         // @ts-ignore
         let contextEve = canvasElementEve.getContext('2d');
         // OpenTDF
-        const authProvider = await AuthProviders.refreshAuthProvider({
-            clientId: OIDC_CLIENT_ID,
-            exchange: 'refresh',
-            oidcRefreshToken: refreshTokenAlice,
-            oidcOrigin: OIDC_ENDPOINT,
-            organizationName: OIDC_REALM
-        });
-        const clientWebcam = new NanoTDFDatasetClient(authProvider, KAS_URL);
-        // alice client
-        const clientAlice = new NanoTDFDatasetClient(authProvider, KAS_URL);
+        const clientWebcam = clientAlice;
         const imageDataAlice = contextAlice.createImageData(640, 480);
-        // bob client
-        const authProviderBob = await AuthProviders.refreshAuthProvider({
-            clientId: OIDC_CLIENT_ID,
-            exchange: 'refresh',
-            oidcRefreshToken: refreshTokenBob,
-            oidcOrigin: OIDC_ENDPOINT,
-            organizationName: OIDC_REALM
-        });
-        const clientBob = new NanoTDFDatasetClient(authProviderBob, KAS_URL);
-        // eve client
-        const authProviderEve = await AuthProviders.refreshAuthProvider({
-            clientId: OIDC_CLIENT_ID,
-            exchange: 'refresh',
-            oidcRefreshToken: refreshTokenEve,
-            oidcOrigin: OIDC_ENDPOINT,
-            organizationName: OIDC_REALM
-        });
-        const clientEve = new NanoTDFDatasetClient(authProviderEve, KAS_URL);
         function handleSuccess(stream: any) {
             // @ts-ignore
             window.stream = stream; // make stream available to browser console
@@ -74,34 +51,36 @@ function App() {
                 ctx.drawImage(webcamDevice, 0, 0)
                 const imageData = ctx.getImageData(0, 0, 640, 480);
                 // encrypt frame
-                clientWebcam.dataAttributes = dataAttributes;
+                clientWebcam && (clientWebcam.dataAttributes = dataAttributes);
                 // console.log(imageData.data);
                 // FIXME buffer is all 0
-                const cipherImageData = await clientWebcam.encrypt(imageData.data.buffer);
-                // alice decrypt
-                try {
-                    const cipherBuffer = await clientAlice.decrypt(cipherImageData);
-                    // console.log(cipherBuffer);
-                    imageDataAlice.data.set(cipherBuffer);
-                    // console.log(imageData);
-                    // console.log(imageDataAlice);
-                    contextAlice.putImageData(imageData, 0, 0);
-                } catch (e) {
-                    console.error(e);
-                }
-                try {
-                    const incomingBuffer = await clientBob.decrypt(cipherImageData);
-                    const imageDataBob = contextBob.createImageData(640, 480);
-                    imageDataBob.data.set(incomingBuffer);
-                    contextBob.putImageData(imageData, 0, 0);
-                } catch (e) {
-                }
-                try {
-                    const incomingBuffer = await clientEve.decrypt(cipherImageData);
-                    const imageDataEve = contextEve.createImageData(640, 480);
-                    imageDataEve.data.set(incomingBuffer);
-                    contextEve.putImageData(imageData, 0, 0);
-                } catch (e) {
+                const cipherImageData = await clientWebcam?.encrypt(imageData.data.buffer);
+                if (cipherImageData) {
+                    // alice decrypt
+                    try {
+                        const cipherBuffer = await clientAlice?.decrypt(cipherImageData);
+                        // console.log(cipherBuffer);
+                        imageDataAlice.data.set(cipherBuffer);
+                        // console.log(imageData);
+                        // console.log(imageDataAlice);
+                        contextAlice.putImageData(imageData, 0, 0);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                    try {
+                        const incomingBuffer = await clientBob?.decrypt(cipherImageData);
+                        const imageDataBob = contextBob.createImageData(640, 480);
+                        imageDataBob.data.set(incomingBuffer);
+                        contextBob.putImageData(imageData, 0, 0);
+                    } catch (e) {
+                    }
+                    try {
+                        const incomingBuffer = await clientEve?.decrypt(cipherImageData);
+                        const imageDataEve = contextEve.createImageData(640, 480);
+                        imageDataEve.data.set(incomingBuffer);
+                        contextEve.putImageData(imageData, 0, 0);
+                    } catch (e) {
+                    }
                 }
                 setTimeout(loop, 1000 / 30); // drawing at 30fps
             })();
@@ -125,40 +104,72 @@ function App() {
         urlencoded.append("username", "alice");
         urlencoded.append("password", "testuser123");
         urlencoded.append("grant_type", "password");
-
-        const requestOptions = {
-            method: 'POST',
-            headers: myHeaders,
-            body: urlencoded,
-            redirect: 'follow'
-        };
+        let request: Request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", {method: 'POST', headers: myHeaders, body: urlencoded});
         // alice Direct Access Grants login
         urlencoded.set("username", "alice")
+        let response: HttpResponse<any> = await fetch(request);
+        let responseJson = await response.json();
+        // OpenTDF
+        const authProviderAlice = await AuthProviders.refreshAuthProvider({
+            clientId: OIDC_CLIENT_ID,
+            exchange: 'refresh',
+            oidcRefreshToken: responseJson.refresh_token,
+            oidcOrigin: OIDC_ENDPOINT,
+            organizationName: OIDC_REALM
+        });
+        setClientAlice(new NanoTDFDatasetClient(authProviderAlice, KAS_URL));
+        // BEGIN this triggers an OIDC access token with claims to be fetched
+        await clientAlice?.decrypt(await clientAlice.encrypt("dummy"));
+        // END
         // @ts-ignore
-        fetch("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", requestOptions)
-            .then(response => response.json())
-            .then(result => {
-                refreshTokenAlice = result.refresh_token;
-            })
-            .catch(error => console.log('error', error));
+        let token = await clientAlice.authProvider.oidcAuth?.getCurrentAccessToken();
+        // @ts-ignore
+        let decoded: {tdf_claims} = jwt_decode(token);
+        setEntitlementsAlice(decoded.tdf_claims.entitlements);
         // bob Direct Access Grants login
         urlencoded.set("username", "bob")
+        request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", {method: 'POST', headers: myHeaders, body: urlencoded});
+        response = await fetch(request);
+        responseJson = await response.json();
+        // bob client
+        const authProviderBob = await AuthProviders.refreshAuthProvider({
+            clientId: OIDC_CLIENT_ID,
+            exchange: 'refresh',
+            oidcRefreshToken: responseJson.refresh_token,
+            oidcOrigin: OIDC_ENDPOINT,
+            organizationName: OIDC_REALM
+        });
+        setClientBob(new NanoTDFDatasetClient(authProviderBob, KAS_URL));
+        // BEGIN this triggers an OIDC access token with claims to be fetched
+        await clientBob?.decrypt(await clientBob.encrypt("dummy"));
+        // END
         // @ts-ignore
-        fetch("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", requestOptions)
-            .then(response => response.json())
-            .then(result => {
-                refreshTokenBob = result.refresh_token;
-            })
-            .catch(error => console.log('error', error));
+        token = await clientBob.authProvider.oidcAuth?.getCurrentAccessToken();
+        // @ts-ignore
+        decoded = jwt_decode(token);
+        setEntitlementsBob(decoded.tdf_claims.entitlements);
         // eve Direct Access Grants login
-        urlencoded.set("username", "eve")
+        urlencoded.set("username", "eve");
+        request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", {method: 'POST', headers: myHeaders, body: urlencoded});
+        response = await fetch(request);
+        responseJson = await response.json();
+        // eve client
+        const authProviderEve = await AuthProviders.refreshAuthProvider({
+            clientId: OIDC_CLIENT_ID,
+            exchange: 'refresh',
+            oidcRefreshToken: responseJson.refresh_token,
+            oidcOrigin: OIDC_ENDPOINT,
+            organizationName: OIDC_REALM
+        });
+        setClientEve(new NanoTDFDatasetClient(authProviderEve, KAS_URL));
+        // BEGIN this triggers an OIDC access token with claims to be fetched
+        await clientEve?.decrypt(await clientEve.encrypt("dummy"));
+        // END
         // @ts-ignore
-        fetch("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", requestOptions)
-            .then(response => response.json())
-            .then(result => {
-                refreshTokenEve = result.refresh_token;
-            })
-            .catch(error => console.log('error', error));
+        token = await clientEve.authProvider.oidcAuth?.getCurrentAccessToken();
+        // @ts-ignore
+        decoded = jwt_decode(token);
+        setEntitlementsEve(decoded.tdf_claims.entitlements);
     }
 
     function toggleContentExclusivity(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -183,21 +194,18 @@ function App() {
         }
     }
 
+    // @ts-ignore
     return (
     <div className="App">
         <table>
             <tbody>
             <tr>
-                <td><video id="webcamDevice" autoPlay playsInline width="320" height="240"></video></td>
+                <td><h2>camera</h2><video id="webcamDevice" autoPlay playsInline width="320" height="240"></video></td>
                 <td>
-                    <button
-                        onClick={() => login()}
-                    >
+                    <button onClick={() => login()}>
                         Login
                     </button>
-                    <button
-                        onClick={() => start()}
-                    >
+                    <button onClick={() => start()}>
                         Webcam
                     </button>
                     <br/><br/>
@@ -206,7 +214,7 @@ function App() {
                     ContentExclusivity <button onClick={(event) => toggleContentExclusivity(event)}>Premier</button><br/>
                     AudienceGuidance <button onClick={(event) => toggleAudienceGuidance(event)}>Restricted</button><br/>
                 </td>
-                <td><canvas id="webcamCanvasSource" width="640" height="480"></canvas><h2>Source</h2></td>
+                <td><h2>Source</h2><canvas id="webcamCanvasSource" width="640" height="480"></canvas></td>
                 <td><h2>Entitlement Grantor</h2><a target="_new" href="http://localhost:65432/">Abacus</a><br/><i>user1/testuser123</i></td>
             </tr>
             </tbody>
@@ -214,14 +222,43 @@ function App() {
         <table>
             <tbody>
             <tr>
-                <td><h2>Alice</h2>Adult - Paid<br/><canvas id="webcamCanvasAlice" width="640" height="480"></canvas></td>
-                <td><h2>Bob</h2>Minor - Paid<br/><canvas id="webcamCanvasBob" width="640" height="480"></canvas></td>
-                <td><h2>Eve</h2>eavesdropper (authenticated)<br/><canvas id="webcamCanvasEve" width="640" height="480"></canvas></td>
+                <td>
+                    <h2>Alice</h2>Adult - Paid<br/>
+                    <EntitlementsList entitlements={entitlementsAlice}/>
+                    <canvas id="webcamCanvasAlice" width="640" height="480"></canvas>
+                </td>
+                <td>
+                    <h2>Bob</h2>Minor - Paid<br/>
+                    <EntitlementsList entitlements={entitlementsBob}/>
+                    <canvas id="webcamCanvasBob" width="640" height="480"></canvas>
+                </td>
+                <td>
+                    <h2>Eve</h2>eavesdropper (authenticated)<br/>
+                    <EntitlementsList entitlements={entitlementsEve}/>
+                    <canvas id="webcamCanvasEve" width="640" height="480"></canvas>
+                </td>
             </tr>
             </tbody>
         </table>
     </div>
   );
+}
+
+// @ts-ignore
+const EntitlementsList = ({entitlements}) => {
+    return <ul>{entitlements.map((entitlement: { entity_identifier: string | null | undefined; entity_attributes: any[]; }) => (
+        <li key={entitlement.entity_identifier}>{entitlement.entity_identifier}
+            <ul>
+                {entitlement.entity_attributes.map(attribute => (
+                    <li key={attribute.attribute}>{attribute.attribute}</li>
+                ))}
+            </ul>
+        </li>
+    ))}</ul>;
+};
+
+interface HttpResponse<T> extends Response {
+    parsedBody?: T;
 }
 
 export default App;
