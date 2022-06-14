@@ -36,6 +36,8 @@ export function useClientTDF() {
 
       console.log(`decrypted text is: ${decodedText}`);
       setDecryptedText(decodedText);
+
+      return decodedText;
     }
   };
 
@@ -43,5 +45,5 @@ export function useClientTDF() {
     decryptString(textToDecrypt);
   }, [textToDecrypt, initialized, keycloak]);
 
-  return { textToDecrypt, setTextToDecrypt, decryptedText };
+  return { textToDecrypt, setTextToDecrypt, decryptedText, decryptString };
 }

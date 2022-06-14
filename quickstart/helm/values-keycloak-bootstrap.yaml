@@ -3,9 +3,9 @@ image:
   pullPolicy: IfNotPresent
 externalUrl: http://offline.demo.internal/
 attributes:
-  hostname: http://attributes:4020
+  hostname: http://opentdf-attributes:4020
 entitlements:
-  hostname: http://entitlements:4030
+  hostname: http://opentdf-entitlements:4030
   clientId: dcr-test
   username: user1
   password: testuser123

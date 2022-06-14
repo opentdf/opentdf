@@ -1,8 +1,8 @@
 import { ServerStatus } from "../recoil-atoms/gameDeskData";
 
 export interface IServerBoards {
-  player1: string [][];
-  player2: string [][];
+  player1: string[][];
+  player2: string[][];
 }
 
 export interface IPlayerServerInfo {
