@@ -3,6 +3,10 @@ export const CELL_TYPE = {
   PLAYER_ONE: 1,
   PLAYER_TWO: 2,
   UNKNOWN: 3,
+  ENEMY_MISS: 4,
+  ENEMY_HIT: 5,
+  PLAYER_MISS: 6,
+  PLAYER_HIT: 7,
 };
 
 

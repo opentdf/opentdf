@@ -14,3 +14,4 @@ export type SecretBoard = string[][];
 export type StatusBoard = number[][];
 
 export type BoardKeyType = "my_board" | "enemy_board" | "my_secret_board" | "enemy_secret_board";
+export type TypeBoardPosition = "left" | "right";

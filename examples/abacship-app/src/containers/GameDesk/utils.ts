@@ -1,6 +1,7 @@
 import { ASSETS_LIST } from "../../assets";
 import { BoardKeyType, SecretBoard, ShipType, StatusBoard } from "../../interfaces/board";
 import { CELL_TYPE, COL_INDICATORS, ROW_INDICATORS } from "../../models/cellType";
+import { postGrandAccess } from "../../services/axios";
 import { defaulBoardSize, getBoard, setBoard } from "../../utils/board";
 import { generateRandomBoard } from "../../utils/randomBoard";
 
@@ -70,3 +71,15 @@ export const getOpponentGrid = async (): Promise<number[][]> => {
 
   return board;
 }
+
+export const shareAccess = (name: string) => {
+  const token = sessionStorage.getItem("token") || "";
+  const refreshToken = sessionStorage.getItem("refreshToken") || "";
+
+  const dataInfo = {
+    name,
+    refresh_token: refreshToken,
+    access_token: token,
+  };
+  postGrandAccess(dataInfo);
+};

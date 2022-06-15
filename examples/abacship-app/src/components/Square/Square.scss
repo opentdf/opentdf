@@ -1,19 +1,91 @@
 .unknown-value {
-    opacity: 1;
-    display: block;
+  opacity: 1;
+  display: block;
+}
+
+.ocean_cell {
+  background: #459AE2;
+  width: 100%;
+  height: 100%;
+
+  &.right {
+    background: #5EB29E;
+  }
+}
+
+.unknown_cell {
+  width: 100%;
+  height: 100%;
+  background: #5EB29E;
+  color: #FFFFFF;
+  font-weight: 400;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &:hover {
+    background: #30967E;
+  }
+
+  &.left {
+    background: #459AE2;
+
+    &:hover {
+      background: #004A87;
+    }
+  }
 }
 
 .revealed {
-    transform: rotateY(360deg);
+  transform: rotateY(360deg);
 }
 
-
 .value-hidden {
-    opacity: 0;
-    display: none;
+  opacity: 0;
+  display: none;
 }
 
 .actual-value {
-    opacity: 1;
-    transform: rotateY(360deg);
+  opacity: 1;
+  transform: rotateY(360deg);
+}
+
+.hit_cell {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #5EB29E;
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  .lineA,
+  .lineB {
+    width: calc(1.414 * 200px);
+    border-top: 1px solid #5EB29E;
+    position: absolute;
+    box-sizing: border-box;
+  }
+
+  .lineA {
+    transform: rotate(45deg);
+    transform-origin: top left;
+    top: -2px;
+    left: -1px;
+  }
+
+  .lineB {
+    transform: rotate(-45deg);
+    transform-origin: bottom left;
+    bottom: -2px;
+    left: -1px;
+  }
+}
+
+img.gray-border {
+  border: 1px solid #459AE2;
+}
+
+img.active-border {
+  border: 1px solid #5EB29E;
 }
