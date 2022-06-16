@@ -164,7 +164,7 @@ docker_build('opentdf/example-web-app-image', '.',
 
 This will sync the file contents on all file changes, and execute `pip install` when the requirements change.
 
-But this doesn't build the service, as Tilt builds a k8s resource graph and there is no correponding kuberenetes deployment. So we must add that with a little k8s yaml:
+But this doesn't build the service, as Tilt builds a k8s resource graph and there is no correponding kubernetes deployment. So we must add that with a little k8s yaml:
 
 ```yaml
 apiVersion: apps/v1

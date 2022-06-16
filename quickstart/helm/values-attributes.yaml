@@ -24,4 +24,4 @@ postgres:
   database: tdf_database
   schema: tdf_attribute
 secretRef:
-  name: attributes-secrets
+  name: opentdf-attributes-secrets

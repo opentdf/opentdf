@@ -65,7 +65,7 @@ i_helm() (
   HELMVER="helm-v${HELM_VERSION}-linux-amd64.tar.gz"
   curl -LO https://get.helm.sh/"$HELMVER" || e "Unable to curl [${HELMVER}]"
   tar -xf "$HELMVER" || e "Unable to untar helm blob"
-  cp linux-amd64/helm "${BUILD_BIN}/" || e "Unable to intall [${HELMVER}] binary"
+  cp linux-amd64/helm "${BUILD_BIN}/" || e "Unable to install [${HELMVER}] binary"
 )
 
 i_kind() (

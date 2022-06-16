@@ -22,10 +22,10 @@ ENV SERVER_PUBLIC_NAME ""
 ENV SERVER_LOG_LEVEL "DEBUG"
 
 #Endpoints
-ENV ENTITLEMENTS_URL "http://entitlements:4030"
-ENV ATTRIBUTES_URL "http://attributes:4020" 
+ENV ENTITLEMENTS_URL "http://opentdf-entitlements:4030"
+ENV ATTRIBUTES_URL "http://opentdf-attributes:4020"
 ENV OIDC_ENDPOINT "http://keycloak-http"
-ENV KAS_URL "http://kas:8000"
+ENV KAS_URL "http://opentdf-kas:8000"
 ENV KEYCLOAK_URL "http://keycloak-http/auth/"
 ENV EXTERNAL_KAS_URL "http://localhost:65432/api/kas"
 

@@ -1,10 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import './GameDesk.scss';
-// Assets
-import { ASSETS_LIST } from "../../assets";
-import { CELL_TYPE, COL_INDICATORS, ROW_INDICATORS, } from '../../models/cellType';
+import { CELL_TYPE } from '../../models/cellType';
 import { Board } from "../../components/Board";
-import { hitGridItem, revealCell, sendBoard } from './utils';
+import { getMyGrid, getOpponentGrid, hitGridItem } from './utils';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { playerState } from '../../recoil-atoms/player';
 import { boardState, player1Board, player2Board, ServerStatus } from "../../recoil-atoms/gameDeskData";
@@ -13,16 +10,8 @@ import { usePingServer } from "../../hooks/usePingServer";
 import { useClientTDF } from "../../hooks/useClientTDF";
 import { ServerModeStatus } from '../../components/ServerModeStatus';
 import { ResetGameButton } from '../../components/ResetGameButton';
-
-const { IMAGES } = ASSETS_LIST;
-
-const getMyGrid = async (): Promise<number[][]> => {
-  return ROW_INDICATORS.map((val, rowIdx) => COL_INDICATORS.map((col, colIdx) => revealCell(rowIdx, colIdx)));
-}
-
-const getOpponentGrid = async (): Promise<number[][]> => {
-  return ROW_INDICATORS.map(() => COL_INDICATORS.map(() => CELL_TYPE.UNKNOWN));
-}
+import { sendBoard, setBoard } from '../../utils/board';
+import './GameDesk.scss';
 
 export function GameDesk() {
   const [myGrid, setMyGrid] = useState<number[][] | null>(null);
@@ -30,7 +19,7 @@ export function GameDesk() {
   const { status: currentServerStatus } = useRecoilValue(boardState);
   const setServerStatus = useSetRecoilState(boardState)
   const { startPing, stopPing } = usePingServer();
-  const { setTextToDecrypt, decryptedText } = useClientTDF();
+  const { setTextToDecrypt, decryptedText, decryptString } = useClientTDF();
   const playerData = useRecoilValue(playerState);
 
   const setPlayer1Board = useSetRecoilState(player1Board);
@@ -43,7 +32,6 @@ export function GameDesk() {
 
     setMyGrid(_myGrid);
     setOpponentGrid(_opponentGrid);
-    // const data = await getBoard();
   }
 
   useEffect(() => {
@@ -143,8 +131,10 @@ export function GameDesk() {
         cypher_text: data?.encrypted_string,
       };
       console.log("Enemy name = ", enemyName);
-      setTextToDecrypt(_data);
-      setOpponentGrid(hitGridItem(opponentGrid, rowIdx, colIdx));
+      const secretValue = await decryptString(_data);
+      const newStatusBoard = hitGridItem(opponentGrid, rowIdx, colIdx, secretValue)
+      setBoard("enemy_board", newStatusBoard);
+      setOpponentGrid(newStatusBoard);
     }
   };
 
@@ -168,9 +158,9 @@ export function GameDesk() {
         </div>
         <div className="resetGamePanel"><ResetGameButton /></div>
         <div className="rules">
-          <h3> 
-          There must be one aircraft carrier (size 5), one battleship (size 4), one cruiser (size 3), 2 destroyers (size 2) and 2 submarines (size 1). 
-          Any additional ships or missing ships are not allowed. To win you must sink all of your opponent's ships.
+          <h3>
+            There must be one aircraft carrier (size 5), one battleship (size 4), one cruiser (size 3), 2 destroyers (size 2) and 2 submarines (size 1).
+            Any additional ships or missing ships are not allowed. To win you must sink all of your opponent's ships.
           </h3>
         </div>
       </div>
