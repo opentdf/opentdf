@@ -4,6 +4,8 @@ to support the secure-remote-storage sample application
 """
 
 from keycloak import KeycloakAdmin
+import json
+
 
 FRONTEND_URL = 'http://localhost:3001'
 KC_URL = 'http://localhost:65432/auth/'
@@ -37,21 +39,26 @@ new_client = keycloak_admin.update_client(keycloak_client_id,
     "webOrigins": ["+"],
   }
 )
-
-keycloak_admin.add_mapper_to_client(keycloak_client_id,
-  payload={
-    "protocol": "openid-connect",
-    "config": {
-      "id.token.claim": "true",
-      "access.token.claim": "true",
-      "userinfo.token.claim": "false",
-      "remote.parameters.username": "true",
-      "remote.parameters.clientid": "true",
-      "client.publickey": "X-VirtruPubKey",
-      "claim.name": "tdf_claims",
-      "claim.type": "Virtru OIDC to Entity Claim Mapper"
+try:
+  keycloak_admin.add_mapper_to_client(keycloak_client_id,
+    payload={
+      "protocol": "openid-connect",
+      "config": {
+        "id.token.claim": "true",
+        "access.token.claim": "true",
+        "userinfo.token.claim": "false",
+        "remote.parameters.username": "true",
+        "remote.parameters.clientid": "true",
+        "client.publickey": "X-VirtruPubKey",
+        "claim.name": "tdf_claims",
+        "claim.type": "Virtru OIDC to Entity Claim Mapper"
+      },
+      "name": "tdf_claims",
+      "protocolMapper": "virtru-oidc-protocolmapper",
     },
-    "name": "tdf_claims",
-    "protocolMapper": "virtru-oidc-protocolmapper",
-  },
-)
+  )
+
+  print('Protocol mapper successfully created.')
+
+except Exception as e:
+  print('Protocol mapper already exists with same name, bootstrap script skipped.')
