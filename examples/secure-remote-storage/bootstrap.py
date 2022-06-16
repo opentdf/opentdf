@@ -4,8 +4,6 @@ to support the secure-remote-storage sample application
 """
 
 from keycloak import KeycloakAdmin
-import json
-
 
 FRONTEND_URL = 'http://localhost:3001'
 KC_URL = 'http://localhost:65432/auth/'
@@ -13,7 +11,6 @@ KC_ADMIN_USER = 'keycloakadmin'
 KC_ADMIN_PASS = 'mykeycloakpassword'
 REALM = 'tdf'
 USER_REALM = 'master'
-
 
 keycloak_admin = KeycloakAdmin(
   server_url=KC_URL,
@@ -39,6 +36,7 @@ new_client = keycloak_admin.update_client(keycloak_client_id,
     "webOrigins": ["+"],
   }
 )
+
 try:
   keycloak_admin.add_mapper_to_client(keycloak_client_id,
     payload={
