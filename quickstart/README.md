@@ -38,8 +38,8 @@ A quick (less than 10 minutes) and easy process to protect data with TDF using t
 ### Pull repository
 
 ```shell
-git clone https://github.com/opentdf/documentation.git
-cd documentation/quickstart
+git clone https://github.com/opentdf/opentdf.git
+cd opentdf/quickstart
 ```
 
 ### Log in to GitHub Container Registry
@@ -77,7 +77,7 @@ and options to disable or skip configuration of various features and services.
 
 #### Monitor services
 
-Hit (space) and wait for all resources to turn green.  
+Hit (space) and wait for all resources to turn green.
 Or go to http://localhost:10350/
 
 Services should be up in 4-6 minutes.
@@ -113,7 +113,7 @@ TDF Encrypt/Decrypt is successful!!
 Nano TDF Encrypt/Decrypt is successful!!
 ```
 
-See the TDF files under `documentation/quickstart` (the directory from which the `oidc-auth.py` was run)  
+See the TDF files under `documentation/quickstart` (the directory from which the `oidc-auth.py` was run)
 Report errors to [support@OpenTDF.io](MAILTO:support@OpenTDF.io)
 
 ### Clean up
@@ -138,7 +138,7 @@ See [the OpenTDF Client base repo](https://github.com/opentdf/client-cpp) for de
 
 #### Attributes
 
-Manage attributes with rules used in ABAC  
+Manage attributes with rules used in ABAC
 [OpenAPI](https://github.com/opentdf/backend/blob/main/containers/attributes/openapi.yaml)
 
 <!--http://localhost:65432/api/attributes/docs-->
@@ -210,7 +210,7 @@ In the users panel, to grant a user access to abacus to view and edit attributes
 
 #### entitlements
 
-Manage assignment of attributes to entities  
+Manage assignment of attributes to entities
 [OpenAPI](https://github.com/opentdf/backend/blob/main/containers/entitlements/openapi.yaml)
 
 <!-- http://localhost:65432/api/entitlements/docs -->
@@ -225,7 +225,7 @@ Generate entitlements on-demand (using OpenPolicyAgent and pluggable Rego policy
 
 #### key-access
 
-Access control of the key using ABAC  
+Access control of the key using ABAC
 Swagger http://localhost:65432/api/kas/ui/ (update `/kas/openapi.json`)
 
 ## Solutions
@@ -260,7 +260,7 @@ rm -f /path/to/.tilt-dev/config.lock
 
 ---
 
-A stuck Status of "Runtime Pending" on a postgresql:statefulset.  
+A stuck Status of "Runtime Pending" on a postgresql:statefulset.
 Trigger a restart manually, once or twice.
 
 ---
@@ -278,12 +278,12 @@ Wait. All services aren't up, namely keycloak.
 
 ---
 
-Port conflicts  
+Port conflicts
 check that ports used in `Tiltfile` are not used on the host
 
 ---
 
-attribute-provider: Name or service not known  
+attribute-provider: Name or service not known
 hard-coded value in keycloak-bootstrap?
 
 ---
