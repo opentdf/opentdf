@@ -14,8 +14,8 @@ from logging.config import dictConfig
 import sys
 from opentdf import NanoTDFClient, OIDCCredentials, LogLevel
 
-from services import addUserEntitlement, refreshTokens
-from constants import *
+from .services import addUserEntitlement, refreshTokens
+from .constants import *
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("abacship")
@@ -49,6 +49,11 @@ class Turn:
     def __init__(self, player, row, col):
         self.guess = (row,col)
         self.player = player
+
+    def __eq__(self, other):
+        if not isinstance(other, Turn):
+            return False
+        return self.player == other.player and self.guess == other.guess
 
 class GamePlayer:
     board = None
@@ -115,7 +120,7 @@ class GamePlayer:
             self.player.access_token = new_access
 
 class Game:
-    status = 1
+    status = Status.setup
     opentdf_oidccreds = None
     player1 = None
     player2 = None
@@ -192,6 +197,8 @@ class Game:
     """
     def victoryCheck(self):
         logger.debug("Victory check")
+        if self.player1 is None or self.player2 is None:
+            return False
         if set(self.player2.ships).issubset(set(self.player1.guesses)):
             self.status = Status.p1_victory
             return True
@@ -204,9 +211,10 @@ class Game:
     Reset the game
     """
     def reset(self):
-        self.status = 1
+        self.status = Status.setup
         self.player1 = None
         self.player2 = None
+        self.turns = []
 
 """
 Get the positions of ships on board

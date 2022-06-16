@@ -14,3 +14,8 @@ http://localhost:4060/docs
 
 #### ReDoc
 http://localhost:4030/redoc
+
+### Run Tests
+```shell
+cd backend_server/tests && pytest
+```
