@@ -6,7 +6,7 @@ import jwt
 import sys
 from keycloak import KeycloakAdmin, KeycloakOpenID
 import requests
-from constants import *
+from .constants import *
 from fastapi import HTTPException
 from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
 

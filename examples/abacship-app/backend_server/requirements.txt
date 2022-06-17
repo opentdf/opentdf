@@ -37,3 +37,5 @@ sniffio==1.2.0; python_version >= '3.5'
 typing-extensions==4.1.1; python_version >= '3.6'
 python-keycloak==0.27.0
 opentdf==0.7.3
+colorlog
+aiohttp

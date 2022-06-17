@@ -27,7 +27,7 @@ from pydantic import AnyUrl, BaseSettings, Field, Json, ValidationError, conlist
 from pydantic.main import BaseModel
 #from python_base import Pagination, get_query
 
-from game import (
+from .game import (
     Status,
     Player,
     WholeBoard,
@@ -35,7 +35,7 @@ from game import (
     validBoard,
     genRandomBoard
 )
-from services import (
+from .services import (
     setupKeycloak,
     setupAttributes,
     setupEntitlements,
@@ -48,7 +48,7 @@ from services import (
     deleteUserEntitlement
 )
 
-from constants import *
+from .constants import *
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("abacship")
