@@ -1,7 +1,7 @@
 import { ASSETS_LIST } from "../../assets";
 import { BoardKeyType, SecretBoard, ShipType, StatusBoard } from "../../interfaces/board";
 import { CELL_TYPE, COL_INDICATORS, ROW_INDICATORS } from "../../models/cellType";
-import { postGrandAccess } from "../../services/axios";
+import { getPreviousTurn, postGrandAccess } from "../../services/axios";
 import { defaulBoardSize, getBoard, setBoard } from "../../utils/board";
 import { generateRandomBoard } from "../../utils/randomBoard";
 
@@ -43,18 +43,19 @@ export const hitGridItem = (statusBoard: number[][], rowIdx: number, colIdx: num
 };
 
 export const getMyGrid = async (): Promise<number[][]> => {
-  const boardKey = "my_secret_board";
-  const localBoard = getBoard<SecretBoard>(boardKey);
-  let board: SecretBoard;
+  const boardKey = "my_board";
+  const localBoard = getBoard<StatusBoard>(boardKey);
+  let board: StatusBoard;
   if (localBoard.length === 0) {
+    const secretBoardKey = "my_secret_board";
     const randomBoard = generateRandomBoard(defaulBoardSize);
-    setBoard(boardKey, randomBoard);
-    board = randomBoard;
+    setBoard(secretBoardKey, randomBoard);
+    board = randomBoard.map((row, rowIdx) => row.map((cell, colIdx) => revealCell(cell)));
   } else {
     board = localBoard;
   }
 
-  return board.map((row, rowIdx) => row.map((cell, colIdx) => revealCell(cell)));
+  return board;
 }
 
 export const getOpponentGrid = async (): Promise<number[][]> => {
@@ -83,3 +84,16 @@ export const shareAccess = (name: string) => {
   };
   postGrandAccess(dataInfo);
 };
+
+export const updatePlayerBoardByPreviousTurnData = async (): Promise<StatusBoard> => {
+  const previousTurn = await getPreviousTurn();
+  console.log(previousTurn);
+  const secretBoardKey = "my_secret_board";
+  const boardKey = "my_board";
+  const localBoard = getBoard<StatusBoard>(boardKey);
+  const localSecretBoard = getBoard<SecretBoard>(secretBoardKey);
+  const cellType = localSecretBoard[previousTurn.row][previousTurn.col] === "ocean" ? CELL_TYPE.OCEAN_HIT : CELL_TYPE.SHIP_HIT;
+  localBoard[previousTurn.row][previousTurn.col] = cellType;
+
+  return localBoard;
+}

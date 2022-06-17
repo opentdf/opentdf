@@ -1,22 +1,69 @@
+$left_unknown_color: #459AE2;
+$left_unknown_hover_color: #004A87;
+$left_unknown_ship_hit_color: white;
+$left_unknown_ocean_hit_color: $left_unknown_color;
+$left_ocean_cell_color: $left_unknown_color;
+$left_ocean_cell_hit_color: #004A87;
+$left_ship_cell_color: $left_unknown_color;
+$left_ship_cell_hit_color: #932E43;
+
+$right_unknown_color: #5EB29E;
+$right_unknown_hover_color: #30967E;
+$right_unknown_ship_hit_color: white;
+$right_unknown_ocean_hit_color: $right_unknown_color;
+$right_ocean_cell_color: $right_unknown_color;
+$right_ocean_cell_hit_color: #0F775E;
+$right_ship_cell_color: $right_unknown_color;
+$right_ship_cell_hit_color: #932E43;
+
+
 .unknown-value {
   opacity: 1;
   display: block;
 }
 
 .ocean_cell {
-  background: #459AE2;
   width: 100%;
   height: 100%;
 
+  &.left {
+    background: $left_ocean_cell_color;
+  }
+
   &.right {
-    background: #5EB29E;
+    background: $right_ocean_cell_color;
+  }
+}
+
+.ocean_cell_hit {
+  width: 100%;
+  height: 100%;
+
+  &.left {
+    background: $left_ocean_cell_hit_color;
+  }
+
+  &.right {
+    background: $right_ocean_cell_hit_color;
+  }
+}
+
+.ship_cell_hit {
+  width: 100%;
+  height: 100%;
+
+  &.left {
+    background: $left_ship_cell_hit_color;
+  }
+
+  &.right {
+    background: $right_ship_cell_hit_color;
   }
 }
 
 .unknown_cell {
   width: 100%;
   height: 100%;
-  background: #5EB29E;
   color: #FFFFFF;
   font-weight: 400;
   font-size: 14px;
@@ -24,45 +71,51 @@
   justify-content: center;
   align-items: center;
 
-  &:hover {
-    background: #30967E;
-  }
-
   &.left {
-    background: #459AE2;
+    background: $left_unknown_color;
 
     &:hover {
-      background: #004A87;
+      background: $left_unknown_hover_color;
+    }
+  }
+
+  &.right {
+    background: $right_unknown_color;
+
+    &:hover {
+      background: $right_unknown_hover_color;
     }
   }
 }
 
-.revealed {
-  transform: rotateY(360deg);
-}
-
-.value-hidden {
-  opacity: 0;
-  display: none;
-}
-
-.actual-value {
-  opacity: 1;
-  transform: rotateY(360deg);
-}
-
-.hit_cell {
+.unknown_cell_hit {
   width: 100%;
   height: 100%;
-  border: 1px solid #5EB29E;
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
 
+  &.left {
+    border: 1px solid $left_unknown_ocean_hit_color;
+
+    .lineA,
+    .lineB {
+      border-top: 1px solid $left_unknown_ocean_hit_color;
+    }
+  }
+
+  &.right {
+    border: 1px solid $right_unknown_ocean_hit_color;
+
+    .lineA,
+    .lineB {
+      border-top: 1px solid $right_unknown_ocean_hit_color;
+    }
+  }
+
   .lineA,
   .lineB {
-    width: calc(1.414 * 200px);
-    border-top: 1px solid #5EB29E;
+    width: calc(1.414 * 38px);
     position: absolute;
     box-sizing: border-box;
   }
@@ -82,10 +135,24 @@
   }
 }
 
-img.gray-border {
-  border: 1px solid #459AE2;
+img.player_one {
+  border: 1px solid $left_ship_cell_color;
 }
 
-img.active-border {
-  border: 1px solid #5EB29E;
+img.player_two {
+  border: 1px solid $right_ship_cell_color;
+}
+
+.revealed {
+  transform: rotateY(360deg);
+}
+
+.value-hidden {
+  opacity: 0;
+  display: none;
+}
+
+.actual-value {
+  opacity: 1;
+  transform: rotateY(360deg);
 }

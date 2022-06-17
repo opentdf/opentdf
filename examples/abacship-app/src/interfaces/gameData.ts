@@ -24,3 +24,9 @@ export interface ICheckSquareResponse {
   "encrypted_string": string;
   "status": ServerStatus;
 }
+
+export interface IPreviousTurn {
+  "player": string;
+  "row": number;
+  "col": number;
+}

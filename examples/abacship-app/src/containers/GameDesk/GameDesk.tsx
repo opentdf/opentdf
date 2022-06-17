@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CELL_TYPE } from '../../models/cellType';
 import { Board } from "../../components/Board";
-import { getMyGrid, getOpponentGrid, hitGridItem, shareAccess } from './utils';
+import { getMyGrid, getOpponentGrid, hitGridItem, shareAccess, updatePlayerBoardByPreviousTurnData } from './utils';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { playerState } from '../../recoil-atoms/player';
 import { boardState, ServerStatus } from "../../recoil-atoms/gameDeskData";
@@ -33,12 +33,18 @@ export function GameDesk() {
 
   useEffect(() => {
     generateGrids();
-    startPing();
+    startPing(); // TODO ENABLE IT !!!!
 
     return function () {
       stopPing();
     }
   }, []);
+
+  const updateMyBoard = async () => {
+    const data = await updatePlayerBoardByPreviousTurnData();
+    setBoard("my_board", data);
+    setMyGrid(data);
+  };
 
   useEffect(() => {
     if (currentServerStatus === ServerStatus.p1_victory || currentServerStatus === ServerStatus.p2_victory) {
@@ -79,12 +85,16 @@ export function GameDesk() {
     // PLAYER TURN
     if (currentServerStatus === ServerStatus.p1_turn) {
       // PLAYER 1
-
+      if (playerData.name === "player1") {
+        updateMyBoard();
+      }
     }
 
     if (currentServerStatus === ServerStatus.p2_turn) {
       //PLAYER 2
-
+      if (playerData.name === "player2") {
+        updateMyBoard();
+      }
     }
   }, [currentServerStatus, playerData]);
 
@@ -129,7 +139,7 @@ export function GameDesk() {
 
   const renderBoard = (position: TypeBoardPosition, isEnemy: boolean) => {
     return (
-      <div className="board1">
+      <div className="board1" key={position}>
         <PlayerNameTitle playerName={isEnemy ? playerData.enemyName : playerData.name} />
         <Board position={position} grid={isEnemy ? opponentGrid : myGrid} onCellClicked={isEnemy ? onOpponentCellClicked : onMyCellClicked} />
       </div>
