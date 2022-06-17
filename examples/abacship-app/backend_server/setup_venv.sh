@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd backend_server/src
+cd backend_server/app
 
 if [ ! -d "./venv" ] 
 then

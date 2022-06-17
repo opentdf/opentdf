@@ -1,5 +1,5 @@
 
-valid_board = [
+VALID_BOARD = [
     ["aircraft carrier", "ocean", "ocean", "ocean", "ocean", "destroyer", "destroyer", "ocean", "ocean", "ocean"],
     ["aircraft carrier", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "destroyer", "ocean"],
     ["aircraft carrier", "ocean", "ocean", "ocean", "cruiser", "cruiser", "cruiser", "ocean", "destroyer", "ocean"],
@@ -12,7 +12,7 @@ valid_board = [
     ["ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean"]
 ]
 
-valid_board_2 = [
+VALID_BOARD_2 = [
     ["ocean", "ocean", "ocean", "ocean", "ocean", "destroyer", "destroyer", "ocean", "ocean", "ocean"],
     ["aircraft carrier", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "destroyer", "ocean"],
     ["aircraft carrier", "ocean", "ocean", "ocean", "cruiser", "cruiser", "cruiser", "ocean", "destroyer", "ocean"],
@@ -25,7 +25,7 @@ valid_board_2 = [
     ["ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean"]
 ]
 
-invalid_board_missing = [
+INVALID_BOARD_MISSING = [
     ["aircraft carrier", "ocean", "ocean", "ocean", "ocean", "destroyer", "destroyer", "ocean", "ocean", "ocean"],
     ["aircraft carrier", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "destroyer", "ocean"],
     ["aircraft carrier", "ocean", "ocean", "ocean", "cruiser", "cruiser", "cruiser", "ocean", "destroyer", "ocean"],
@@ -37,7 +37,7 @@ invalid_board_missing = [
     ["ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "submarine", "ocean", "ocean"],
     ["ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean"]
 ]
-invalid_board_extra = [
+INVALID_BOARD_EXTRA = [
     ["aircraft carrier", "ocean", "ocean", "ocean", "ocean", "battleship", "battleship", "battleship", "battleship", "ocean"],
     ["aircraft carrier", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean"],
     ["aircraft carrier", "ocean", "ocean", "ocean", "cruiser", "cruiser", "cruiser", "ocean", "ocean", "ocean"],
@@ -50,7 +50,7 @@ invalid_board_extra = [
     ["ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean", "ocean"]
 ]
 
-access_token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJXWU5yRmhaT25IbUFEY0N0d0x0V\
+ACCESS_TOKEN = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJXWU5yRmhaT25IbUFEY0N0d0x0V\
                 lVoY1A4SHNQYU1Rbk1GYnllcHR2VzlnIn0.eyJleHAiOjE2NTUyOTU1MTQsImlhdCI6MTY1NTI5NTI\
                 xNCwianRpIjoiNmY1MThhZjctZDg1ZS00OWEwLTgwZjItM2M3N2RhMzg0NDllIiwiaXNzIjoiaHR0c\
                 DovL2xvY2FsaG9zdDo2NTQzMi9hdXRoL3JlYWxtcy90ZGYiLCJhdWQiOlsidGRmLWVudGl0bGVtZW50\
@@ -70,7 +70,7 @@ access_token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJXWU5yRmhaT25I
                 YHg722eJImJ_DJq2hAC8If2bThy6bg3A2CZ907Jl7WGIQXfOS_EbkRvKySaY2QdOnvFxbB3J3s9NRUHP7mLn\
                 RpGeicffqMbYkHeatQzqBfTBCg4_NKuv-10DesUjwxa_A"
 
-refresh_token = "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJmZTM3NTYxZS05ZTBiLTQ1N2UtODU5Mi1\
+REFRESH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJmZTM3NTYxZS05ZTBiLTQ1N2UtODU5Mi1\
                 iZjg2NDYzYzI4ZDIifQ.eyJleHAiOjE2NTUyOTcwMTQsImlhdCI6MTY1NTI5NTIxNCwianRpIjoiMTg4MWQwM\
                 DEtN2E2MS00N2IyLTk4ODQtYzVhY2QxNmJmZGZkIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo2NTQzMi9hdXR\
                 oL3JlYWxtcy90ZGYiLCJhdWQiOiJodHRwOi8vbG9jYWxob3N0OjY1NDMyL2F1dGgvcmVhbG1zL3RkZiIsInN1Y\

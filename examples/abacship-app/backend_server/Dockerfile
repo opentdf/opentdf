@@ -10,7 +10,7 @@ FROM python:${PY_VERSION} as build
 WORKDIR /build
 
 COPY requirements.txt requirements.txt
-COPY ./src .
+COPY ./app ./app
 RUN echo $(arch)
 RUN pip3 install --no-cache-dir --upgrade pip setuptools
 RUN pip3 install --no-cache-dir --requirement requirements.txt
@@ -36,4 +36,4 @@ ENTRYPOINT python3 -m uvicorn \
     --root-path ${SERVER_ROOT_PATH} \
     --no-use-colors \
     --no-server-header \
-    main:app
+    app.main:app
