@@ -137,8 +137,8 @@ if [[ $LOAD_SECRETS ]]; then
 
   monolog TRACE "Creating 'opentdf-attributes-secrets'..."
   kubectl create secret generic opentdf-attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
-  monolog TRACE "Creating 'opentdf-entitlement-store-secrets'..."
-  kubectl create secret generic opentdf-entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ent-store secrets failed"
+  monolog TRACE "Creating 'opentdf-entitlement-store-secret'..."
+  kubectl create secret generic opentdf-entitlement-store-secret --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ent-store secrets failed"
   monolog TRACE "Creating 'opentdf-entitlement-pdp-secrets'..."
   # If CR_PAT is undefined and the entitlement-pdp chart is configured to use the policy bundle baked in at container build time, this isn't used and can be empty
   kubectl create secret generic opentdf-entitlement-pdp-secrets --from-literal=opaPolicyPullSecret="${CR_PAT}" || e "create ent-pdp secrets failed"
