@@ -37,7 +37,7 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: './src/index.html'
     }),
-    new NodePolyfillPlugin(),
+    // new NodePolyfillPlugin(),
   ],
   resolve: {
     extensions: ['.js'],

@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDom from 'react-dom';
 import Keycloak from 'keycloak-js';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
-import App from './App';
+import App from './App-client';
 
 import './index.css';
 
