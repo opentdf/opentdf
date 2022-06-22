@@ -51,6 +51,8 @@ For local development
 
 ```shell
 kubectl create namespace keycloak
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo update
 helm install --version 5.1.1 --values helm/keycloak-values.yaml --namespace keycloak keycloak bitnami/keycloak
 ```
 
