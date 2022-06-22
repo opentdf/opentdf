@@ -19,7 +19,7 @@ e() {
 
 : "${SERVICE_IMAGE_TAG:="offline"}"
 
-BACKEND_CHART_TAG="0.0.0-sha-eb68a90"
+BACKEND_CHART_TAG="0.0.0-sha-53411b7"
 FRONTEND_CHART_TAG="0.0.0-sha-93bb332"
 LOAD_IMAGES=1
 LOAD_SECRETS=1
@@ -139,9 +139,9 @@ if [[ $LOAD_SECRETS ]]; then
   kubectl create secret generic opentdf-attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
   monolog TRACE "Creating 'opentdf-entitlement-store-secrets'..."
   kubectl create secret generic opentdf-entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ent-store secrets failed"
-  monolog TRACE "Creating 'opentdf-entitlement-pdp-secrets'..."
+  monolog TRACE "Creating 'opentdf-entitlement-pdp-secret'..."
   # If CR_PAT is undefined and the entitlement-pdp chart is configured to use the policy bundle baked in at container build time, this isn't used and can be empty
-  kubectl create secret generic opentdf-entitlement-pdp-secrets --from-literal=opaPolicyPullSecret="${CR_PAT}" || e "create ent-pdp secrets failed"
+  kubectl create secret generic opentdf-entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}" || e "create ent-pdp secrets failed"
   monolog TRACE "Creating 'opentdf-entitlements-secrets'..."
   kubectl create secret generic opentdf-entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
   monolog TRACE "Creating 'keycloak-secrets'..."
@@ -228,7 +228,7 @@ load-chart() {
   val_file="${DEPLOYMENT_DIR}/values-${repo}.yaml"
   if [[ $RUN_OFFLINE ]]; then
     monolog TRACE "helm upgrade --install ${svc} ${CHART_ROOT}/${repo}-*.tgz -f ${val_file} --set image.tag=${SERVICE_IMAGE_TAG}"
-    helm upgrade --install "opentdf-${svc}" "${CHART_ROOT}"/"${repo}"-*.tgz -f "${val_file}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to install chart for ${svc}"
+    helm upgrade --install "${svc}" "${CHART_ROOT}"/"${repo}"-*.tgz -f "${val_file}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to install chart for ${svc}"
   else
     monolog TRACE "helm upgrade --version ${version} --install ${svc} oci://ghcr.io/opentdf/charts/${repo} -f ${val_file}"
     helm upgrade --version "${version}" --install "${svc}" "oci://ghcr.io/opentdf/charts/${repo}" -f "${val_file}" || e "Unable to install $svc chart"

@@ -57,7 +57,5 @@ entitlements:
         - https://example.com/attr/Classification/value/S
         - https://example.com/attr/COI/value/PRX
 
-externalUrl: http://localhost:65432
-
 job:
   backoffLimit: 3
