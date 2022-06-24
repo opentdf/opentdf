@@ -1,4 +1,40 @@
-load("ext://min_tilt_version", "min_tilt_version")
+load("ext://helm_resource", "helm_resource", "helm_repo")
 
-# The helm_resource extension uses the 'new extensions api' introduced in tilt 0.25
-min_tilt_version("0.25")
+# version_settings() enforces a minimum Tilt version
+# https://docs.tilt.dev/api.html#api.version_settings
+version_settings(constraint='>=0.30.0')
+
+# Where the redirect URI should go to, for example
+EXTERNAL_URL = "http://localhost:65432"
+
+# Versions of things backend to pull (attributes, kas, etc)
+BACKEND_IMAGE_TAG = "main"
+BACKEND_CHART_TAG = "0.0.0-sha-53411b7"
+FRONTEND_IMAGE_TAG = "main"
+FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
+
+# disable Quickstart bootstrap
+# FIXME change to HELM_VALUES_DIR '../examples'
+os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')
+
+# start Quickstart
+# https://docs.tilt.dev/api.html#api.include
+include('../quickstart/Tiltfile')
+
+# execute Examples bootstrap
+helm_resource(
+    "bootstrap",
+    "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
+    flags=[
+        "--version",
+        BACKEND_CHART_TAG,
+        "-f",
+        "helm/values-bootstrap.yaml",
+        "--set",
+        "externalUrl=%s" % EXTERNAL_URL,
+        "--set",
+        "image.tag=%s" % BACKEND_IMAGE_TAG,
+    ],
+    labels="examples",
+    resource_deps=["opentdf-attributes", "opentdf-entitlements", "keycloak"],
+)

@@ -156,22 +156,25 @@ helm_resource(
     resource_deps=["opentdf-attributes", "keycloak"],
 )
 
-helm_resource(
-    "keycloak-bootstrap",
-    "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
-    flags=[
-        "--version",
-        BACKEND_CHART_TAG,
-        "-f",
-        "helm/values-keycloak-bootstrap.yaml",
-        "--set",
-        "externalUrl=%s" % EXTERNAL_URL,
-        "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
-    ],
-    labels="utility",
-    resource_deps=["opentdf-attributes", "opentdf-entitlements", "keycloak"],
-)
+# ability to disable the quickstart defaults
+if not os.environ.get("QUICKSTART_BOOTSTRAP_DISABLED"):
+    helm_resource(
+        "keycloak-bootstrap",
+        "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
+        flags=[
+            "--version",
+            BACKEND_CHART_TAG,
+            "-f",
+            "helm/values-keycloak-bootstrap.yaml",
+            "--set",
+            "externalUrl=%s" % EXTERNAL_URL,
+            "--set",
+            "image.tag=%s" % BACKEND_IMAGE_TAG,
+        ],
+        labels="utility",
+        resource_deps=["opentdf-attributes", "opentdf-entitlements", "keycloak"],
+    )
+
 
 helm_resource(
     "opentdf-abacus",
@@ -180,7 +183,7 @@ helm_resource(
         "--version",
         FRONTEND_CHART_TAG,
         "-f",
-        "helm/values-abacus.yaml",
+        "%s/helm/values-abacus.yaml" % '../examples',
         "--set",
         "attributes.serverUrl=%s/api/attributes" % EXTERNAL_URL,
         "--set",

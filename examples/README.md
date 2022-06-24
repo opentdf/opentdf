@@ -6,15 +6,10 @@ Experience examples based on OpenTDF
 
 The examples are built on top of the Quickstart. See Prerequisites in [Quickstart](../quickstart#prerequisites).
 
-## Create cluster
-
-```shell
-kind create cluster --name opentdf-examples
-```
-
 ### Start examples
 
 ```shell
+kind create cluster --name opentdf-examples
 tilt up
 ```
 
