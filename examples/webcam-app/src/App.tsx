@@ -117,15 +117,16 @@ function App() {
             oidcOrigin: OIDC_ENDPOINT,
             organizationName: OIDC_REALM
         });
-        setClientAlice(new NanoTDFDatasetClient(authProviderAlice, KAS_URL));
+        const tmpClientAlice = new NanoTDFDatasetClient(authProviderAlice, KAS_URL);
         // BEGIN this triggers an OIDC access token with claims to be fetched
-        await clientAlice?.decrypt(await clientAlice.encrypt("dummy"));
+        await tmpClientAlice.decrypt(await tmpClientAlice.encrypt("dummy"));
         // END
         // @ts-ignore
-        let token = await clientAlice.authProvider.oidcAuth?.getCurrentAccessToken();
+        let token = await tmpClientAlice.authProvider.oidcAuth?.getCurrentAccessToken();
         // @ts-ignore
         let decoded: {tdf_claims} = jwt_decode(token);
         setEntitlementsAlice(decoded.tdf_claims.entitlements);
+        setClientAlice(tmpClientAlice);
         // bob Direct Access Grants login
         urlencoded.set("username", "bob")
         request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", {method: 'POST', headers: myHeaders, body: urlencoded});
@@ -139,15 +140,16 @@ function App() {
             oidcOrigin: OIDC_ENDPOINT,
             organizationName: OIDC_REALM
         });
-        setClientBob(new NanoTDFDatasetClient(authProviderBob, KAS_URL));
+        const tmpClientBob = new NanoTDFDatasetClient(authProviderBob, KAS_URL);
         // BEGIN this triggers an OIDC access token with claims to be fetched
-        await clientBob?.decrypt(await clientBob.encrypt("dummy"));
+        await tmpClientBob.decrypt(await tmpClientBob.encrypt("dummy"));
         // END
         // @ts-ignore
-        token = await clientBob.authProvider.oidcAuth?.getCurrentAccessToken();
+        token = await tmpClientBob.authProvider.oidcAuth?.getCurrentAccessToken();
         // @ts-ignore
         decoded = jwt_decode(token);
         setEntitlementsBob(decoded.tdf_claims.entitlements);
+        setClientBob(tmpClientBob);
         // eve Direct Access Grants login
         urlencoded.set("username", "eve");
         request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", {method: 'POST', headers: myHeaders, body: urlencoded});
@@ -161,15 +163,16 @@ function App() {
             oidcOrigin: OIDC_ENDPOINT,
             organizationName: OIDC_REALM
         });
-        setClientEve(new NanoTDFDatasetClient(authProviderEve, KAS_URL));
+        const tmpClientEve = new NanoTDFDatasetClient(authProviderEve, KAS_URL);
         // BEGIN this triggers an OIDC access token with claims to be fetched
-        await clientEve?.decrypt(await clientEve.encrypt("dummy"));
+        await tmpClientEve.decrypt(await tmpClientEve.encrypt("dummy"));
         // END
         // @ts-ignore
-        token = await clientEve.authProvider.oidcAuth?.getCurrentAccessToken();
+        token = await tmpClientEve.authProvider.oidcAuth?.getCurrentAccessToken();
         // @ts-ignore
         decoded = jwt_decode(token);
         setEntitlementsEve(decoded.tdf_claims.entitlements);
+        setClientEve(tmpClientEve);
     }
 
     function toggleContentExclusivity(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
