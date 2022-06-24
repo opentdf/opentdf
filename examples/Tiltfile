@@ -1,0 +1,4 @@
+load("ext://min_tilt_version", "min_tilt_version")
+
+# The helm_resource extension uses the 'new extensions api' introduced in tilt 0.25
+min_tilt_version("0.25")
