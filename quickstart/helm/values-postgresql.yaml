@@ -35,6 +35,9 @@ initdbScripts:
         name         VARCHAR NOT NULL UNIQUE, -- ??? COLLATE NOCASE
         description  VARCHAR,
         values_array TEXT[]
+        group_by_attr INTEGER REFERENCES tdf_attribute.attribute(id),
+        group_by_attrval VARCHAR,
+        CONSTRAINT no_attrval_without_attrid CHECK(group_by_attrval is not null or group_by_attr is null)
     );
 
     CREATE SCHEMA IF NOT EXISTS tdf_entitlement;
@@ -82,3 +85,10 @@ initdbScripts:
     GRANT USAGE ON SCHEMA tdf_entity TO tdf_entity_manager;
     GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entity TO tdf_entity_manager;
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_entity TO tdf_entity_manager;
+
+    upgrade-1.0.0.sql: |
+    -- Add groupby
+    ALTER TABLE tdf_attribute.attribute ADD COLUMN IF NOT EXISTS group_by_attr INTEGER REFERENCES tdf_attribute.attribute(id);
+    ALTER TABLE tdf_attribute.attribute ADD COLUMN IF NOT EXISTS group_by_attrval VARCHAR;
+    ALTER TABLE tdf_attribute.attribute DROP CONSTRAINT IF EXISTS no_attrval_without_attrid;
+    ALTER TABLE tdf_attribute.attribute ADD CONSTRAINT no_attrval_without_attrid CHECK(group_by_attrval is not null or group_by_attr is null)
