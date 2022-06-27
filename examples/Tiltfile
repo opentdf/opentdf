@@ -14,8 +14,10 @@ FRONTEND_IMAGE_TAG = "main"
 FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
 
 # disable Quickstart bootstrap
-# FIXME change to HELM_VALUES_DIR '../examples'
 os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')
+
+# Where helm values for examples
+os.putenv('HELM_VALUES_PATH', '../examples/helm')
 
 # start Quickstart
 # https://docs.tilt.dev/api.html#api.include
