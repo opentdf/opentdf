@@ -3,6 +3,7 @@ import { Square } from "../Square";
 import { CELL_TYPE, COL_INDICATORS, ROW_INDICATORS } from "../../models/cellType";
 import "./Board.scss";
 import { TypeBoardPosition } from "../../interfaces/board";
+import { PopupMessage } from "../PopupMessage";
 
 interface IBoard {
   onCellClicked: (rowId: number, colId: number) => void,
@@ -25,7 +26,7 @@ export function Board({ onCellClicked, grid, position = "left" }: IBoard) {
     <>&nbsp;</>,
   ];
   COL_INDICATORS.forEach(indicator => {
-    headerColumns.push(<span>{indicator}</span>);
+    headerColumns.push(<span key={`${position} 0-${indicator}`}>{indicator}</span>);
   });
 
   const rows = [headerColumns];
@@ -34,7 +35,7 @@ export function Board({ onCellClicked, grid, position = "left" }: IBoard) {
     // First row is the indicator row.
     const gridRowIndex = rows.length - 1;
     grid[gridRowIndex].forEach((gridCell: number) => {
-      row.push(<Square type={gridCell} position={position} />);
+      row.push(<Square key={`${position} ${indicator}-${gridCell}`} type={gridCell} position={position} />);
     });
     rows.push(row);
   });
@@ -56,5 +57,6 @@ export function Board({ onCellClicked, grid, position = "left" }: IBoard) {
         ))}
       </div>
     ))}
+    <PopupMessage position={position} />
   </div>)
 }

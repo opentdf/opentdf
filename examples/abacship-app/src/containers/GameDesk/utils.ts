@@ -87,15 +87,15 @@ export const shareAccess = (name: string) => {
   postGrandAccess(dataInfo);
 };
 
-export const updatePlayerBoardByPreviousTurnData = async (): Promise<StatusBoard> => {
+export const updatePlayerBoardByPreviousTurnData = async (): Promise<{ localBoard: StatusBoard, secretValue: string }> => {
   const previousTurn = await getPreviousTurn();
   console.log(previousTurn);
   const secretBoardKey = "my_secret_board";
   const boardKey = "my_board";
   const localBoard = getBoard<StatusBoard>(boardKey);
   const localSecretBoard = getBoard<SecretBoard>(secretBoardKey);
-  localBoard[previousTurn.row][previousTurn.col] = localSecretBoard[previousTurn.row][previousTurn.col] === "ocean" ?
-    CELL_TYPE.OCEAN_HIT : CELL_TYPE.SHIP_HIT;
+  const secretValue = localSecretBoard[previousTurn.row][previousTurn.col];
+  localBoard[previousTurn.row][previousTurn.col] = secretValue === "ocean" ? CELL_TYPE.OCEAN_HIT : CELL_TYPE.SHIP_HIT;
 
-  return localBoard;
+  return { localBoard, secretValue };
 }

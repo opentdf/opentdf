@@ -4,7 +4,7 @@ import { Board } from "../../components/Board";
 import { getMyGrid, getOpponentGrid, hitGridItem, shareAccess, updatePlayerBoardByPreviousTurnData } from './utils';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { playerState } from '../../recoil-atoms/player';
-import { boardState, ServerStatus } from "../../recoil-atoms/gameDeskData";
+import { boardMessageData, boardState, ServerStatus } from "../../recoil-atoms/gameDeskData";
 import { requestCheckSquare } from "../../services/axios";
 import { usePingServer } from "../../hooks/usePingServer";
 import { useClientTDF } from "../../hooks/useClientTDF";
@@ -14,12 +14,14 @@ import { sendBoard, setBoard } from '../../utils/board';
 import { PlayerNameTitle } from '../../components/PlayerNameTitle';
 import './GameDesk.scss';
 import { TypeBoardPosition } from '../../interfaces/board';
+import { BOARD_POPUP_MESSAGE } from '../../components/PopupMessage/PopupMessage';
 
 export function GameDesk() {
   const [myGrid, setMyGrid] = useState<number[][] | null>(null);
   const [opponentGrid, setOpponentGrid] = useState<number[][] | null>(null);
   const { status: currentServerStatus } = useRecoilValue(boardState);
-  const setServerStatus = useSetRecoilState(boardState)
+  const setServerStatus = useSetRecoilState(boardState);
+  const setPopupMessage = useSetRecoilState(boardMessageData);
   const { startPing, stopPing } = usePingServer();
   const { setTextToDecrypt, decryptedText, decryptString } = useClientTDF();
   const playerData = useRecoilValue(playerState);
@@ -35,15 +37,20 @@ export function GameDesk() {
     generateGrids();
     startPing(); // TODO ENABLE IT !!!!
 
-    return function () {
+    return function cleanup() {
       stopPing();
     }
   }, []);
 
   const updateMyBoard = async () => {
-    const data = await updatePlayerBoardByPreviousTurnData();
-    setBoard("my_board", data);
-    setMyGrid(data);
+    const { localBoard, secretValue } = await updatePlayerBoardByPreviousTurnData();
+    setBoard("my_board", localBoard);
+    setMyGrid(localBoard);
+    //show popup  message
+    setPopupMessage({
+      message: secretValue === "ocean" ? BOARD_POPUP_MESSAGE.ENEMY_MISS : BOARD_POPUP_MESSAGE.ENEMY_HIT,
+      position: playerData.name === "player1" ? "left" : "right"
+    });
   };
 
   useEffect(() => {
@@ -130,6 +137,11 @@ export function GameDesk() {
       const newStatusBoard = hitGridItem(opponentGrid, rowIdx, colIdx, secretValue)
       setBoard("enemy_board", newStatusBoard);
       setOpponentGrid(newStatusBoard);
+      // show popup message
+      setPopupMessage({
+        message: secretValue === "ocean" ? BOARD_POPUP_MESSAGE.MISS : BOARD_POPUP_MESSAGE.HIT,
+        position: playerData.name === "player1" ? "right" : "left"
+      });
     }
   };
 
@@ -139,7 +151,7 @@ export function GameDesk() {
 
   const renderBoard = (position: TypeBoardPosition, isEnemy: boolean) => {
     return (
-      <div className="board1" key={position}>
+      <div className="board1" key={`board-${position}`}>
         <PlayerNameTitle playerName={isEnemy ? playerData.enemyName : playerData.name} />
         <Board position={position} grid={isEnemy ? opponentGrid : myGrid} onCellClicked={isEnemy ? onOpponentCellClicked : onMyCellClicked} />
       </div>
@@ -160,12 +172,6 @@ export function GameDesk() {
           {renderDesk()}
         </div>
         <div className="resetGamePanel"><ResetGameButton /></div>
-        <div className="rules">
-          <h3>
-            There must be one aircraft carrier (size 5), one battleship (size 4), one cruiser (size 3), 2 destroyers (size 2) and 2 submarines (size 1).
-            Any additional ships or missing ships are not allowed. To win you must sink all of your opponent's ships.
-          </h3>
-        </div>
       </div>
     </div>
   );
