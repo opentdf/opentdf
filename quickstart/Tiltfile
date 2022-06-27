@@ -14,7 +14,7 @@ FRONTEND_IMAGE_TAG = "main"
 FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
 
 # Where helm values for quickstart
-HELM_VALUES_PATH = './helm'
+HELM_VALUES_PATH = 'helm'
 
 k8s_yaml(
     helm(
