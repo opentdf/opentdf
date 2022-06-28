@@ -5,7 +5,7 @@ entitlements:
   serverUrl: http://offline.demo.internal/api/entitlements
 oidc:
   serverUrl: http://offline.demo.internal/auth/
-  clientId: dcr-test
+  clientId: blahblah-test
   queryRealms: tdf
 ingress:
   enabled: true
