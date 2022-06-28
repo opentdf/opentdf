@@ -14,7 +14,7 @@
   "proxy": "http://localhost:3001",
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
-    "@opentdf/client": "file:opentdf-client-0.2.2.tgz",
+    "@opentdf/client": "file:opentdf-client-0.2.1.tgz",
     "@react-keycloak/web": "^3.4.0",
     "antd": "^4.20.5",
     "filereader-stream": "^2.0.0",

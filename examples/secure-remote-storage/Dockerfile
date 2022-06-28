@@ -1,4 +1,5 @@
 ARG NODE_VERSION=lts
+ARG PY_VERSION=3.10
 # multi-stage build
 
 # depender - get production dependencies
@@ -7,15 +8,22 @@ WORKDIR /build/
 COPY package-lock.json package.json opentdf-client-0.2.1.tgz ./
 RUN npm ci
 
+# bootstrap - bootstrap keycloak values
+# FROM python:${PY_VERSION}-alpine${ALPINE_VERSION} AS build
+FROM python:${PY_VERSION} as build
+WORKDIR /build/
+COPY bootstrap.py/ .
+RUN pip install pipenv
+RUN pipenv install --dev
+RUN pipenv run bootstrap
+
 # builder - create-react-app build
 FROM depender as builder
 WORKDIR /build/
 COPY resource/ resource/
 COPY src/ src/
 COPY webpack.config.js/ .
-COPY bootstrap.py/ .
-RUN pipenv install --dev
-RUN pipenv run bootstrap
+COPY .babelrc/ .
 RUN npm run build
 #COPY dist/ dist/
 
