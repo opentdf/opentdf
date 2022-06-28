@@ -17,8 +17,29 @@ attributes:
   clientId: dcr-test
   username: user1
   password: testuser123
-  preloadedAuthorities: null
-  preloadedAttributes: null
+  preloadedAuthorities:
+  - https://example.com
+  preloadedAttributes:
+  - authority: https://example.com
+    name: Classification
+    rule: hierarchy
+    state: published
+    order: 
+    - TS
+    - S
+    - C
+    - U
+  - authority: https://example.com
+    name: COI
+    rule: allOf
+    state: published
+    order: 
+    - PRX
+    - PRA
+    - PRB
+    - PRC
+    - PRD
+    - PRF
 
 entitlements:
   hostname: http://opentdf-entitlements:4030
