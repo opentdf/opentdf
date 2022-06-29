@@ -89,7 +89,7 @@ i_kubectl() {
       (apt-get update && apt install -y kubectl) || e "Unable to install kubectl"
     fi
   fi
-  kubectl version || e "Bad kubectl install"
+  kubectl version --client || e "Bad kubectl install"
 }
 
 i_kuttl() (
