@@ -172,6 +172,8 @@ for item in "${stuff[@]}"; do
   esac
 done
 
-cp "${BUILD_BIN}"/* /bin || e "Unable to install binaries"
+if [ -n "$(ls -A "${BUILD_BIN}" 2>/dev/null)" ]; then
+   cp "${BUILD_BIN}"/* /bin || e "Unable to install binaries"
+fi
 
 monolog INFO "Finished installing linux pre-reqs"
