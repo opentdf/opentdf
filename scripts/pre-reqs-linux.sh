@@ -172,4 +172,4 @@ for item in "${stuff[@]}"; do
   esac
 done
 
-cp "${BUILD_BIN}/*" /bin || e "Unable to install binaries"
+cp "${BUILD_BIN}"/* /bin || e "Unable to install binaries"
