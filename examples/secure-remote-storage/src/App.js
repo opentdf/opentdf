@@ -3,6 +3,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import { useKeycloak } from '@react-keycloak/web';
 import { Client, FileClient } from '@opentdf/client';
 import { Button, Divider, Input, Layout, Select, Space, Spin, Table, Tooltip, Typography, Upload } from 'antd';
+import { toWebReadableStream } from 'web-streams-node';
 import { ToolOutlined } from '@ant-design/icons';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import fileReaderStream from 'filereader-stream';
@@ -193,7 +194,7 @@ const App = () => {
       const client = new Client.Client(CLIENT_CONFIG);
 
       const encryptParams = new Client.EncryptParamsBuilder()
-        .withStreamSource(fileReaderStream(selectedFile))
+        .withStreamSource(toWebReadableStream(fileReaderStream(selectedFile)))
         .withOffline()
         .build();
 
