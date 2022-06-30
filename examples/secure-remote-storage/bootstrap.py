@@ -5,7 +5,7 @@ to support the secure-remote-storage sample application
 
 from keycloak import KeycloakAdmin
 
-FRONTEND_URL = 'http://localhost:3001' # React serves app on port 3001
+FRONTEND_URL = 'http://localhost:65432/secure-remote-storage' # React serves app on port 3001
 KC_URL = 'http://localhost:65432/auth/'
 KC_ADMIN_USER = 'keycloakadmin'
 KC_ADMIN_PASS = 'mykeycloakpassword'

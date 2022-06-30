@@ -25,7 +25,6 @@ COPY src/ src/
 COPY webpack.config.js/ .
 COPY .babelrc/ .
 RUN npm run build
-#COPY dist/ dist/
 
 # server - nginx alpine
 FROM nginx:stable-alpine as server
