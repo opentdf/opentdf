@@ -173,3 +173,5 @@ for item in "${stuff[@]}"; do
 done
 
 cp "${BUILD_BIN}"/* /bin || e "Unable to install binaries"
+
+monolog INFO "Finished installing linux pre-reqs"
