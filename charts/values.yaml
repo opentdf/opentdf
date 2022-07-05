@@ -1,28 +1,3 @@
-keycloak:
-  image:
-    # Keycloak is a non-OpenTDF chart, but with an OpenTDF image
-    repository: ghcr.io/opentdf/keycloak
-  postgresql:
-    enabled: false
-  extraEnvFrom: |
-    - secretRef:
-        name: 'keycloak-secrets'
-  ingress:
-    enabled: true
-    ingressClassName: nginx
-    rules:
-      - host: localhost
-        paths: &paths
-          - path: /auth(/|$)(.*)
-            pathType: Prefix
-      - host: host.docker.internal
-        paths: *paths
-      - host: offline.demo.internal
-        paths: *paths
-      - host: opentdf.local
-        paths: *paths
-    tls: null
-
 attributes:
   serverRootPath: /attributes
   serverPublicName: "Attribute Authority"
