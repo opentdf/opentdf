@@ -87,7 +87,9 @@ jobs:
         run: |-
           kubectl version
           kubectl get pods -A
-      - run: tilt ci
+      - run: |
+          helm dependency build ./charts
+          tilt ci
       - env:
           TEST_SCRIPT: tests/wait-and-test.sh
         run: tilt ci
