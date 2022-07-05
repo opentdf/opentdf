@@ -88,6 +88,9 @@ jobs:
           kubectl version
           kubectl get pods -A
       - env:
+          TEST_SCRIPT: quickstart/tests/wait-and-test.sh
+          run: tilt ci
+      - env:
           TEST_SCRIPT: tests/wait-and-test.sh
         run: tilt ci
         working-directory: quickstart
