@@ -1,7 +1,9 @@
 name: keycloak-bootstrap
 image:
   pullPolicy: IfNotPresent
-externalUrl: http://offline.demo.internal/
+
+externalUrl: http://localhost:65432
+# externalUrl: http://offline.demo.internal/
 
 keycloak:
   hostname: http://keycloak-http
@@ -46,8 +48,6 @@ entitlements:
     user1:
       - https://example.com/attr/Classification/value/S
       - https://example.com/attr/COI/value/PRX
-
-externalUrl: http://localhost:65432
 
 job:
   backoffLimit: 3

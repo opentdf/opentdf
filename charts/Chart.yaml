@@ -9,7 +9,6 @@ maintainers:
     url: https://www.virtru.com
 icon: https://inxmad4bw31barrx17wec71c-wpengine.netdna-ssl.com/wp-content/uploads/2018/12/o_efa1e48d0db5ebc8-4.png
 
-
 dependencies:
   - name: attributes
     repository: oci://ghcr.io/opentdf/charts
@@ -40,25 +39,3 @@ dependencies:
     repository: oci://ghcr.io/opentdf/charts
     version: 0.0.0-sha-97a020d
     tags: ["backend"]
-
-# repository: https://codecentric.github.io/helm-charts
-# 17.0.1
-
-# repository: https://codecentric.github.io/helm-charts
-
-  # - name: keycloak
-  #   repository: https://codecentric.github.io/helm-charts
-  #   version: 17.0.1
-  #   tags: ["third-party"]
-  #   alias: keycloak
-
-    # - name: keycloak
-    # repository: oci://ghcr.io/opentdf
-    # version: 0.0.0-sha-bfa85e3
-    # tags: ["third-party"]
-    # alias: keycloak
-
-# - name: ingress-nginx
-#     repository: https://kubernetes.github.io/ingress-nginx
-#     version: 4.0.16
-#     tags: ["third-party"]
