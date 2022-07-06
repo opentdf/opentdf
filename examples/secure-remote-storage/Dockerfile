@@ -5,7 +5,7 @@ ARG PY_VERSION=3.10
 # depender - get production dependencies
 FROM node:${NODE_VERSION} as depender
 WORKDIR /build/
-COPY package-lock.json package.json opentdf-client-0.2.1.tgz ./
+COPY package-lock.json package.json opentdf-client-0.2.2.tgz ./
 RUN npm ci
 
 # bootstrap - bootstrap keycloak values
