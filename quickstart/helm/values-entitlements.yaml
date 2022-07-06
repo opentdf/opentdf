@@ -1,5 +1,6 @@
 rootPath: /entitlements
 publicName: "Entitlement"
+serverCorsOrigins: "*"
 logLevel: DEBUG
 postgres:
   host: postgresql

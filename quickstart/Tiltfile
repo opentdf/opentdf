@@ -9,7 +9,7 @@ EXTERNAL_URL = "http://localhost:65432"
 
 # Versions of things backend to pull (attributes, kas, etc)
 BACKEND_IMAGE_TAG = "main"
-BACKEND_CHART_TAG = "0.0.0-sha-53411b7"
+BACKEND_CHART_TAG = "0.0.0-sha-dc58196"
 FRONTEND_IMAGE_TAG = "main"
 FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
 
