@@ -1,3 +1,6 @@
+logLevel: DEBUG
+image:
+  tag: sha-0b804dd
 endpoints:
   attrHost: http://opentdf-attributes:4020
   oidcPubkeyEndpoint: http://keycloak-http

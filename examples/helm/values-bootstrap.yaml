@@ -65,6 +65,67 @@ keycloak:
         name: Virtru "tdf-attributes" Audience Mapper
         protocolMapper: oidc-audience-mapper
     - payload:
+        clientId: examples-webcam-app
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        clientAuthenticatorType: client-secret
+        serviceAccountsEnabled: "true"
+        protocol: openid-connect
+        redirectUris:
+        - "http://localhost:3000/*"
+        - "http://localhost:65432/*"
+        webOrigins:
+        - "+"
+      mappers:
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "false"
+          userinfo.token.claim: "true"
+          remote.parameters.username: "true"
+          remote.parameters.clientid: "true"
+          client.publickey: X-VirtruPubKey
+          claim.name: tdf_claims
+        name: Virtru OIDC UserInfo Mapper
+        protocolMapper: virtru-oidc-protocolmapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "true"
+          access.token.claim: "true"
+          userinfo.token.claim: "false"
+          remote.parameters.username: "true"
+          remote.parameters.clientid: "true"
+          client.publickey: X-VirtruPubKey
+          claim.name: tdf_claims
+        name: Virtru OIDC Auth Mapper
+        protocolMapper: virtru-oidc-protocolmapper
+    - payload:
+        clientId: abacus-localhost
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        clientAuthenticatorType: client-secret
+        serviceAccountsEnabled: "true"
+        protocol: openid-connect
+        redirectUris:
+        - "http://localhost:3000/*"
+        webOrigins:
+        - "+"
+      mappers:
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-entitlement"
+        name: Virtru "tdf-entitlements" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-attributes"
+        name: Virtru "tdf-attributes" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+    - payload:
         clientId: tdf-entitlement
         publicClient: "true"
         standardFlowEnabled: "true"
@@ -217,7 +278,9 @@ entitlements:
       bob:
         - https://example.com/attr/AudienceGuidance/value/All
         - https://example.com/attr/ContentExclusivity/value/Premium
-
+      examples-webcam-app:
+        - https://example.com/attr/AudienceGuidance/value/Restricted
+        - https://example.com/attr/ContentExclusivity/value/Deluxe
 
 externalUrl: http://localhost:65432
 

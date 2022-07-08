@@ -10,19 +10,32 @@ const mediaConstraints = {
 
 const OIDC_ENDPOINT = "http://localhost:65432";
 const OIDC_REALM = "tdf";
-const OIDC_CLIENT_ID = "localhost-webcam-app";
+const OIDC_CLIENT_ID = "examples-webcam-app";
 const KAS_URL = "http://localhost:65432/api/kas";
 
 function App() {
+    let isRenderLoop = true;
     const [entitlementsAlice, setEntitlementsAlice] = useState([]);
     const [entitlementsBob, setEntitlementsBob] = useState([]);
     const [entitlementsEve, setEntitlementsEve] = useState([]);
     const [clientAlice, setClientAlice] = useState<NanoTDFDatasetClient>();
     const [clientBob, setClientBob] = useState<NanoTDFDatasetClient>();
     const [clientEve, setClientEve] = useState<NanoTDFDatasetClient>();
-    let dataAttributes: string[] = [];
+    const [clientWebcam, setClientWebcam] = useState<NanoTDFDatasetClient>();
+    const [dataAttributes, setDataAttributes] = useState<string[]>([]);
+
+    const stop = () => {
+        // @ts-ignore
+        window.stream.getTracks().forEach(function(track) {
+            if (track.readyState === 'live') {
+                track.stop();
+            }
+        });
+        isRenderLoop = false;
+    }
 
     const start = async () => {
+        isRenderLoop = true;
         const webcamDevice = document.getElementById('webcamDevice');
         const canvasElementAlice = document.getElementById('webcamCanvasAlice');
         const canvasElementBob = document.getElementById('webcamCanvasBob');
@@ -34,14 +47,12 @@ function App() {
         // @ts-ignore
         let contextEve = canvasElementEve.getContext('2d');
         // OpenTDF
-        const clientWebcam = clientAlice;
         const imageDataAlice = contextAlice.createImageData(640, 480);
         function handleSuccess(stream: any) {
             // @ts-ignore
             window.stream = stream; // make stream available to browser console
             // @ts-ignore
             webcamDevice.srcObject = stream;
-            // nano data client
             // source canvas
             const canvas = document.getElementById('webcamCanvasSource');
             // @ts-ignore
@@ -51,6 +62,7 @@ function App() {
                 ctx.drawImage(webcamDevice, 0, 0)
                 const imageData = ctx.getImageData(0, 0, 640, 480);
                 // encrypt frame
+                // tag with data attributes
                 clientWebcam && (clientWebcam.dataAttributes = dataAttributes);
                 // console.log(imageData.data);
                 // FIXME buffer is all 0
@@ -59,7 +71,6 @@ function App() {
                     // alice decrypt
                     try {
                         const cipherBuffer = await clientAlice?.decrypt(cipherImageData);
-                        // console.log(cipherBuffer);
                         imageDataAlice.data.set(cipherBuffer);
                         // console.log(imageData);
                         // console.log(imageDataAlice);
@@ -75,6 +86,8 @@ function App() {
                     } catch (e) {
                     }
                     try {
+                        // hack set data attributes
+                        clientEve && (clientEve.dataAttributes = dataAttributes);
                         const incomingBuffer = await clientEve?.decrypt(cipherImageData);
                         const imageDataEve = contextEve.createImageData(640, 480);
                         imageDataEve.data.set(incomingBuffer);
@@ -82,7 +95,9 @@ function App() {
                     } catch (e) {
                     }
                 }
-                setTimeout(loop, 1000 / 30); // drawing at 30fps
+                if (isRenderLoop) {
+                    setTimeout(loop, 1000 / 30); // drawing at 30fps
+                }
             })();
         }
 
@@ -102,7 +117,7 @@ function App() {
         const urlencoded = new URLSearchParams();
         urlencoded.append("client_id", OIDC_CLIENT_ID);
         urlencoded.append("username", "alice");
-        urlencoded.append("password", "testuser123");
+        urlencoded.append("password", "myuserpassword");
         urlencoded.append("grant_type", "password");
         let request: Request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", {method: 'POST', headers: myHeaders, body: urlencoded});
         // alice Direct Access Grants login
@@ -117,8 +132,11 @@ function App() {
             oidcOrigin: OIDC_ENDPOINT,
             organizationName: OIDC_REALM
         });
+        // hack
+        setClientWebcam(new NanoTDFDatasetClient(authProviderAlice, KAS_URL));
         const tmpClientAlice = new NanoTDFDatasetClient(authProviderAlice, KAS_URL);
         // BEGIN this triggers an OIDC access token with claims to be fetched
+        tmpClientAlice.addAttribute("https://example.com/attr/AudienceGuidance/value/All");
         await tmpClientAlice.decrypt(await tmpClientAlice.encrypt("dummy"));
         // END
         // @ts-ignore
@@ -142,6 +160,7 @@ function App() {
         });
         const tmpClientBob = new NanoTDFDatasetClient(authProviderBob, KAS_URL);
         // BEGIN this triggers an OIDC access token with claims to be fetched
+        tmpClientBob.addAttribute("https://example.com/attr/AudienceGuidance/value/All");
         await tmpClientBob.decrypt(await tmpClientBob.encrypt("dummy"));
         // END
         // @ts-ignore
@@ -176,20 +195,20 @@ function App() {
     }
 
     function toggleContentExclusivity(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-        const premier = "https://opentdf.us/attr/X-ContentExclusivity/value/Premier";
-        if (dataAttributes.includes(premier)) {
-            dataAttributes = dataAttributes.filter(e => { return e !== premier})
+        const premium = "https://example.com/attr/ContentExclusivity/value/Premium";
+        if (dataAttributes.includes(premium)) {
+            setDataAttributes(dataAttributes.filter(e => { return e !== premium}));
             event.currentTarget.style.borderStyle = '';
         } else {
-            dataAttributes.push(premier)
+            dataAttributes.push(premium);
             event.currentTarget.style.borderStyle = 'inset';
         }
     }
 
     function toggleAudienceGuidance(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-        const restricted = "https://opentdf.us/attr/X-AudienceGuidance/value/Restricted";
+        const restricted = "https://example.com/attr/AudienceGuidance/value/Restricted";
         if (dataAttributes.includes(restricted)) {
-            dataAttributes = dataAttributes.filter(e => { return e !== restricted})
+            setDataAttributes(dataAttributes.filter(e => { return e !== restricted}));
             event.currentTarget.style.borderStyle = '';
         } else {
             dataAttributes.push(restricted);
@@ -209,16 +228,19 @@ function App() {
                         Login
                     </button>
                     <button onClick={() => start()}>
-                        Webcam
+                        Webcam Start
+                    </button>
+                    <button onClick={() => stop()}>
+                        Webcam Stop
                     </button>
                     <br/><br/>
                     <h2>Video Operator</h2>
                     <h4>Data tag</h4>
-                    ContentExclusivity <button onClick={(event) => toggleContentExclusivity(event)}>Premier</button><br/>
+                    ContentExclusivity <button onClick={(event) => toggleContentExclusivity(event)}>Premium</button><br/>
                     AudienceGuidance <button onClick={(event) => toggleAudienceGuidance(event)}>Restricted</button><br/>
                 </td>
                 <td><h2>Source</h2><canvas id="webcamCanvasSource" width="640" height="480"></canvas></td>
-                <td><h2>Entitlement Grantor</h2><a target="_new" href="http://localhost:65432/">Abacus</a><br/><i>user1/testuser123</i></td>
+                <td><h2>Entitlement Grantor</h2><a target="_new" href="http://localhost:65432/">Abacus</a><br/><i>ted/myuserpassword</i></td>
             </tr>
             </tbody>
         </table>
