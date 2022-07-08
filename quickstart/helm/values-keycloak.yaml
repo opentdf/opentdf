@@ -1,7 +1,6 @@
 image:
-  repository: ghcr.io/opentdf/keycloak
   # Keycloak is a non-OpenTDF chart, but with an OpenTDF image
-  tag: sha-0b804dd
+  repository: ghcr.io/opentdf/keycloak
 postgresql:
   enabled: false
   postgresqlUsername: postgres
@@ -14,7 +13,7 @@ externalDatabase:
   database: keycloak_database
 extraEnv: |
   - name: CLAIMS_URL
-    value: http://claims:5000/claims
+    value: http://opentdf-entitlement-pdp:3355/entitlements
   - name: JAVA_OPTS_APPEND
     value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
 # - name: DB_VENDOR

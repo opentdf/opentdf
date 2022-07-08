@@ -76,7 +76,7 @@ else
     #else not installed
 fi
 
-# #trying tdf3-js, client-web, and cli -- user has to provide path to pakage.json
+# #trying tdf3-js, client-web, and cli -- user has to provide path to package.json
 if [[ ! -z ${PATH_TO_PACKAGE_DIR+z} ]]; then
     cd $PATH_TO_PACKAGE_DIR > /dev/null
     npm install > /dev/null

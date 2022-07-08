@@ -1,28 +1,27 @@
 image:
-  repository: virtru/keycloak-h3-poc
-  tag: 0.4.1
-
-##  https://artifacthub.io/packages/helm/bitnami/keycloak
-auth:
-  createAdminUser: true
-  adminUser: keycloakadmin
-  adminPassword: mykeycloakpassword
-
-extraEnvVars:
-  - name: KEYCLOAK_LOG_LEVEL
-    value: DEBUG
-  - name: KEYCLOAK_USER
-    value: keycloakadmin
-  - name: KEYCLOAK_PASSWORD
-    value: mykeycloakpassword
-  - name: ATTRIBUTE_PROVIDER_URL
-    value: http://opentdf-claims
-  - name: KEYCLOAK_EXTRA_ARGS
-    value: "-Dkeycloak.frontendUrl=https://localhost/keycloak/auth -Dkeycloak.adminUrl=https://localhost/keycloak/auth"
-
+  # Keycloak is a non-OpenTDF chart, but with an OpenTDF image
+  repository: ghcr.io/opentdf/keycloak
+  tag: 0.0.0-sha-eb68a90
+extraEnv: |
+  - name: CLAIMS_URL
+    value: http://opentdf-entitlement-pdp:3355/entitlements
+  - name: JAVA_OPTS_APPEND
+    value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
+extraEnvFrom: |
+  - secretRef:
+      name: 'keycloak-secrets'
 ingress:
   enabled: true
-  annotations:
-    kubernetes.io/ingress.class: nginx
-  path: /keycloak
-  hostname: localhost
+  ingressClassName: nginx
+  rules:
+    - host: localhost
+      paths: &paths
+        - path: /auth(/|$)(.*)
+          pathType: Prefix
+    - host: host.docker.internal
+      paths: *paths
+    - host: offline.demo.internal
+      paths: *paths
+    - host: opentdf.local
+      paths: *paths
+  tls: null

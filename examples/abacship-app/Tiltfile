@@ -1,0 +1,58 @@
+# Tiltfile for development
+# https://docs.tilt.dev/api.html
+#
+
+include('../../quickstart/Tiltfile')
+
+#k8s_resource("kas", resource_deps=["opentdf-attributes"], port_forwards="8000:8000")
+
+# frontend
+k8s_yaml("kubernetes.yaml")
+k8s_resource(
+    "opentdf-abacship",
+    resource_deps = ["keycloak-bootstrap"],
+    labels="abacship",
+)
+
+docker_build(
+    "opentdf/abacship",
+    "."
+)
+
+#backend
+docker_build(
+    "opentdf/abacship-backend",
+    "./backend_server"
+)
+
+abacship_backend_set = [
+    "image.name=opentdf/abacship-backend"
+    ]
+
+k8s_yaml(
+    helm(
+        "backend_server/helm",
+        "abacship-backend",
+        set=abacship_backend_set,
+        values=["backend_server/deployment/abacship-backend-values.yaml"],
+    )
+)
+
+k8s_resource(
+   "abacship-backend", 
+    resource_deps=["keycloak-bootstrap"],
+    labels="abacship"
+)
+
+
+# local_resource(
+#     "opentdf-abacship-backend",
+#     cmd = "./backend_server/setup_venv.sh",
+#     serve_cmd = "cd backend_server/src && \
+#     source ./venv/bin/activate && \
+#     python3 -m uvicorn main:app --reload --port 4060",
+#     labels="abacship",
+#     resource_deps = ["keycloak-bootstrap"],
+#     allow_parallel=True
+# )
+
