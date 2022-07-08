@@ -136,7 +136,6 @@ function App() {
         setClientWebcam(new NanoTDFDatasetClient(authProviderAlice, KAS_URL));
         const tmpClientAlice = new NanoTDFDatasetClient(authProviderAlice, KAS_URL);
         // BEGIN this triggers an OIDC access token with claims to be fetched
-        tmpClientAlice.addAttribute("https://example.com/attr/AudienceGuidance/value/All");
         await tmpClientAlice.decrypt(await tmpClientAlice.encrypt("dummy"));
         // END
         // @ts-ignore
@@ -160,7 +159,6 @@ function App() {
         });
         const tmpClientBob = new NanoTDFDatasetClient(authProviderBob, KAS_URL);
         // BEGIN this triggers an OIDC access token with claims to be fetched
-        tmpClientBob.addAttribute("https://example.com/attr/AudienceGuidance/value/All");
         await tmpClientBob.decrypt(await tmpClientBob.encrypt("dummy"));
         // END
         // @ts-ignore
@@ -235,11 +233,11 @@ function App() {
                     </button>
                     <br/><br/>
                     <h2>Video Operator</h2>
-                    <h4>Data tag</h4>
+                    <b>Data tag</b><br/>
                     ContentExclusivity <button onClick={(event) => toggleContentExclusivity(event)}>Premium</button><br/>
                     AudienceGuidance <button onClick={(event) => toggleAudienceGuidance(event)}>Restricted</button><br/>
                 </td>
-                <td><h2>Source</h2><canvas id="webcamCanvasSource" width="640" height="480"></canvas></td>
+                <td id="img-src"><h2>Source</h2><canvas id="webcamCanvasSource" width="640" height="480"></canvas></td>
                 <td><h2>Entitlement Grantor</h2><a target="_new" href="http://localhost:65432/">Abacus</a><br/><i>ted/myuserpassword</i></td>
             </tr>
             </tbody>
@@ -249,18 +247,18 @@ function App() {
             <tr>
                 <td>
                     <h2>Alice</h2>Adult - Paid<br/>
-                    <EntitlementsList entitlements={entitlementsAlice}/>
                     <canvas id="webcamCanvasAlice" width="640" height="480"></canvas>
+                    <EntitlementsList entitlements={entitlementsAlice}/>
                 </td>
                 <td>
                     <h2>Bob</h2>Minor - Paid<br/>
-                    <EntitlementsList entitlements={entitlementsBob}/>
                     <canvas id="webcamCanvasBob" width="640" height="480"></canvas>
+                    <EntitlementsList entitlements={entitlementsBob}/>
                 </td>
                 <td>
                     <h2>Eve</h2>eavesdropper (authenticated)<br/>
-                    <EntitlementsList entitlements={entitlementsEve}/>
                     <canvas id="webcamCanvasEve" width="640" height="480"></canvas>
+                    <EntitlementsList entitlements={entitlementsEve}/>
                 </td>
             </tr>
             </tbody>
