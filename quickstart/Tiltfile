@@ -5,10 +5,10 @@ load('../version-tool/Tiltfile', 'min_helm_version', "min_kind_version", "min_ct
 
 # The helm_resource extension uses the 'new extensions api' introduced in tilt 0.25
 min_tilt_version("0.25")
-min_k8s_version("1.18.1")
-min_helm_version("3.0.0")
-min_kind_version("0.10.0")
-min_ctlptl_version("0.6.0")
+min_k8s_version("1.23.0")
+min_helm_version("3.8.0")
+min_kind_version("0.12.0")
+min_ctlptl_version("0.7.4")
 
 
 
