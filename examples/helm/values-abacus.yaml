@@ -1,0 +1,23 @@
+attributes:
+  serverUrl: http://offline.demo.internal/api/attributes
+basePath: ""
+entitlements:
+  serverUrl: http://offline.demo.internal/api/entitlements
+oidc:
+  serverUrl: http://offline.demo.internal/auth/
+  clientId: opentdf-abacus
+  queryRealms: tdf
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: localhost
+      paths: &paths
+        - path: /
+          pathType: Prefix
+    - host: host.docker.internal
+      paths: *paths
+    - host: offline.demo.internal
+      paths: *paths
+    - host: opentdf.local
+      paths: *paths
