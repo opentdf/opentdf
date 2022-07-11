@@ -30,6 +30,9 @@ def _get_helm_server_version():
 
 def min_kind_version(min_version):
     version_str = _get_kind_server_version()
+    if version_str == None:
+        print("Error running command kind")
+        return
     cur_ver = _version_tuple(version_str)
     min_ver = _version_tuple(min_version)
     
@@ -49,6 +52,9 @@ def _get_kind_server_version():
     #
     # The previous version used 'grep' to filter out the server version. Use a
     # native way to support systems without 'grep'.
+    # Kind is not necessary so we check if it's installed
+    if not str(local('command -v kind || true', quiet=True)):
+        return None
     version_output = str(local('kind version', quiet=True))
     version_str = ''
     for line in version_output.split('\n'):
@@ -60,6 +66,9 @@ def _get_kind_server_version():
 
 def min_ctlptl_version(min_version):
     version_str = _get_ctlptl_server_version()
+    if version_str == None:
+        print("Error running command ctlptl")
+        return
     cur_ver = _version_tuple(version_str)
     min_ver = _version_tuple(min_version)
     
@@ -79,6 +88,9 @@ def _get_ctlptl_server_version():
     #
     # The previous version used 'grep' to filter out the server version. Use a
     # native way to support systems without 'grep'.
+    # ctlptl is not necessary so we check if it's installed
+    if not str(local('command -v ctlptl || true', quiet=True)):
+        return None
     version_output = str(local('ctlptl version', quiet=True))
     version_str = ''
     for line in version_output.split('\n'):
