@@ -54,19 +54,6 @@
   margin: auto !important;
 }
 
-<<<<<<< HEAD
-=======
-.optionalWarningContainer {
-  margin: 2px;
-  display: inline;
-}
-
-.asterisk {
-  color: red;
-  font-weight: bold;
-}
-
->>>>>>> upstream/period-app
 .selectDropdown {
   width: 309px;
 }
