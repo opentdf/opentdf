@@ -9,6 +9,17 @@ keycloak:
   clientId: tdf-client
   clientSecret: 123-456
   realm: tdf
+  preloadedUsers:
+    - username: regina
+      password: testuser123
+    - username: cady
+      password: testuser123
+    - username: janis
+      password: testuser123
+    - username: karen
+      password: testuser123
+    - username: gretchen
+      password: testuser123
 
 attributes:
   hostname: http://opentdf-attributes:4020
@@ -18,6 +29,7 @@ attributes:
   password: testuser123
   preloadedAuthorities:
   - https://example.com
+  - http://period.com
   preloadedAttributes:
   - authority: https://example.com
     name: Classification
