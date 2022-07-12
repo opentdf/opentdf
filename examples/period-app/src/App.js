@@ -54,65 +54,10 @@ const App = () => {
     kasEndpoint: 'http://localhost:65432/api/kas',
   };
 
-<<<<<<< HEAD
   const events = [{ title: "today's event", date: new Date() }];
 
   keycloak.onAuthError = console.log;
 
-=======
-  const tooltipExampleText = `Example: \n\n
-  {
-    "Bucket": "myBucketName",
-    "credentials": {
-      "accessKeyId": "IELVUWIEUD7U99JHPPES",
-      "secretAccessKey": "N7RTPIqNRR7iqRo/a9WnrXryq7hSQvpCjVueRXLo"
-    },
-    "region": "us-east-2",
-    "signatureVersion": "v4",
-    "s3ForcePathStyle": true
-  }`;
-
-  const tableColumns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (text, record, index) => (
-        <div className="spinnerContainer">
-          <Spin spinning={showDownloadSpinner}>
-            <Button onClick={() => lfsDownload(text, record, index)}>Download/Decrypt</Button>
-          </Spin>
-        </div>
-      ),
-    }
-  ];
-
-  keycloak.onAuthError = console.log;
-
-  const validateJsonStr = (jsonString) => {
-    try {
-      var o = JSON.parse(jsonString);
-      // Handle non-exception-throwing cases:
-      // Neither JSON.parse(false), JSON.parse(1234), or JSON.parse({}) throw errors, hence the type-checking,
-      // but... JSON.parse(null) returns null, and typeof null === "object",
-      // so we must check for that, too. Thankfully, null is falsey, so this suffices:
-      if (o && typeof o === "object" && Object.keys(o).length) {
-          return o;
-      }
-    }
-    catch (e) {
-      console.error(e);
-    }
-
-    return false;
-  };
-
-
->>>>>>> upstream/period-app
   const handleFileSelect = (file, fileList) => {
     setSelectedFile(file);
     setUploadFileList(fileList);
