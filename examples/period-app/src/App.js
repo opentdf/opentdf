@@ -7,11 +7,19 @@ import { ToolOutlined } from '@ant-design/icons';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import fileReaderStream from 'filereader-stream';
 import UserStatus from "./components/UserStatus";
-import openTDFLogo from './assets/images/logo-masked-group.png';
+import openTDFLogo from './assets/images/period-logo.png';
 import './App.css';
+
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+
+import "@fullcalendar/core/main.css";
+import "@fullcalendar/daygrid/main.css";
 
 const { Header, Footer, Content } = Layout;
 const { TextArea } = Input;
+
+const s3ConfigJson = "";
 
 
 const App = () => {
@@ -57,25 +65,6 @@ const App = () => {
 
   keycloak.onAuthError = console.log;
 
-  const validateJsonStr = (jsonString) => {
-    try {
-      var o = JSON.parse(jsonString);
-      // Handle non-exception-throwing cases:
-      // Neither JSON.parse(false), JSON.parse(1234), or JSON.parse({}) throw errors, hence the type-checking,
-      // but... JSON.parse(null) returns null, and typeof null === "object",
-      // so we must check for that, too. Thankfully, null is falsey, so this suffices:
-      if (o && typeof o === "object" && Object.keys(o).length) {
-          return o;
-      }
-    }
-    catch (e) {
-      console.error(e);
-    }
-
-    return false;
-  };
-
-
   const handleFileSelect = (file, fileList) => {
     setSelectedFile(file);
     setUploadFileList(fileList);
@@ -104,7 +93,7 @@ const App = () => {
       return;
     }
 
-    const s3ConfigJson = validateJsonStr(s3Config);
+
 
     // Checks for falsey values, empty valid objects, and invalid objects
     if(!s3ConfigJson) {
@@ -127,13 +116,6 @@ const App = () => {
 
     console.log("record: ", record)
     console.log("txt: ", text)
-
-    // const s3ConfigJson = validateJsonStr(s3Config);
-
-    // if(!s3ConfigJson) {
-    //   toast.error('Please enter a valid S3 compatible json object.');
-    //   return;
-    // }
 
     try {
       setShowDownloadSpinner(true);
@@ -164,19 +146,6 @@ const App = () => {
     try {
       if(!keycloak.authenticated) {
         toast.error('You must login to perform this action.');
-        return;
-      }
-
-      // if(!selectedFile) {
-      //   toast.error('Please select a file to upload/encrypt.');
-      //   return;
-      // }
-
-      const s3ConfigJson = validateJsonStr(s3Config);
-
-      // Checks for falsey values, empty valid objects, and invalid objects
-      if(!s3ConfigJson) {
-        toast.error('Please enter a valid S3 compatible json object.');
         return;
       }
 
@@ -229,7 +198,6 @@ const App = () => {
         <Header>
           <div className='headerContainer'>
             <img className='logo' src={openTDFLogo} />
-            <span className='logoTitle'> - Period Tracking App</span>
             <div className="userStatusContainer">
               <UserStatus />
             </div>
@@ -240,9 +208,13 @@ const App = () => {
           <br/>
           <h3>Enter your sentitve data</h3><br/>
           <br/>
-          <TextArea className='newS3TextArea' rows={5} value={s3Config} onChange={handleTextBoxChange}  />
-          <br/>
-          <br/>
+          <div className="App">
+      <FullCalendar
+        defaultView="dayGridMonth"
+        plugins={[dayGridPlugin]}
+        events={events}
+      />
+    </div>
           <div className="spinnerContainer">
             <Spin spinning={showUploadSpinner}>
               <Button type='primary' onClick={lfsUpload} >
@@ -257,17 +229,6 @@ const App = () => {
         <Footer>
         </Footer>
       </Layout>
-      <ToastContainer
-        position="bottom-center"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss={false}
-        draggable
-        pauseOnHover={false}
-      />
     </React.StrictMode>
   );
 };
