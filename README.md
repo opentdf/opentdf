@@ -39,9 +39,14 @@ See [Architecture Overview Diagram](./architecture-overview.md)
 
 ## Deploy
 
-Ready to deploy to production? Review our Helm chart install and configuration
+Ready to deploy to production? Review our Helm chart install and configuration.
+
+To make use of changes to the [frontend] or [backend], see [docs/Updating-Helm-Charts.md](docs/Updating-Helm-Charts.md)
 
 ## Contribute
 
 To contribute, follow the Development section in the corresponding READMEs.
 Reference the license and code of conduct in the About section.
+
+[frontend]: https://github.com/opentdf/frontend
+[backend]: https://github.com/opentdf/backend
