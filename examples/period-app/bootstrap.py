@@ -63,8 +63,6 @@ try:
 
 except Exception as e:
   print('Protocol mapper already exists with same name, bootstrap script skipped.')
-<<<<<<< HEAD
-=======
 
 
 # get all the user ids
@@ -141,4 +139,3 @@ if response.status_code != 200:
       detail="Failed to create attribute definition",
   )
 
->>>>>>> upstream/period-app
