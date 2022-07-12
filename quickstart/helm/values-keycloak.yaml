@@ -1,6 +1,6 @@
 image:
   # Keycloak is a non-OpenTDF chart, but with an OpenTDF image
-  repository: ghcr.io/opentdf/keycloak
+  repository: docker.io/opentdf/keycloak
 postgresql:
   enabled: false
   postgresqlUsername: postgres

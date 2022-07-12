@@ -139,7 +139,7 @@ helm_resource(
         "-f",
         "helm/values-keycloak.yaml",
         "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
+        "image.tag=%s" % "18.0.2-eth0",
     ],
     labels="third-party",
     resource_deps=["opentdf-entitlement-pdp", "codecentric"],
