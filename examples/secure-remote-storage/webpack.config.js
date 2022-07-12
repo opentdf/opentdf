@@ -49,9 +49,9 @@ module.exports = {
   //   historyApiFallback: true
   // },
   resolve: {
-    // alias: {
-    //   stream: "stream-browserify",
-    // },
+    alias: {
+      stream: "stream-browserify",
+    },
     extensions: ['.js'],
   },
   // amd: false,
