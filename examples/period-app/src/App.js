@@ -86,11 +86,6 @@ const App = () => {
       return;
     }
 
-<<<<<<< HEAD
-
-=======
-    const s3ConfigJson = validateJsonStr(s3Config);
->>>>>>> upstream/period-app
 
     // Checks for falsey values, empty valid objects, and invalid objects
     if(!s3ConfigJson) {
@@ -111,17 +106,8 @@ const App = () => {
 
     const fileToDecryptName = record.name;
 
-<<<<<<< HEAD
     console.log("record: ", record)
     console.log("txt: ", text)
-=======
-    const s3ConfigJson = validateJsonStr(s3Config);
-
-    if(!s3ConfigJson) {
-      toast.error('Please enter a valid S3 compatible json object.');
-      return;
-    }
->>>>>>> upstream/period-app
 
     try {
       setShowDownloadSpinner(true);
@@ -155,35 +141,14 @@ const App = () => {
         return;
       }
 
-<<<<<<< HEAD
-=======
-      if(!selectedFile) {
-        toast.error('Please select a file to upload/encrypt.');
-        return;
-      }
-
-      const s3ConfigJson = validateJsonStr(s3Config);
-
-      // Checks for falsey values, empty valid objects, and invalid objects
-      if(!s3ConfigJson) {
-        toast.error('Please enter a valid S3 compatible json object.');
-        return;
-      }
-
->>>>>>> upstream/period-app
       setShowUploadSpinner(true);
 
       const client = new Client.Client(CLIENT_CONFIG);
 
-<<<<<<< HEAD
       const testJSONStr = '{ "Id": 1, "Name": "Coke" }'
 
       const encryptParams = new Client.EncryptParamsBuilder()
         .withStringSource(testJSONStr)
-=======
-      const encryptParams = new Client.EncryptParamsBuilder()
-        .withStreamSource(fileReaderStream(selectedFile))
->>>>>>> upstream/period-app
         .withOffline()
         .build();
 
@@ -205,7 +170,6 @@ const App = () => {
     }
   };
 
-<<<<<<< HEAD
   const onPanelChange = (value, mode) => {
     console.log("in onPanelChange")
     console.log("value: ", value)
@@ -213,8 +177,6 @@ const App = () => {
     console.log(value.format('YYYY-MM-DD'), mode);
   };
 
-=======
->>>>>>> upstream/period-app
   useEffect(() => {
     if (initialized) {
       keycloak.idToken ? toast.success(`Authenticated: ${keycloak.idToken}`) : null;
@@ -229,27 +191,18 @@ const App = () => {
     }
   }, [initialized, keycloak]);
 
-<<<<<<< HEAD
-=======
-  // TODO: remove <br>'s
->>>>>>> upstream/period-app
   return (
     <React.StrictMode>
       <Layout>
         <Header>
           <div className='headerContainer'>
             <img className='logo' src={openTDFLogo} />
-<<<<<<< HEAD
-=======
-            <span className='logoTitle'> - Secure Remote Storage</span>
->>>>>>> upstream/period-app
             <div className="userStatusContainer">
               <UserStatus />
             </div>
           </div>
         </Header>
         <Content className='contentContainer'>
-<<<<<<< HEAD
           <div className='calendarContentWrapper'>
           <FullCalendar
         defaultView="dayGridMonth"
@@ -266,85 +219,15 @@ const App = () => {
             <br></br>
             <div className="dot">Day 14 of Cycle</div>
           </div>
-=======
-          <br/>
-          <br/>
-          <h3>Upload a file as an encrypted TDF to an S3 compatible remote store</h3><br/>
-          <Upload className='upload' multiple={false} maxCount={1} fileList={uploadFileList} beforeUpload={handleFileSelect} onRemove={e => setUploadFileList([])} removeIcon={true}>
-            <Button type='upload' icon={<UploadOutlined />}>Select File</Button>
-          </Upload>
-          <br/>
-          <Input.Group className='newS3ConfigInputContainer' compact>
-            <Tooltip title={tooltipExampleText}>
-              <Space className='newS3Tooltip'>
-                <span>Enter an S3 compatible configuration object</span>
-                <ToolOutlined />
-              </Space>
-            </Tooltip>
-            <TextArea className='newS3TextArea' rows={5} value={s3Config} onChange={handleTextBoxChange}  />
-          </Input.Group>
-          <h3 className='optionalWarningContainer'><span className='asterisk'>*</span></h3>
-          <Select
-            className='selectDropdown'
-            placeholder="Add or select remote store"
-            onSelect={handleS3ConfigSelect}
-            value={selectedS3Config}
-            onChange={val => {setSelectedS3Config(val)}}
-            dropdownRender={(menu) => (
-              <React.Fragment>
-                {menu}
-                <Divider className='divider' />
-                <Space align="center" className='space'>
-                  <Input placeholder="Remote store name" onPressEnter={handleSaveS3Config} value={newS3Name} onChange={handleNewS3ConfigName} />
-                  <Typography.Link onClick={handleSaveS3Config} className='saveRemoteStoreButton'> <PlusOutlined /> Save remote store</Typography.Link>
-                </Space>
-              </React.Fragment>
-            )}
-          >
-            {savedS3Configs.map((s3Config) => (
-              <Select.Option title={s3Config.name} key={s3Config.key}>{s3Config.name}</Select.Option>
-            ))}
-          </Select>
-          <br/>
-          <br/>
-          <div className="spinnerContainer">
-            <Spin spinning={showUploadSpinner}>
-              <Button type='primary' onClick={lfsUpload} >
-                Encrypt and Upload
-              </Button>
-            </Spin>
-          </div>
-          <br/>
-          <Divider plain>Uploaded Files</Divider>
-          <Table locale={{ emptyText: 'No uploaded files' }} className='uploadedFilesTable' dataSource={uploadedFiles} columns={tableColumns} />
->>>>>>> upstream/period-app
         </Content>
         <Footer>
         </Footer>
       </Layout>
-<<<<<<< HEAD
-=======
-      <h3 className='optionalWarning'><span className='asterisk'>*</span> = Optional</h3>
-      <ToastContainer
-        position="bottom-center"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss={false}
-        draggable
-        pauseOnHover={false}
-      />
->>>>>>> upstream/period-app
     </React.StrictMode>
   );
 };
 
-<<<<<<< HEAD
 
 
 
-=======
->>>>>>> upstream/period-app
 export default App;
