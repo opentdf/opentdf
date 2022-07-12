@@ -1,0 +1,87 @@
+.headerContainer {
+  display: flex;
+}
+
+.logo {
+  width: 180px;
+  height: 50px;
+  margin-top: 7px;
+}
+
+.logoTitle {
+  color: white;
+  font-size: large;
+}
+
+.contentContainer {
+  text-align: center !important;
+}
+
+.upload {
+  width: calc(20%);
+}
+
+.newS3ConfigInputContainer {
+  margin: auto;
+  width: 80%;
+}
+
+.newS3Tooltip {
+  display: inline-flex !important;
+  width: calc(50%);
+  margin: auto;
+  justify-content: center;
+}
+
+.newS3TextArea {
+  text-align: left !important;
+  width: calc(50%) !important;
+  display: block !important;
+  margin: auto !important;
+}
+
+.optionalWarningContainer {
+  margin: 2px;
+  display: inline;
+}
+
+.asterisk {
+  color: red;
+  font-weight: bold;
+}
+
+.selectDropdown {
+  width: 309px;
+}
+
+.space {
+  padding: 0 8px 4px;
+}
+
+.saveRemoteStoreButton {
+  white-space: nowrap;
+}
+
+.divider {
+  margin: 8px 0 !important;
+}
+
+.uploadedFilesTable {
+  margin: auto;
+  width: calc(60%);
+}
+
+.optionalWarning {
+  margin: 20px;
+}
+
+.ant-upload-list {
+  margin: auto !important;
+  width: fit-content;
+}
+
+.userStatusContainer {
+  position: absolute;
+  right: 0;
+  padding-right: 20px;
+}
