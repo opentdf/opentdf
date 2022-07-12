@@ -3,10 +3,13 @@ This module configures a locally running Keycloak instance from OpenTDF/document
 to support the secure-remote-storage sample application
 """
 
-from keycloak import KeycloakAdmin
+from keycloak import KeycloakAdmin, KeycloakOpenID
+import requests
+from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
 
 FRONTEND_URL = 'http://localhost:3001'
 KC_URL = 'http://localhost:65432/auth/'
+ATTRIBUTES_URL = "http://localhost:65432/api/attributes"
 KC_ADMIN_USER = 'keycloakadmin'
 KC_ADMIN_PASS = 'mykeycloakpassword'
 REALM = 'tdf'
@@ -60,3 +63,82 @@ try:
 
 except Exception as e:
   print('Protocol mapper already exists with same name, bootstrap script skipped.')
+<<<<<<< HEAD
+=======
+
+
+# get all the user ids
+users = keycloak_admin.get_users({})
+ids = [user["id"] for user in users]
+
+# attribute rule json
+definition = {
+    "authority": "http://period.com",
+    "name": "tracker",
+    "rule": "allOf",
+    "state": "published",
+    "order": ids
+}
+
+# keycloak openid w user 1
+keycloak_openid = KeycloakOpenID(
+    # NOTE: `realm_name` IS NOT == `target_realm` here
+    # Target realm is the realm you're querying users from keycloak for
+    # `realm_name` is the realm you're using to get a token to talk to entitlements with
+    # They are not the same.
+    server_url="http://localhost:65432/auth/",
+    client_id="dcr-test",
+    realm_name="tdf",
+)  # Entitlements endpoint always uses `tdf` realm client creds
+authToken = keycloak_openid.token("user1", "testuser123")
+authToken = authToken["access_token"]
+
+
+# attempt to delete attribute definition
+loc = f"{ATTRIBUTES_URL}/definitions/attributes"
+print(f"Adding attribute definition {definition}")
+response = requests.get(loc, headers={"Authorization": f"Bearer {authToken}"})
+definitions = response.json()
+definitions_no_order = [f'{d["authority"]}/{d["name"]}/{d["rule"]}' for d in definitions]
+
+
+if f'{definition["authority"]}/{definition["name"]}/{definition["rule"]}' in definitions_no_order:
+  print(f"Attribute definition {definition} already exists, deleting definition")
+  old_definition = [d for d in definitions if d["authority"]==definition["authority"] and 
+  d["name"]==definition["name"] and d["rule"]==definition["rule"]]
+  response = requests.delete(
+      loc,
+      json=old_definition[0],
+      headers={"Authorization": f"Bearer {authToken}"},
+  )
+  if response.status_code != 202:
+    print(
+        "Unexpected code [%s] from attributes service when attempting to delete attribute definition! [%s]",
+        response.status_code,
+        response.text,
+        exc_info=True,
+    )
+    raise HTTPException(
+        status_code=BAD_REQUEST,
+        detail="Failed to delete attribute definition",
+    )
+  
+
+response = requests.post(
+  loc,
+  json=definition,
+  headers={"Authorization": f"Bearer {authToken}"},
+)
+if response.status_code != 200:
+  logger.error(
+      "Unexpected code [%s] from attributes service when attempting to create attribute definition! [%s]",
+      response.status_code,
+      response.text,
+      exc_info=True,
+  )
+  raise HTTPException(
+      status_code=BAD_REQUEST,
+      detail="Failed to create attribute definition",
+  )
+
+>>>>>>> upstream/period-app
