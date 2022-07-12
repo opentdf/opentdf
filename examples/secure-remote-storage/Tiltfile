@@ -4,8 +4,6 @@
 
 include('../../quickstart/Tiltfile')
 
-#k8s_resource("kas", resource_deps=["opentdf-attributes"], port_forwards="8000:8000")
-
 # frontend
 k8s_yaml("kubernetes.yaml")
 k8s_resource(
@@ -18,14 +16,3 @@ docker_build(
     "opentdf/secure-remote-storage",
     "."
 )
-
-# local_resource( # Needs updating
-#     "opentdf-secure-remote-storage",
-#     cmd = "./backend_server/setup_venv.sh",
-#     serve_cmd = "cd backend_server/src && \
-#     source ./venv/bin/activate && \
-#     python3 -m uvicorn main:app --reload --port 4060",
-#     labels="secure-remote-storage",
-#     resource_deps = ["keycloak-bootstrap"],
-#     allow_parallel=True
-# )

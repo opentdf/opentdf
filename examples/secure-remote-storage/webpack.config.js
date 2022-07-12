@@ -12,7 +12,6 @@ module.exports = {
       directory: path.join(__dirname, 'src'),
     },
     port: 3001,
-    //  watchContentBase: true
   },
   module: {
     rules: [
@@ -45,15 +44,11 @@ module.exports = {
       stream: 'stream-browserify',
     }),
   ],
-  // devServer: {
-  //   historyApiFallback: true
-  // },
   resolve: {
     alias: {
       stream: "stream-browserify",
     },
     extensions: ['.js'],
   },
-  // amd: false,
   devtool: 'source-map',
 };
