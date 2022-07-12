@@ -13,6 +13,7 @@ import './App.css';
 const { Header, Footer, Content } = Layout;
 const { TextArea } = Input;
 
+
 const App = () => {
   const { keycloak, initialized } = useKeycloak();
   const [opentdfClient, setOpentdfClient] = useState(null);
@@ -34,18 +35,6 @@ const App = () => {
     oidcRefreshToken: keycloak.refreshToken,
     kasEndpoint: 'http://localhost:65432/api/kas',
   };
-
-  const tooltipExampleText = `Example: \n\n
-  {
-    "Bucket": "myBucketName",
-    "credentials": {
-      "accessKeyId": "IELVUWIEUD7U99JHPPES",
-      "secretAccessKey": "N7RTPIqNRR7iqRo/a9WnrXryq7hSQvpCjVueRXLo"
-    },
-    "region": "us-east-2",
-    "signatureVersion": "v4",
-    "s3ForcePathStyle": true
-  }`;
 
   const tableColumns = [
     {
@@ -136,12 +125,15 @@ const App = () => {
 
     const fileToDecryptName = record.name;
 
-    const s3ConfigJson = validateJsonStr(s3Config);
+    console.log("record: ", record)
+    console.log("txt: ", text)
 
-    if(!s3ConfigJson) {
-      toast.error('Please enter a valid S3 compatible json object.');
-      return;
-    }
+    // const s3ConfigJson = validateJsonStr(s3Config);
+
+    // if(!s3ConfigJson) {
+    //   toast.error('Please enter a valid S3 compatible json object.');
+    //   return;
+    // }
 
     try {
       setShowDownloadSpinner(true);
@@ -175,10 +167,10 @@ const App = () => {
         return;
       }
 
-      if(!selectedFile) {
-        toast.error('Please select a file to upload/encrypt.');
-        return;
-      }
+      // if(!selectedFile) {
+      //   toast.error('Please select a file to upload/encrypt.');
+      //   return;
+      // }
 
       const s3ConfigJson = validateJsonStr(s3Config);
 
@@ -192,8 +184,10 @@ const App = () => {
 
       const client = new Client.Client(CLIENT_CONFIG);
 
+      const testJSONStr = '{ "Id": 1, "Name": "Coke" }'
+
       const encryptParams = new Client.EncryptParamsBuilder()
-        .withStreamSource(fileReaderStream(selectedFile))
+        .withStringSource(testJSONStr)
         .withOffline()
         .build();
 
@@ -229,14 +223,13 @@ const App = () => {
     }
   }, [initialized, keycloak]);
 
-  // TODO: remove <br>'s
   return (
     <React.StrictMode>
       <Layout>
         <Header>
           <div className='headerContainer'>
             <img className='logo' src={openTDFLogo} />
-            <span className='logoTitle'> - Secure Remote Storage</span>
+            <span className='logoTitle'> - Period Tracking App</span>
             <div className="userStatusContainer">
               <UserStatus />
             </div>
@@ -245,42 +238,9 @@ const App = () => {
         <Content className='contentContainer'>
           <br/>
           <br/>
-          <h3>Upload a file as an encrypted TDF to an S3 compatible remote store</h3><br/>
-          <Upload className='upload' multiple={false} maxCount={1} fileList={uploadFileList} beforeUpload={handleFileSelect} onRemove={e => setUploadFileList([])} removeIcon={true}>
-            <Button type='upload' icon={<UploadOutlined />}>Select File</Button>
-          </Upload>
+          <h3>Enter your sentitve data</h3><br/>
           <br/>
-          <Input.Group className='newS3ConfigInputContainer' compact>
-            <Tooltip title={tooltipExampleText}>
-              <Space className='newS3Tooltip'>
-                <span>Enter an S3 compatible configuration object</span>
-                <ToolOutlined />
-              </Space>
-            </Tooltip>
-            <TextArea className='newS3TextArea' rows={5} value={s3Config} onChange={handleTextBoxChange}  />
-          </Input.Group>
-          <h3 className='optionalWarningContainer'><span className='asterisk'>*</span></h3>
-          <Select
-            className='selectDropdown'
-            placeholder="Add or select remote store"
-            onSelect={handleS3ConfigSelect}
-            value={selectedS3Config}
-            onChange={val => {setSelectedS3Config(val)}}
-            dropdownRender={(menu) => (
-              <React.Fragment>
-                {menu}
-                <Divider className='divider' />
-                <Space align="center" className='space'>
-                  <Input placeholder="Remote store name" onPressEnter={handleSaveS3Config} value={newS3Name} onChange={handleNewS3ConfigName} />
-                  <Typography.Link onClick={handleSaveS3Config} className='saveRemoteStoreButton'> <PlusOutlined /> Save remote store</Typography.Link>
-                </Space>
-              </React.Fragment>
-            )}
-          >
-            {savedS3Configs.map((s3Config) => (
-              <Select.Option title={s3Config.name} key={s3Config.key}>{s3Config.name}</Select.Option>
-            ))}
-          </Select>
+          <TextArea className='newS3TextArea' rows={5} value={s3Config} onChange={handleTextBoxChange}  />
           <br/>
           <br/>
           <div className="spinnerContainer">
@@ -297,7 +257,6 @@ const App = () => {
         <Footer>
         </Footer>
       </Layout>
-      <h3 className='optionalWarning'><span className='asterisk'>*</span> = Optional</h3>
       <ToastContainer
         position="bottom-center"
         autoClose={5000}
