@@ -161,6 +161,9 @@ if [[ ! $no_third_party ]]; then
 
   # nginx ingress
   save-image k8s.gcr.io/ingress-nginx/controller v1.1.1 third-party-image-ingress-nginx
+
+  # docker registry
+  save-image registry 2.8.1 third-party-image-docker-registry
 fi
 
 # Third party helm charts
