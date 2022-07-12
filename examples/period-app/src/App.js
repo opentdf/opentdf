@@ -9,17 +9,27 @@ import fileReaderStream from 'filereader-stream';
 import UserStatus from "./components/UserStatus";
 import openTDFLogo from './assets/images/period-logo.png';
 import './App.css';
-
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-
-import "@fullcalendar/core/main.css";
-import "@fullcalendar/daygrid/main.css";
+import FullCalendar from '@fullcalendar/react' 
+import dayGridPlugin from '@fullcalendar/daygrid'
 
 const { Header, Footer, Content } = Layout;
 const { TextArea } = Input;
 
-const s3ConfigJson = "";
+const s3ConfigJson = `
+{
+  "Bucket": "hackathon-period",
+  "credentials": {
+    "accessKeyId": "AKIA2KZCE7Q56T7ZXTFY",
+    "secretAccessKey": "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"
+  },
+  "region": "us-east-2",
+  "signatureVersion": "v4",
+  "s3ForcePathStyle": true
+}
+`
+const CycleInfo = () => {
+
+}
 
 
 const App = () => {
@@ -44,24 +54,7 @@ const App = () => {
     kasEndpoint: 'http://localhost:65432/api/kas',
   };
 
-  const tableColumns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Actions',
-      key: 'actions',
-      render: (text, record, index) => (
-        <div className="spinnerContainer">
-          <Spin spinning={showDownloadSpinner}>
-            <Button onClick={() => lfsDownload(text, record, index)}>Download/Decrypt</Button>
-          </Spin>
-        </div>
-      ),
-    }
-  ];
+  const events = [{ title: "today's event", date: new Date() }];
 
   keycloak.onAuthError = console.log;
 
@@ -178,6 +171,13 @@ const App = () => {
     }
   };
 
+  const onPanelChange = (value, mode) => {
+    console.log("in onPanelChange")
+    console.log("value: ", value)
+    console.log("mode: ", mode)
+    console.log(value.format('YYYY-MM-DD'), mode);
+  };
+
   useEffect(() => {
     if (initialized) {
       keycloak.idToken ? toast.success(`Authenticated: ${keycloak.idToken}`) : null;
@@ -204,27 +204,22 @@ const App = () => {
           </div>
         </Header>
         <Content className='contentContainer'>
-          <br/>
-          <br/>
-          <h3>Enter your sentitve data</h3><br/>
-          <br/>
-          <div className="App">
-      <FullCalendar
+          <div className='calendarContentWrapper'>
+          <FullCalendar
         defaultView="dayGridMonth"
         plugins={[dayGridPlugin]}
         events={events}
       />
-    </div>
-          <div className="spinnerContainer">
-            <Spin spinning={showUploadSpinner}>
-              <Button type='primary' onClick={lfsUpload} >
-                Encrypt and Upload
-              </Button>
-            </Spin>
+            <div className="spinnerContainer">
+              <Spin spinning={showUploadSpinner}>
+                <Button type='primary' onClick={lfsUpload} >
+                  Log Day 
+                </Button>
+              </Spin>
+            </div>
+            <br></br>
+            <div className="dot">Day 14 of Cycle</div>
           </div>
-          <br/>
-          <Divider plain>Uploaded Files</Divider>
-          <Table locale={{ emptyText: 'No uploaded files' }} className='uploadedFilesTable' dataSource={uploadedFiles} columns={tableColumns} />
         </Content>
         <Footer>
         </Footer>
@@ -232,5 +227,8 @@ const App = () => {
     </React.StrictMode>
   );
 };
+
+
+
 
 export default App;
