@@ -121,7 +121,7 @@ const App = () => {
     });
     $.ajax({ 
       type : "GET", 
-      url : keycloak.authServerUrl+"/admin/realms/master/users", 
+      url : keycloak.authServerUrl+"/admin/realms/tdf/users", 
       beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer '+auth["access_token"]);},
       success : function(result) { 
           users = $.parseJSON(result);
