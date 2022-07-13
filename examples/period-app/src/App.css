@@ -10,6 +10,38 @@
   background: #EAE4E5 !important;
 }
 
+.fc-button {
+  background: #84A5A3 !important;
+}
+
+.fc-col-header-cell-cushion {
+  color: #BA8D93 !important;
+}
+
+.fc-daygrid-day-number {
+  color: #84A5A3 !important;
+}
+
+.fc-event-time {
+  color: #6B596F !important;
+}
+
+.fc-event-title {
+  color: #EAE4E5  !important;
+}
+
+.fc-daygrid-event-dot {
+  color: #6B596F !important;
+}
+
+.ant-btn-primary {
+  background: #84A5A3 !important;
+}
+
+.fc-event-title-container {
+  background:#BA8D93!important;
+}
+
 .userStatusContainer {
   padding: 0.5vh;
 }

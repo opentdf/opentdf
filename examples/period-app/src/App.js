@@ -12,6 +12,7 @@ import './App.css';
 import FullCalendar from '@fullcalendar/react' 
 import dayGridPlugin from '@fullcalendar/daygrid'
 import jwt_decode from "jwt-decode"
+import { Checkbox, CheckboxGroup } from 'rsuite';
 
 const { Header, Footer, Content } = Layout;
 const { TextArea } = Input;
@@ -135,7 +136,12 @@ const App = () => {
   };
 
 
-  const events = [{ title: "today's event", date: new Date() }];
+  const events = [{ 
+    title: "AHHHH IM BLEEDING",
+    start: new Date('July 8, 2022 23:15:30'),
+    end: new Date('July 14, 2022 23:15:30'),
+    allDay: true
+  }];
 
   keycloak.onAuthError = console.log;
 
@@ -258,19 +264,27 @@ const App = () => {
       />
             <div className="spinnerContainer">
               <Spin spinning={showUploadSpinner}>
-                <Button type='primary' onClick={showModal} >
+                <Button className="log-button" type='primary' onClick={showModal} >
                   Log Day 
                 </Button>
               </Spin>
             </div>
             <Modal
-        title="Title"
+        title="Log for Today"
         visible={isModalVisible}
         onOk={handleOk}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
       >
-        <p>{modalText}</p>
+      <Checkbox> Did you start your period today?</Checkbox>
+      <Checkbox> Did you finish your period today?</Checkbox>
+  <CheckboxGroup name="checkboxList">
+    <p>Symptoms</p>
+    <Checkbox value="A">Headache</Checkbox>
+    <Checkbox value="B">Cramps</Checkbox>
+    <Checkbox value="A">Back Pain</Checkbox>
+    <Checkbox value="B">Nausea</Checkbox>
+  </CheckboxGroup>
       </Modal>
             <br></br>
             <div className="dot">Day 14 of Cycle</div>
