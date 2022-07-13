@@ -39,7 +39,7 @@ module.exports = {
       filename: "index.html",
     }),
     new webpack.ProvidePlugin({
-      title: "Secure Remote Storage",
+      title: "Period App",
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
       stream: 'stream-browserify',

@@ -100,46 +100,46 @@ const App = () => {
     await setNewS3Name('');
   };
 
-  const getKeycloakUserId = async () => {
-    let users = "";
-    let auth = ""
-    let decoded = jwt_decode(keycloak.token);
-    let username = decoded[sub];
-    // i think we need a specific user with the view-users role to 
-    let post_data={"grant_type": "password", "username": "keycloakadmin", "password": "mykeycloakpassword", "client_id":"admin-cli"}
-    $.ajax({ 
-      type : "POST", 
-      url : keycloak.authServerUrl+"/auth/realms/master/protocol/openid-connect/token", 
-      data : post_data,
-      success : function(result) { 
-          auth = $.parseJSON(result);
-      }, 
-      error : function(result) { 
-        var json = $.parseJSON(data);
-        console.log(json);
-      } 
-    });
-    $.ajax({ 
-      type : "GET", 
-      url : keycloak.authServerUrl+"/admin/realms/tdf/users", 
-      beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer '+auth["access_token"]);},
-      success : function(result) { 
-          users = $.parseJSON(result);
-      }, 
-      error : function(result) { 
-        var json = $.parseJSON(data);
-        console.log(json);
-      } 
-    });
-    let id = null;
-    for (const u of users){
-      if (u["username"]==username){
-        id = u["id"]
-        return id;
-      }
-    }
-    return id;
-  };
+  // const getKeycloakUserId = async () => {
+  //   let users = "";
+  //   let auth = ""
+  //   let decoded = jwt_decode(keycloak.token);
+  //   let username = decoded[sub];
+  //   // i think we need a specific user with the view-users role to 
+  //   let post_data={"grant_type": "password", "username": "keycloakadmin", "password": "mykeycloakpassword", "client_id":"admin-cli"}
+  //   $.ajax({ 
+  //     type : "POST", 
+  //     url : keycloak.authServerUrl+"/auth/realms/master/protocol/openid-connect/token", 
+  //     data : post_data,
+  //     success : function(result) { 
+  //         auth = $.parseJSON(result);
+  //     }, 
+  //     error : function(result) { 
+  //       var json = $.parseJSON(data);
+  //       console.log(json);
+  //     } 
+  //   });
+  //   $.ajax({ 
+  //     type : "GET", 
+  //     url : keycloak.authServerUrl+"/admin/realms/tdf/users", 
+  //     beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer '+auth["access_token"]);},
+  //     success : function(result) { 
+  //         users = $.parseJSON(result);
+  //     }, 
+  //     error : function(result) { 
+  //       var json = $.parseJSON(data);
+  //       console.log(json);
+  //     } 
+  //   });
+  //   let id = null;
+  //   for (const u of users){
+  //     if (u["username"]==username){
+  //       id = u["id"]
+  //       return id;
+  //     }
+  //   }
+  //   return id;
+  // };
 
   const lfsDownload = async (text, record, index) => {
 
@@ -148,11 +148,11 @@ const App = () => {
       return;
     }
 
-    const keycloak_id = getKeycloakUserId()
-      if (!keycloak_id) {
-        toast.error('Keycloak user not found');
-        return;
-      }
+    // const keycloak_id = getKeycloakUserId()
+    //   if (!keycloak_id) {
+    //     toast.error('Keycloak user not found');
+    //     return;
+    //   }
 
     const fileToDecryptName = keycloak_id+".tdf";
 
@@ -195,11 +195,11 @@ const App = () => {
 
       setShowUploadSpinner(true);
 
-      const keycloak_id = getKeycloakUserId()
-      if (!keycloak_id) {
-        toast.error('Keycloak user not found');
-        return;
-      }
+      // const keycloak_id = getKeycloakUserId()
+      // if (!keycloak_id) {
+      //   toast.error('Keycloak user not found');
+      //   return;
+      // }
 
       const client = new Client.Client(CLIENT_CONFIG);
 
