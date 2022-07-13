@@ -14,27 +14,9 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import jwt_decode from "jwt-decode"
 import { Checkbox, CheckboxGroup } from 'rsuite';
 
+import { validateJsonStr } from './utils';
+
 const { Header, Footer, Content } = Layout;
-const { TextArea } = Input;
-
-
-const validateJsonStr = (jsonString) => {
-  try {
-    var o = JSON.parse(jsonString);
-    // Handle non-exception-throwing cases:
-    // Neither JSON.parse(false), JSON.parse(1234), or JSON.parse({}) throw errors, hence the type-checking,
-    // but... JSON.parse(null) returns null, and typeof null === "object",
-    // so we must check for that, too. Thankfully, null is falsey, so this suffices:
-    if (o && typeof o === "object" && Object.keys(o).length) {
-        return o;
-    }
-  }
-  catch (e) {
-    console.error(e);
-  }
-
-  return false;
-};
 
 const s3ConfigJson = validateJsonStr(`
 {
@@ -50,6 +32,7 @@ const s3ConfigJson = validateJsonStr(`
 `)
 
 const getKeycloakUserId = async (keycloak) => {
+  console.log("in get keycloak")
   let users = "";
   let auth = ""
   let decoded = jwt_decode(keycloak.token);
@@ -123,6 +106,7 @@ const App = () => {
 
   const handleOk = (val) => {
     setModalText('Securely Uploading your data...');
+    lfsUpload()
     setConfirmLoading(true);
     setTimeout(() => {
       setIsModalVisible(false);
@@ -184,7 +168,8 @@ const App = () => {
 
   const lfsUpload = async () => {
     console.log("in lfs upload")
-    //const keycloakUserID = await getKeycloakUserId(keycloak)
+    // const keycloakUserID = await getKeycloakUserId(keycloak)
+    // console.log("keycloak user id", keycloakUserID)
     try {
       if(!keycloak.authenticated) {
         toast.error('You must login to perform this action.');
@@ -203,19 +188,19 @@ const App = () => {
         .withOffline()
         .build();
 
-      // const cipherTextStream = await client.encrypt(encryptParams);
+      const cipherTextStream = await client.encrypt(encryptParams);
 
-      // cipherTextStream.toRemoteStore(`thisisatest.tdf`, s3ConfigJson).then(data => {
-      //   setShowUploadSpinner(false);
-      //   setUploadFileList([]);
-      //   setSelectedFile(null);
-      //   setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
-      //   console.log("i think it went")
-      // });
+      cipherTextStream.toRemoteStore(`keycloakuserid.tdf`, s3ConfigJson).then(data => {
+        setShowUploadSpinner(false);
+        setUploadFileList([]);
+        setSelectedFile(null);
+        setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
+        console.log("i think it went")
+      });
 
-      // cipherTextStream.on('progress', progress => {
-      //   console.log(`Uploaded ${progress.loaded} bytes`);
-      // });
+      cipherTextStream.on('progress', progress => {
+        console.log(`Uploaded ${progress.loaded} bytes`);
+      });
     } catch (e) {
       setShowUploadSpinner(false);
       console.error(e);
