@@ -48,9 +48,6 @@ const s3ConfigJson = validateJsonStr(`
   "s3ForcePathStyle": true
 }
 `)
-const CycleInfo = () => {
-
-}
 
 const getKeycloakUserId = async (keycloak) => {
   let users = "";
@@ -106,6 +103,9 @@ const App = () => {
   const [uploadFileList, setUploadFileList] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
+
+  //symptoms
+  const [symptoms, setSymptoms] = useState([]);
   const [modalText, setModalText] = useState('Content of the modal');
 
   const CLIENT_CONFIG = { // TODO: set this as env vars .etc
@@ -276,14 +276,14 @@ const App = () => {
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
       >
-      <Checkbox> Did you start your period today?</Checkbox>
-      <Checkbox> Did you finish your period today?</Checkbox>
+      <Checkbox onChange={(value) => value &&= setSymptoms(...symptoms, {periodStart: new Date()})}> Did you start your period today?</Checkbox>
+      <Checkbox onChange={(value) => value &&= setSymptoms(...symptoms, {periodEnd: new Date()})}> Did you finish your period today?</Checkbox>
   <CheckboxGroup name="checkboxList">
     <p>Symptoms</p>
-    <Checkbox value="A">Headache</Checkbox>
-    <Checkbox value="B">Cramps</Checkbox>
-    <Checkbox value="A">Back Pain</Checkbox>
-    <Checkbox value="B">Nausea</Checkbox>
+    <Checkbox onChange={(value) => setSymptoms(...symptoms, {headache: value})}>Headache</Checkbox>
+    <Checkbox onChange={(value) => setSymptoms(...symptoms, {cramps: value})}>Cramps</Checkbox>
+    <Checkbox onChange={(value) => setSymptoms(...symptoms, {backpain: value})}>Back Pain</Checkbox>
+    <Checkbox onChange={(value) => setSymptoms(...symptoms, {nausea: value})}>Nausea</Checkbox>
   </CheckboxGroup>
       </Modal>
             <br></br>
