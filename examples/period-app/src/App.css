@@ -1,21 +1,33 @@
+
+
+.ant-layout-header {
+  background: #EAE4E5 !important;
+  height: 9vh !important;
+}
+
 .headerContainer {
   display: flex;
+  background: #EAE4E5 !important;
+}
+
+.userStatusContainer {
+  padding: 0.5vh;
 }
 
 .logo {
-  width: 180px;
-  height: 50px;
-  margin-top: 7px;
-}
-
-.logoTitle {
-  color: white;
-  font-size: large;
+  width: 9vh;
+  height: 9vh;
 }
 
 .contentContainer {
   align-self: center;
+  /* background-color: #EAE4E5; */
+  padding-top: 2vh;
 }
+
+/* .calendarContentWrapper {
+  background: white;
+} */
 
 .calendar {
   width: 60vw;
