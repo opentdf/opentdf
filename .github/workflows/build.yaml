@@ -26,6 +26,7 @@ jobs:
             offline:
               - 'examples/offline/**'
               - 'quickstart/start.sh'
+              - 'quickstart/helm/**'
             quickstart:
               - 'quickstart/**'
             scripts:

@@ -14,11 +14,25 @@
 }
 
 .contentContainer {
-  text-align: center !important;
+  align-self: center;
+}
+
+.calendar {
+  width: 60vw;
+  margin: 0 auto;
 }
 
 .upload {
-  width: calc(20%);
+  margin: auto;
+}
+
+.dot {
+  background: #BA8D93;
+  border-radius: 50%;
+  height: 40vw;
+  width: 40vw;
+  text-align: center;
+  padding-top: 25%;
 }
 
 .newS3ConfigInputContainer {
@@ -38,16 +52,6 @@
   width: calc(50%) !important;
   display: block !important;
   margin: auto !important;
-}
-
-.optionalWarningContainer {
-  margin: 2px;
-  display: inline;
-}
-
-.asterisk {
-  color: red;
-  font-weight: bold;
 }
 
 .selectDropdown {
