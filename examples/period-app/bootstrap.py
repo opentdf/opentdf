@@ -23,7 +23,7 @@ keycloak_admin = KeycloakAdmin(
   user_realm_name=USER_REALM
 )
 
-CLIENT_ID = "abacus-localhost"
+CLIENT_ID = "browsertest"
 
 keycloak_client_id = keycloak_admin.get_client_id(CLIENT_ID)
 
@@ -144,7 +144,7 @@ definitions_no_order = [f'{d["authority"]}/{d["name"]}/{d["rule"]}' for d in def
 
 if f'{definition["authority"]}/{definition["name"]}/{definition["rule"]}' in definitions_no_order:
   print(f"Attribute definition {definition} already exists, deleting definition")
-  old_definition = [d for d in definitions if d["authority"]==definition["authority"] and 
+  old_definition = [d for d in definitions if d["authority"]==definition["authority"] and
   d["name"]==definition["name"] and d["rule"]==definition["rule"]]
   response = requests.delete(
       loc,
@@ -161,7 +161,7 @@ if f'{definition["authority"]}/{definition["name"]}/{definition["rule"]}' in def
     raise Exception(
        "Failed to delete attribute definition"
     )
-  
+
 
 response = requests.post(
   loc,

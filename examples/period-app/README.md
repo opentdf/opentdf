@@ -30,7 +30,7 @@
 - Install dependencies: `npm i`
 - Start app in local development mode: `npm run serve`
 
-   - Application will be hosted at `http://localhost:3001`
+   - Application will be hosted at `http://localhost:65432/period-app`
    - Authenticate via the app's login flow with
 
       - Username: `user1`
