@@ -1,0 +1,23 @@
+.loginPage {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 36px;
+  text-align: center;
+}
+
+.buttons-group {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+}
+
+.loginPage .title {
+  padding: 58px 0;
+}
+
+.loginPage .status {
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  padding-top: 14px;
+}
