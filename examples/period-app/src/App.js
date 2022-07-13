@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { useKeycloak } from '@react-keycloak/web';
 import { Client, FileClient } from '@opentdf/client';
-import { Button, Divider, Input, Layout, Select, Space, Spin, Table, Tooltip, Typography, Upload } from 'antd';
+import { Button, Divider, Input, Layout, Select, Space, Spin, Table, Tooltip, Typography, Upload, Modal } from 'antd';
 import { ToolOutlined } from '@ant-design/icons';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import fileReaderStream from 'filereader-stream';
@@ -11,6 +11,7 @@ import openTDFLogo from './assets/images/period-logo.png';
 import './App.css';
 import FullCalendar from '@fullcalendar/react' 
 import dayGridPlugin from '@fullcalendar/daygrid'
+import jwt_decode from "jwt-decode"
 
 const { Header, Footer, Content } = Layout;
 const { TextArea } = Input;
@@ -50,19 +51,59 @@ const CycleInfo = () => {
 
 }
 
+const getKeycloakUserId = async (keycloak) => {
+  let users = "";
+  let auth = ""
+  let decoded = jwt_decode(keycloak.token);
+  console.log("decoded: ", decoded)
+  let username = decoded.sub;
+  // i think we need a specific user with the view-users role to 
+  let post_data={"grant_type": "password", "username": "keycloakadmin", "password": "mykeycloakpassword", "client_id":"admin-cli"}
+  $.ajax({ 
+    type : "POST", 
+    url : keycloak.authServerUrl+"/auth/realms/master/protocol/openid-connect/token", 
+    data : post_data,
+    success : function(result) { 
+        auth = $.parseJSON(result);
+    }, 
+    error : function(result) { 
+      var json = $.parseJSON(data);
+      console.log(json);
+    } 
+  });
+  $.ajax({ 
+    type : "GET", 
+    url : keycloak.authServerUrl+"/admin/realms/tdf/users", 
+    beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer '+auth["access_token"]);},
+    success : function(result) { 
+        users = $.parseJSON(result);
+    }, 
+    error : function(result) { 
+      var json = $.parseJSON(data);
+      console.log(json);
+    } 
+  });
+  let id = null;
+  for (const u of users){
+    if (u["username"]==username){
+      id = u["id"]
+      return id;
+    }
+  }
+  return id;
+};
+
 
 const App = () => {
   const { keycloak, initialized } = useKeycloak();
   const [opentdfClient, setOpentdfClient] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [selectedS3Config, setSelectedS3Config] = useState();
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [s3Config, setS3Config] = useState('');
   const [showUploadSpinner, setShowUploadSpinner] = useState(false);
   const [showDownloadSpinner, setShowDownloadSpinner] = useState(false);
   const [uploadFileList, setUploadFileList] = useState([]);
-  const [savedS3Configs, setSavedS3Configs] = useState([]);
-  const [newS3Name, setNewS3Name] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const CLIENT_CONFIG = { // TODO: set this as env vars .etc
     clientId: keycloak.clientId,
@@ -72,6 +113,19 @@ const App = () => {
     oidcRefreshToken: keycloak.refreshToken,
     kasEndpoint: 'http://localhost:65432/api/kas',
   };
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
 
   const events = [{ title: "today's event", date: new Date() }];
 
@@ -116,6 +170,8 @@ const App = () => {
 
   const lfsUpload = async () => {
     console.log("in lfs upload")
+    const thing = await getKeycloakUserId(keycloak)
+    console.log("the tihng i need: ", thing)
     try {
       if(!keycloak.authenticated) {
         toast.error('You must login to perform this action.');
@@ -133,19 +189,19 @@ const App = () => {
         .withOffline()
         .build();
 
-      const cipherTextStream = await client.encrypt(encryptParams);
+      // const cipherTextStream = await client.encrypt(encryptParams);
 
-      cipherTextStream.toRemoteStore(`thisisatest.tdf`, s3ConfigJson).then(data => {
-        setShowUploadSpinner(false);
-        setUploadFileList([]);
-        setSelectedFile(null);
-        setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
-        console.log("i think it went")
-      });
+      // cipherTextStream.toRemoteStore(`thisisatest.tdf`, s3ConfigJson).then(data => {
+      //   setShowUploadSpinner(false);
+      //   setUploadFileList([]);
+      //   setSelectedFile(null);
+      //   setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
+      //   console.log("i think it went")
+      // });
 
-      cipherTextStream.on('progress', progress => {
-        console.log(`Uploaded ${progress.loaded} bytes`);
-      });
+      // cipherTextStream.on('progress', progress => {
+      //   console.log(`Uploaded ${progress.loaded} bytes`);
+      // });
     } catch (e) {
       setShowUploadSpinner(false);
       console.error(e);
@@ -161,6 +217,8 @@ const App = () => {
 
   useEffect(() => {
     if (initialized) {
+      // console.log("keycloak decode : ", jwt.decode(keycloak))
+      console.log("keycloak : ", keycloak)
       keycloak.idToken ? toast.success(`Authenticated: ${keycloak.idToken}`) : null;
       sessionStorage.setItem('keycloak', keycloak.token || '');
       const tmp = localStorage.getItem('realm-tmp');
