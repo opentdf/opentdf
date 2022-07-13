@@ -7,12 +7,12 @@ include('../../quickstart/Tiltfile')
 # frontend
 k8s_yaml("kubernetes.yaml")
 k8s_resource(
-    "opentdf-secure-remote-storage",
+    "opentdf-period-app",
     resource_deps = ["keycloak-bootstrap"],
-    labels="secure-remote-storage",
+    labels="period-app",
 )
 
 docker_build(
-    "opentdf/secure-remote-storage",
+    "opentdf/period-app",
     "."
 )

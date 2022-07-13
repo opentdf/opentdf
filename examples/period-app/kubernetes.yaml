@@ -3,8 +3,8 @@ kind: Service
 metadata:
   labels:
     app.kubernetes.io/instance: opentdf
-    app.kubernetes.io/name: secure-remote-storage
-  name: opentdf-secure-remote-storage
+    app.kubernetes.io/name: period-app
+  name: opentdf-period-app
 spec:
   ports:
     - name: http
@@ -12,13 +12,13 @@ spec:
       protocol: TCP
   selector:
     app.kubernetes.io/instance: opentdf
-    app.kubernetes.io/name: secure-remote-storage
+    app.kubernetes.io/name: period-app
   type: ClusterIP
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: opentdf-secure-remote-storage
+  name: opentdf-period-app
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -26,7 +26,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/rewrite-target: /$2
-  name: opentdf-secure-remote-storage
+  name: opentdf-period-app
 spec:
   rules:
     - host: localhost
@@ -34,32 +34,32 @@ spec:
         paths:
           - backend:
               service:
-                name: opentdf-secure-remote-storage
+                name: opentdf-period-app
                 port:
                   number: 80
-            path: /secure-remote-storage(/|$)(.*)
+            path: /period-app(/|$)(.*)
             pathType: Prefix
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: opentdf-secure-remote-storage
+  name: opentdf-period-app
 spec:
   replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/instance: opentdf
-      app.kubernetes.io/name: secure-remote-storage
+      app.kubernetes.io/name: period-app
   template:
     metadata:
       labels:
         app.kubernetes.io/instance: opentdf
-        app.kubernetes.io/name: secure-remote-storage
+        app.kubernetes.io/name: period-app
     spec:
-      serviceAccountName: opentdf-secure-remote-storage
+      serviceAccountName: opentdf-period-app
       containers:
-        - name: secure-remote-storage
-          image: opentdf/secure-remote-storage
+        - name: period-app
+          image: opentdf/period-app
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -67,9 +67,9 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /secure-remote-storage(/|$)(.*)
+              path: /period-app(/|$)(.*)
               port: http
           readinessProbe:
             httpGet:
-              path: /secure-remote-storage(/|$)(.*)
+              path: /period-app(/|$)(.*)
               port: http
