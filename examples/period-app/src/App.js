@@ -121,12 +121,14 @@ const App = () => {
     setIsModalVisible(true);
   };
 
-  const handleOk = () => {
-    setModalText('The modal will be closed after two seconds');
+  const handleOk = (val) => {
+    setModalText('Securely Uploading your data...');
     setConfirmLoading(true);
     setTimeout(() => {
       setIsModalVisible(false);
       setConfirmLoading(false);
+      toast.success("Your data has been securely uploaded!")
+      console.log(val)
     }, 2000);
   };
 
@@ -135,9 +137,7 @@ const App = () => {
     setIsModalVisible(false);
   };
 
-
   const events = [{ 
-    title: "AHHHH IM BLEEDING",
     start: new Date('July 8, 2022 23:15:30'),
     end: new Date('July 14, 2022 23:15:30'),
     allDay: true
@@ -190,12 +190,13 @@ const App = () => {
         toast.error('You must login to perform this action.');
         return;
       }
-
+    
       setShowUploadSpinner(true);
 
       const client = new Client.Client(CLIENT_CONFIG);
 
       const testJSONStr = '{ "Id": 1, "Name": "Coke" }'
+
 
       const encryptParams = new Client.EncryptParamsBuilder()
         .withStringSource(testJSONStr)
@@ -271,12 +272,21 @@ const App = () => {
             </div>
             <Modal
         title="Log for Today"
+        okText="Submit"
         visible={isModalVisible}
-        onOk={handleOk}
+        onOk={() => handleOk(symptoms)}
         confirmLoading={confirmLoading}
         onCancel={handleCancel}
       >
-      <Checkbox onChange={(value) => value &&= setSymptoms(...symptoms, {periodStart: new Date()})}> Did you start your period today?</Checkbox>
+      <Checkbox onChange={(val, checked) => checked &&= setSymptoms(...symptoms, {periodStart: new Date()})}> Did you start your period today?</Checkbox>
+      <Checkbox onChange={(val, checked) => checked &&= setSymptoms(...symptoms, {periodEnd: new Date()})}> Did you finish your period today?</Checkbox>
+    <p>Symptoms</p>
+    <Checkbox onChange={(val, checked) => setSymptoms({...symptoms, headache: checked})}>Headache</Checkbox>
+    <Checkbox onChange={(val, checked) => setSymptoms({...symptoms, cramps: checked})}>Cramps</Checkbox>
+    <Checkbox onChange={(val, checked) => setSymptoms({...symptoms, backpain: checked})}>Back Pain</Checkbox>
+    <Checkbox onChange={(val, checked) => setSymptoms({...symptoms, nausea: checked})}>Nausea</Checkbox>
+
+  {/* <Checkbox onChange={(value) => value &&= setSymptoms(...symptoms, {periodStart: new Date()})}> Did you start your period today?</Checkbox>
       <Checkbox onChange={(value) => value &&= setSymptoms(...symptoms, {periodEnd: new Date()})}> Did you finish your period today?</Checkbox>
   <CheckboxGroup name="checkboxList">
     <p>Symptoms</p>
@@ -284,7 +294,7 @@ const App = () => {
     <Checkbox onChange={(value) => setSymptoms(...symptoms, {cramps: value})}>Cramps</Checkbox>
     <Checkbox onChange={(value) => setSymptoms(...symptoms, {backpain: value})}>Back Pain</Checkbox>
     <Checkbox onChange={(value) => setSymptoms(...symptoms, {nausea: value})}>Nausea</Checkbox>
-  </CheckboxGroup>
+  </CheckboxGroup> */}
       </Modal>
             <br></br>
             <div className="dot">Day 14 of Cycle</div>

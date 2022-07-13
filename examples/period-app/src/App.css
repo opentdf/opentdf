@@ -2,7 +2,7 @@
 
 .ant-layout-header {
   background: #EAE4E5 !important;
-  height: 9vh !important;
+  height: 10vh !important;
 }
 
 .headerContainer {
@@ -47,7 +47,6 @@
 }
 
 .logo {
-  width: 9vh;
   height: 9vh;
 }
 
