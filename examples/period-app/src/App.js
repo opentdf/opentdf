@@ -15,18 +15,37 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 const { Header, Footer, Content } = Layout;
 const { TextArea } = Input;
 
-const s3ConfigJson = `
+
+const validateJsonStr = (jsonString) => {
+  try {
+    var o = JSON.parse(jsonString);
+    // Handle non-exception-throwing cases:
+    // Neither JSON.parse(false), JSON.parse(1234), or JSON.parse({}) throw errors, hence the type-checking,
+    // but... JSON.parse(null) returns null, and typeof null === "object",
+    // so we must check for that, too. Thankfully, null is falsey, so this suffices:
+    if (o && typeof o === "object" && Object.keys(o).length) {
+        return o;
+    }
+  }
+  catch (e) {
+    console.error(e);
+  }
+
+  return false;
+};
+
+const s3ConfigJson = validateJsonStr(`
 {
   "Bucket": "hackathon-period",
   "credentials": {
-    "accessKeyId": "fakekeyid",
-    "secretAccessKey": "fakeaccesskey"
+    "accessKeyId": "AKIA2KZCE7Q56T7ZXTFY",
+    "secretAccessKey": "Z1sKGUf0TCPJjm4HWOvgSh814E6ZvDyIhrngFF0r"
   },
   "region": "us-east-2",
   "signatureVersion": "v4",
   "s3ForcePathStyle": true
 }
-`
+`)
 const CycleInfo = () => {
 
 }
@@ -57,45 +76,6 @@ const App = () => {
   const events = [{ title: "today's event", date: new Date() }];
 
   keycloak.onAuthError = console.log;
-
-  const handleFileSelect = (file, fileList) => {
-    setSelectedFile(file);
-    setUploadFileList(fileList);
-    return false;
-  }
-
-
-  const handleTextBoxChange = async (e) => {
-    await setS3Config(e.target.value);
-  }
-
-  const handleNewS3ConfigName = async (e) => {
-    await setNewS3Name(e.target.value);
-  };
-
-  const handleS3ConfigSelect = (selectedKey, option) => {
-    const selectedOption = savedS3Configs.find(({key}) => key === parseInt(selectedKey));
-    setS3Config(selectedOption.data);
-  };
-
-  const handleSaveS3Config = async (e) => {
-    e.preventDefault();
-
-    if(!keycloak.authenticated) {
-      toast.error('You must login to perform this action.');
-      return;
-    }
-
-
-    // Checks for falsey values, empty valid objects, and invalid objects
-    if(!s3ConfigJson) {
-      toast.error('Please enter a valid S3 compatible json object.');
-      return;
-    }
-
-    await setSavedS3Configs([...savedS3Configs, {name: newS3Name, data: s3Config, key: savedS3Configs.length + 1}])
-    await setNewS3Name('');
-  };
 
   const lfsDownload = async (text, record, index) => {
 
@@ -135,6 +115,7 @@ const App = () => {
   };
 
   const lfsUpload = async () => {
+    console.log("in lfs upload")
     try {
       if(!keycloak.authenticated) {
         toast.error('You must login to perform this action.');
@@ -154,11 +135,12 @@ const App = () => {
 
       const cipherTextStream = await client.encrypt(encryptParams);
 
-      cipherTextStream.toRemoteStore(`${selectedFile.name}.tdf`, s3ConfigJson).then(data => {
+      cipherTextStream.toRemoteStore(`thisisatest.tdf`, s3ConfigJson).then(data => {
         setShowUploadSpinner(false);
         setUploadFileList([]);
         setSelectedFile(null);
         setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
+        console.log("i think it went")
       });
 
       cipherTextStream.on('progress', progress => {
@@ -223,6 +205,17 @@ const App = () => {
         <Footer>
         </Footer>
       </Layout>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss={false}
+        draggable
+        pauseOnHover={false}
+      />
     </React.StrictMode>
   );
 };
