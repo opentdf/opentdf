@@ -1,0 +1,18 @@
+# Tiltfile for development
+# https://docs.tilt.dev/api.html
+#
+
+include('../../quickstart/Tiltfile')
+
+# frontend
+k8s_yaml("kubernetes.yaml")
+k8s_resource(
+    "opentdf-period-app",
+    resource_deps = ["keycloak-bootstrap"],
+    labels="period-app",
+)
+
+docker_build(
+    "opentdf/period-app",
+    "."
+)
