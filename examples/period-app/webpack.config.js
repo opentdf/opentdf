@@ -5,7 +5,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: 'index.bundle.js'
+    filename: 'index.bundle.js',
+    publicPath: '/period-app/'
   },
   devServer: {
     static: {
@@ -35,14 +36,20 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/index.html'
+      template: './src/index.html',
+      filename: "index.html",
     }),
     new webpack.ProvidePlugin({
+      title: "Period App",
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
+      stream: 'stream-browserify',
     }),
   ],
   resolve: {
+    alias: {
+      stream: "stream-browserify",
+    },
     extensions: ['.js'],
   },
   devtool: 'source-map',
