@@ -19,8 +19,8 @@ const s3ConfigJson = `
 {
   "Bucket": "hackathon-period",
   "credentials": {
-    "accessKeyId": "AKIA2KZCE7Q56T7ZXTFY",
-    "secretAccessKey": "Z1sKGUf0TCPJjm4HWOvgSh814E6ZvDyIhrngFF0r"
+    "accessKeyId": "fakekeyid",
+    "secretAccessKey": "fakeaccesskey"
   },
   "region": "us-east-2",
   "signatureVersion": "v4",
