@@ -5,6 +5,7 @@ import { Client, FileClient } from '@opentdf/client';
 import { Button, Divider, Input, Layout, Select, Space, Spin, Table, Tooltip, Typography, Upload } from 'antd';
 import { ToolOutlined } from '@ant-design/icons';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { toWebReadableStream } from "web-streams-node";
 import fileReaderStream from 'filereader-stream';
 import UserStatus from "./components/UserStatus";
 import openTDFLogo from './assets/images/period-logo.png';
@@ -30,6 +31,8 @@ const s3ConfigJson = `
 const CycleInfo = () => {
 
 }
+
+const attributePrefix = "http://period.com/attr/tracker/value/"
 
 
 const App = () => {
@@ -97,6 +100,47 @@ const App = () => {
     await setNewS3Name('');
   };
 
+  const getKeycloakUserId = async () => {
+    let users = "";
+    let auth = ""
+    let decoded = jwt_decode(keycloak.token);
+    let username = decoded[sub];
+    // i think we need a specific user with the view-users role to 
+    let post_data={"grant_type": "password", "username": "keycloakadmin", "password": "mykeycloakpassword", "client_id":"admin-cli"}
+    $.ajax({ 
+      type : "POST", 
+      url : keycloak.authServerUrl+"/auth/realms/master/protocol/openid-connect/token", 
+      data : post_data,
+      success : function(result) { 
+          auth = $.parseJSON(result);
+      }, 
+      error : function(result) { 
+        var json = $.parseJSON(data);
+        console.log(json);
+      } 
+    });
+    $.ajax({ 
+      type : "GET", 
+      url : keycloak.authServerUrl+"/admin/realms/master/users", 
+      beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer '+auth["access_token"]);},
+      success : function(result) { 
+          users = $.parseJSON(result);
+      }, 
+      error : function(result) { 
+        var json = $.parseJSON(data);
+        console.log(json);
+      } 
+    });
+    let id = null;
+    for (const u of users){
+      if (u["username"]==username){
+        id = u["id"]
+        return id;
+      }
+    }
+    return id;
+  };
+
   const lfsDownload = async (text, record, index) => {
 
     if(!keycloak.authenticated) {
@@ -104,7 +148,13 @@ const App = () => {
       return;
     }
 
-    const fileToDecryptName = record.name;
+    const keycloak_id = getKeycloakUserId()
+      if (!keycloak_id) {
+        toast.error('Keycloak user not found');
+        return;
+      }
+
+    const fileToDecryptName = keycloak_id+".tdf";
 
     console.log("record: ", record)
     console.log("txt: ", text)
@@ -123,11 +173,13 @@ const App = () => {
 
       let plainTextStream = await client.decrypt(decryptParams);
 
-      plainTextStream
-        .toFile(decryptedFileName)
-        .then(() => {
-          setShowDownloadSpinner(false);
-        });
+      // plainTextStream
+      //   .toFile(decryptedFileName)
+      //   .then(() => {
+      //     setShowDownloadSpinner(false);
+      //   });
+      setShowDownloadSpinner(false)
+
     } catch (e) {
       setShowDownloadSpinner(false);
       console.error(e);
@@ -143,6 +195,12 @@ const App = () => {
 
       setShowUploadSpinner(true);
 
+      const keycloak_id = getKeycloakUserId()
+      if (!keycloak_id) {
+        toast.error('Keycloak user not found');
+        return;
+      }
+
       const client = new Client.Client(CLIENT_CONFIG);
 
       const testJSONStr = '{ "Id": 1, "Name": "Coke" }'
@@ -151,6 +209,8 @@ const App = () => {
         .withStringSource(testJSONStr)
         .withOffline()
         .build();
+
+      client.dataAttributes = [attributePrefix+keycloak_id];
 
       const cipherTextStream = await client.encrypt(encryptParams);
 

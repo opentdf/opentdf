@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/instance: opentdf
+    app.kubernetes.io/name: secure-remote-storage
+  name: opentdf-secure-remote-storage
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+  selector:
+    app.kubernetes.io/instance: opentdf
+    app.kubernetes.io/name: secure-remote-storage
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opentdf-secure-remote-storage
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  name: opentdf-secure-remote-storage
+spec:
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - backend:
+              service:
+                name: opentdf-secure-remote-storage
+                port:
+                  number: 80
+            path: /secure-remote-storage(/|$)(.*)
+            pathType: Prefix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opentdf-secure-remote-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: opentdf
+      app.kubernetes.io/name: secure-remote-storage
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: opentdf
+        app.kubernetes.io/name: secure-remote-storage
+    spec:
+      serviceAccountName: opentdf-secure-remote-storage
+      containers:
+        - name: secure-remote-storage
+          image: opentdf/secure-remote-storage
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /secure-remote-storage(/|$)(.*)
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /secure-remote-storage(/|$)(.*)
+              port: http

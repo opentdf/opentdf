@@ -23,7 +23,7 @@ keycloak_admin = KeycloakAdmin(
   user_realm_name=USER_REALM
 )
 
-CLIENT_ID = "abacus-web"
+CLIENT_ID = "abacus-localhost"
 
 keycloak_client_id = keycloak_admin.get_client_id(CLIENT_ID)
 
@@ -36,31 +36,73 @@ new_client = keycloak_admin.update_client(keycloak_client_id,
     "serviceAccountsEnabled": "true",
     "protocol": "openid-connect",
     "redirectUris": ["http://localhost:65432/*", f"{FRONTEND_URL}/*"], # add whatever uris you want to the list
-    "webOrigins": ["+"],
+    "webOrigins": ["+", f"{FRONTEND_URL}/*"],
   }
 )
 
+# try:
+#   keycloak_admin.add_mapper_to_client(keycloak_client_id,
+#     payload={
+#       "protocol": "openid-connect",
+#       "config": {
+#         "id.token.claim": "true",
+#         "access.token.claim": "true",
+#         "userinfo.token.claim": "false",
+#         "remote.parameters.username": "true",
+#         "remote.parameters.clientid": "true",
+#         "client.publickey": "X-VirtruPubKey",
+#         "claim.name": "tdf_claims",
+#         "claim.type": "Virtru OIDC to Entity Claim Mapper"
+#       },
+#       "name": "tdf_claims",
+#       "protocolMapper": "virtru-oidc-protocolmapper",
+#     },
+#   )
+
+#   print('Protocol mapper successfully created.')
+
+# except Exception as e:
+#   print('Protocol mapper already exists with same name, bootstrap script skipped.')
+
 try:
-  keycloak_admin.add_mapper_to_client(keycloak_client_id,
-    payload={
-      "protocol": "openid-connect",
-      "config": {
-        "id.token.claim": "true",
-        "access.token.claim": "true",
-        "userinfo.token.claim": "false",
-        "remote.parameters.username": "true",
-        "remote.parameters.clientid": "true",
-        "client.publickey": "X-VirtruPubKey",
-        "claim.name": "tdf_claims",
-        "claim.type": "Virtru OIDC to Entity Claim Mapper"
+  keycloak_admin.add_mapper_to_client(
+      keycloak_client_id,
+      payload={
+          "protocol": "openid-connect",
+          "config": {
+              "id.token.claim": "true",
+              "access.token.claim": "true",
+              "userinfo.token.claim": "false",
+              "remote.parameters.username": "true",
+              "remote.parameters.clientid": "true",
+              "client.publickey": "X-VirtruPubKey",
+              "claim.name": "tdf_claims",
+          },
+          "name": "Virtru OIDC Auth Mapper",
+          "protocolMapper": "virtru-oidc-protocolmapper",
       },
-      "name": "tdf_claims",
-      "protocolMapper": "virtru-oidc-protocolmapper",
+  )
+except Exception as e:
+  print('Protocol mapper already exists with same name, bootstrap script skipped.')
+
+try:
+  keycloak_admin.add_mapper_to_client(
+    keycloak_client_id,
+    payload={
+        "protocol": "openid-connect",
+        "config": {
+            "id.token.claim": "false",
+            "access.token.claim": "false",
+            "userinfo.token.claim": "true",
+            "remote.parameters.username": "true",
+            "remote.parameters.clientid": "true",
+            "client.publickey": "X-VirtruPubKey",
+            "claim.name": "tdf_claims",
+        },
+        "name": "Virtru OIDC UserInfo Mapper",
+        "protocolMapper": "virtru-oidc-protocolmapper",
     },
   )
-
-  print('Protocol mapper successfully created.')
-
 except Exception as e:
   print('Protocol mapper already exists with same name, bootstrap script skipped.')
 
@@ -116,9 +158,8 @@ if f'{definition["authority"]}/{definition["name"]}/{definition["rule"]}' in def
         response.text,
         exc_info=True,
     )
-    raise HTTPException(
-        status_code=BAD_REQUEST,
-        detail="Failed to delete attribute definition",
+    raise Exception(
+       "Failed to delete attribute definition"
     )
   
 
@@ -134,8 +175,31 @@ if response.status_code != 200:
       response.text,
       exc_info=True,
   )
-  raise HTTPException(
-      status_code=BAD_REQUEST,
-      detail="Failed to create attribute definition",
+  raise Exception(
+"Failed to create attribute definition"
   )
 
+
+## entitle each attribute to each user
+ENTITLEMENTS_URL = "http://localhost:65432/api/entitlements"
+
+for user_id in ids:
+  loc = f"{ENTITLEMENTS_URL}/entitlements/{user_id}"
+  attrs = ["http://period.com/attr/tracker/value/"+user_id]
+  # logger.info(
+  #     "Entitling for user: [%s] with [%s] at [%s]", user["username"], attrs, loc
+  # )
+  # logger.debug("Using auth JWT: [%s]", authToken)
+
+  response = requests.post(
+      loc,
+      json=attrs,
+      headers={"Authorization": f"Bearer {authToken}"},
+  )
+  if response.status_code != 200:
+      print("Unexpected code [%s] from entitlements service when attempting to entitle user! [%s]",
+          response.status_code,
+          response.text,
+      )
+      raise Exception(f"Failed to entitle user {user_id}"
+      )

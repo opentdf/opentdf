@@ -35,14 +35,20 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/index.html'
+      template: './src/index.html',
+      filename: "index.html",
     }),
     new webpack.ProvidePlugin({
+      title: "Secure Remote Storage",
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
+      stream: 'stream-browserify',
     }),
   ],
   resolve: {
+    alias: {
+      stream: "stream-browserify",
+    },
     extensions: ['.js'],
   },
   devtool: 'source-map',
