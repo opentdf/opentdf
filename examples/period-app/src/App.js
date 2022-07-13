@@ -104,6 +104,8 @@ const App = () => {
   const [showDownloadSpinner, setShowDownloadSpinner] = useState(false);
   const [uploadFileList, setUploadFileList] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [modalText, setModalText] = useState('Content of the modal');
 
   const CLIENT_CONFIG = { // TODO: set this as env vars .etc
     clientId: keycloak.clientId,
@@ -119,10 +121,16 @@ const App = () => {
   };
 
   const handleOk = () => {
-    setIsModalVisible(false);
+    setModalText('The modal will be closed after two seconds');
+    setConfirmLoading(true);
+    setTimeout(() => {
+      setIsModalVisible(false);
+      setConfirmLoading(false);
+    }, 2000);
   };
 
   const handleCancel = () => {
+    console.log('Clicked cancel button');
     setIsModalVisible(false);
   };
 
@@ -170,8 +178,7 @@ const App = () => {
 
   const lfsUpload = async () => {
     console.log("in lfs upload")
-    const thing = await getKeycloakUserId(keycloak)
-    console.log("the tihng i need: ", thing)
+    //const keycloakUserID = await getKeycloakUserId(keycloak)
     try {
       if(!keycloak.authenticated) {
         toast.error('You must login to perform this action.');
@@ -251,11 +258,20 @@ const App = () => {
       />
             <div className="spinnerContainer">
               <Spin spinning={showUploadSpinner}>
-                <Button type='primary' onClick={lfsUpload} >
+                <Button type='primary' onClick={showModal} >
                   Log Day 
                 </Button>
               </Spin>
             </div>
+            <Modal
+        title="Title"
+        visible={isModalVisible}
+        onOk={handleOk}
+        confirmLoading={confirmLoading}
+        onCancel={handleCancel}
+      >
+        <p>{modalText}</p>
+      </Modal>
             <br></br>
             <div className="dot">Day 14 of Cycle</div>
           </div>
