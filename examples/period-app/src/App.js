@@ -132,46 +132,11 @@ const App = () => {
 
   keycloak.onAuthError = console.log;
 
-  // const getKeycloakUserId = async () => {
-  //   let users = "";
-  //   let auth = ""
-  //   let decoded = jwt_decode(keycloak.token);
-  //   let username = decoded[sub];
-  //   // i think we need a specific user with the view-users role to 
-  //   let post_data={"grant_type": "password", "username": "keycloakadmin", "password": "mykeycloakpassword", "client_id":"admin-cli"}
-  //   $.ajax({ 
-  //     type : "POST", 
-  //     url : keycloak.authServerUrl+"/auth/realms/master/protocol/openid-connect/token", 
-  //     data : post_data,
-  //     success : function(result) { 
-  //         auth = $.parseJSON(result);
-  //     }, 
-  //     error : function(result) { 
-  //       var json = $.parseJSON(data);
-  //       console.log(json);
-  //     } 
-  //   });
-  //   $.ajax({ 
-  //     type : "GET", 
-  //     url : keycloak.authServerUrl+"/admin/realms/tdf/users", 
-  //     beforeSend: function(xhr){xhr.setRequestHeader('Authorization', 'Bearer '+auth["access_token"]);},
-  //     success : function(result) { 
-  //         users = $.parseJSON(result);
-  //     }, 
-  //     error : function(result) { 
-  //       var json = $.parseJSON(data);
-  //       console.log(json);
-  //     } 
-  //   });
-  //   let id = null;
-  //   for (const u of users){
-  //     if (u["username"]==username){
-  //       id = u["id"]
-  //       return id;
-  //     }
-  //   }
-  //   return id;
-  // };
+  /******************************
+   * ****************************
+   * ************* READ *********
+   * ****************************
+   ******************************/
 
   const lfsDownload = async (text, record, index) => {
 
@@ -186,10 +151,10 @@ const App = () => {
     //     return;
     //   }
 
-    const fileToDecryptName = keycloak_id+".tdf";
+    // const fileToDecryptName = keycloak_id+".tdf";
 
-    console.log("record: ", record)
-    console.log("txt: ", text)
+    // console.log("record: ", record)
+    // console.log("txt: ", text)
 
     try {
       setShowDownloadSpinner(true);
@@ -218,10 +183,16 @@ const App = () => {
     }
   };
 
+    /*****************************
+   * *****************************
+   * ************* WRITE *********
+   * *****************************
+   *******************************/
+
   const lfsUpload = async () => {
     console.log("in lfs upload")
     // const keycloakUserID = await getKeycloakUserId(keycloak)
-    // console.log("keycloak user id", keycloakUserID)
+    //console.log("keycloak user id", keycloakUserID)
     try {
       if(!keycloak.authenticated) {
         toast.error('You must login to perform this action.');
@@ -230,7 +201,7 @@ const App = () => {
     
       setShowUploadSpinner(true);
 
-      // const keycloak_id = getKeycloakUserId()
+      //const keycloak_id = getKeycloakUserId()
       // if (!keycloak_id) {
       //   toast.error('Keycloak user not found');
       //   return;
@@ -246,7 +217,7 @@ const App = () => {
         .withOffline()
         .build();
 
-      client.dataAttributes = [attributePrefix+keycloak_id];
+      client.dataAttributes = [attributePrefix+"keycloakID"];
 
       const cipherTextStream = await client.encrypt(encryptParams);
 
