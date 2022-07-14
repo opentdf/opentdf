@@ -18,7 +18,9 @@ monolog TRACE "pre-reqs: [$0 $*]"
 : "${HELM_VERSION:=3.8.1}"
 : "${KIND_VERSION:=0.13.0}"
 : "${KUTTL_VERSION:=0.12.1}"
-# Find latest: https://github.com/opcr-io/policy/releases
+# Find latest opa tool: https://www.openpolicyagent.org/docs/latest/#running-opa
+: "${OPA_VERSION:=0.42.2}"
+# Find latest policy tool: https://github.com/opcr-io/policy/releases
 : "${POLICY_VERSION:=0.1.34}"
 : "${TILT_VERSION:=0.29.0}"
 
