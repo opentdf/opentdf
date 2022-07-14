@@ -5,7 +5,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: 'index.bundle.js'
+    filename: 'index.bundle.js',
+    // publicPath: '/secure-remote-storage/'
   },
   devServer: {
     static: {
