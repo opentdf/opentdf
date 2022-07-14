@@ -120,6 +120,18 @@ i_minikube() (
   docker system prune --volumes -af
 )
 
+i_policy() (
+  monolog INFO "Installing Tilt binary ${POLICY_VERSION?policy version required}"
+  cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
+  rm -rf policy
+  mkdir policy || e "mkdir policy fail"
+  cd policy || e "no policy build folder"
+  curl -fsSL "https://github.com/opcr-io/policy/releases/download/v${POLICY_VERSION}/policy${POLICY_VERSION}_linux_x86_64.zip" -o policy.zip || e "policy download failure"
+  unzip policy.zip || e "policy.zip unzip failure"
+  chmod +x policy || e "policy binary is not executableable"
+  mv policy "$BUILD_BIN/" || e "policy is not mvable"
+)
+
 i_tilt() (
   monolog INFO "Installing Tilt binary ${TILT_VERSION?tilt version required}"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
@@ -159,6 +171,9 @@ for item in "${stuff[@]}"; do
       ;;
     minikube)
       i_minikube
+      ;;
+    policy)
+      i_policy
       ;;
     tilt)
       i_tilt

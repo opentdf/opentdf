@@ -30,15 +30,15 @@ if [[ ! ${suffix} ]]; then
 fi
 
 docker-load-from() {
-  prefix="$1"
-  monolog TRACE "docker-load-from [${prefix}]"
+  local prefix="$1"
+  local monolog TRACE "docker-load-from [${prefix}]"
   if ! docker load -i "${prefix}.tar"; then
     monolog ERROR "offline bundle for [${first}] failed to load"
     exit 1
   fi
-  meta=$(<"${prefix}.meta")
-  reponame=${meta%%[:@ ]*}
-  prettytag=${meta##*:}
+  local meta=$(<"${prefix}.meta")
+  local reponame=${meta%%[:@ ]*}
+  local prettytag=${meta##*:}
   monolog TRACE "docker-load-from [docker tag ${reponame}:{${prettytag},offline}]"
   if ! docker tag "$reponame:$prettytag" "$reponame:offline"; then
     monolog ERROR "1st party bundle [${first}] failed to [docker tag $reponame:$prettytag $reponame:offline]"
