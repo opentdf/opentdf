@@ -16,3 +16,28 @@ docker_build(
     "opentdf/period-app",
     "."
 )
+
+#backend
+docker_build(
+    "opentdf/abacship-backend",
+    "./python-backend"
+)
+
+abacship_backend_set = [
+    "image.name=opentdf/abacship-backend"
+    ]
+
+k8s_yaml(
+    helm(
+        "python-backend/helm",
+        "abacship-backend",
+        set=abacship_backend_set,
+        values=["python-backend/deployment/abacship-backend-values.yaml"],
+    )
+)
+
+k8s_resource(
+   "abacship-backend", 
+    resource_deps=["keycloak-bootstrap"],
+    labels="abacship"
+)
