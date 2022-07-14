@@ -189,61 +189,65 @@ const App = () => {
    * *****************************
    *******************************/
 
-  const lfsUpload = async () => {
-    console.log("in lfs upload")
-    // const keycloakUserID = await getKeycloakUserId(keycloak)
-    //console.log("keycloak user id", keycloakUserID)
-    try {
-      if(!keycloak.authenticated) {
-        toast.error('You must login to perform this action.');
-        return;
-      }
-    
-      setShowUploadSpinner(true);
-
-      //const keycloak_id = getKeycloakUserId()
-      // if (!keycloak_id) {
-      //   toast.error('Keycloak user not found');
-      //   return;
-      // }
-
-      const client = new Client.Client(CLIENT_CONFIG);
-
-      const testJSONStr = '{ "Id": 1, "Name": "Coke" }'
-
-
-      const encryptParams = new Client.EncryptParamsBuilder()
-        .withStringSource(testJSONStr)
-        .withOffline()
-        .build();
-
-      client.dataAttributes = [attributePrefix+"keycloakID"];
-
-      const cipherTextStream = await client.encrypt(encryptParams);
-
-      cipherTextStream.toRemoteStore(`keycloakuserid.tdf`, s3ConfigJson).then(data => {
+     const lfsUpload = async () => {
+      try {
+        if(!keycloak.authenticated) {
+          toast.error('You must login to perform this action.');
+          return;
+        }
+  
+        setShowUploadSpinner(true);
+  
+        // const keycloak_id = getKeycloakUserId()
+        // if (!keycloak_id) {
+        //   toast.error('Keycloak user not found');
+        //   return;
+        // }
+        function streamToString (stream) {
+          const chunks = [];
+          return new Promise((resolve, reject) => {
+            stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+            stream.on('error', (err) => reject(err));
+            stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+          })
+        }
+  
+        const client = new Client.Client(CLIENT_CONFIG);
+  
+        const testJSONStr = '{ "Id": 1, "Name": "Coke" }'
+  
+        const encryptParams = new Client.EncryptParamsBuilder()
+          .withStringSource(testJSONStr)
+          .withOffline()
+          .build();
+  
+        // client.dataAttributes = [attributePrefix+"keycloakID"];
+  
+        console.log("before encrypt")
+  
+        const cipherTextStream = await client.encrypt(encryptParams);
+  
+        console.log("after encrypt, before remote")
+        
+        // const streamtext = await streamToString(cipherTextStream);
+        // console.log(streamtext);
+  
+        cipherTextStream.toRemoteStore("keycloakuserid.tdf", s3ConfigJson).then(() => {
+          setShowUploadSpinner(false);
+          // setUploadFileList([]);
+          // setSelectedFile(null);
+          // setUploadedFiles([...uploadedFiles, {name: `keycloakuserid.tdf`, key: uploadedFiles.length + 1}])
+          console.log("i think it went")
+        });
+  
+        cipherTextStream.on('progress', progress => {
+          console.log(`Uploaded ${progress.loaded} bytes`);
+        });
+      } catch (e) {
         setShowUploadSpinner(false);
-        setUploadFileList([]);
-        setSelectedFile(null);
-        setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
-        console.log("i think it went")
-      });
-
-      cipherTextStream.on('progress', progress => {
-        console.log(`Uploaded ${progress.loaded} bytes`);
-      });
-    } catch (e) {
-      setShowUploadSpinner(false);
-      console.error(e);
-    }
-  };
-
-  const onPanelChange = (value, mode) => {
-    console.log("in onPanelChange")
-    console.log("value: ", value)
-    console.log("mode: ", mode)
-    console.log(value.format('YYYY-MM-DD'), mode);
-  };
+        console.error(e);
+      }
+    };
 
   useEffect(() => {
     if (initialized) {
