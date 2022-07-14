@@ -12,6 +12,12 @@ import openTDFLogo from './assets/images/period-logo.png';
 import './App.css';
 import FullCalendar from '@fullcalendar/react' 
 import dayGridPlugin from '@fullcalendar/daygrid'
+import jwt_decode from "jwt-decode"
+import { Checkbox, CheckboxGroup } from 'rsuite';
+
+import { Readable } from 'stream'
+
+import { validateJsonStr } from './utils';
 
 const { Header, Footer, Content } = Layout;
 const { TextArea } = Input;
@@ -173,6 +179,17 @@ const App = () => {
 
       let plainTextStream = await client.decrypt(decryptParams);
 
+      function streamToString (stream) {
+        const chunks = [];
+        return new Promise((resolve, reject) => {
+          stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+          stream.on('error', (err) => reject(err));
+          stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+        })
+      }
+      
+      const result = await streamToString(plainTextStream)
+
       // plainTextStream
       //   .toFile(decryptedFileName)
       //   .then(() => {
@@ -200,6 +217,14 @@ const App = () => {
       //   toast.error('Keycloak user not found');
       //   return;
       // }
+      function streamToString (stream) {
+        const chunks = [];
+        return new Promise((resolve, reject) => {
+          stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+          stream.on('error', (err) => reject(err));
+          stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+        })
+      }
 
       const client = new Client.Client(CLIENT_CONFIG);
 
@@ -210,15 +235,23 @@ const App = () => {
         .withOffline()
         .build();
 
-      client.dataAttributes = [attributePrefix+keycloak_id];
+      // client.dataAttributes = [attributePrefix+"keycloakID"];
+
+      console.log("before encrypt")
 
       const cipherTextStream = await client.encrypt(encryptParams);
 
-      cipherTextStream.toRemoteStore(`${selectedFile.name}.tdf`, s3ConfigJson).then(data => {
+      console.log("after encrypt, before remote")
+      
+      // const streamtext = await streamToString(cipherTextStream);
+      // console.log(streamtext);
+
+      cipherTextStream.toRemoteStore("keycloakuserid.tdf", s3ConfigJson).then(() => {
         setShowUploadSpinner(false);
-        setUploadFileList([]);
-        setSelectedFile(null);
-        setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
+        // setUploadFileList([]);
+        // setSelectedFile(null);
+        // setUploadedFiles([...uploadedFiles, {name: `keycloakuserid.tdf`, key: uploadedFiles.length + 1}])
+        console.log("i think it went")
       });
 
       cipherTextStream.on('progress', progress => {
