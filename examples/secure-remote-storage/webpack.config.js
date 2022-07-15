@@ -5,14 +5,14 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   output: {
     path: path.join(__dirname, '/dist'),
-    filename: 'index.bundle.js'
+    filename: 'index.bundle.js',
+    // publicPath: '/secure-remote-storage/'
   },
   devServer: {
     static: {
       directory: path.join(__dirname, 'src'),
     },
     port: 3001,
-    //  watchContentBase: true
   },
   module: {
     rules: [
@@ -35,14 +35,20 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './src/index.html'
+      template: './src/index.html',
+      filename: "index.html",
     }),
     new webpack.ProvidePlugin({
+      title: "Secure Remote Storage",
       process: 'process/browser',
       Buffer: ['buffer', 'Buffer'],
+      stream: 'stream-browserify',
     }),
   ],
   resolve: {
+    alias: {
+      stream: "stream-browserify",
+    },
     extensions: ['.js'],
   },
   devtool: 'source-map',

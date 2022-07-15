@@ -16,7 +16,7 @@ const UserStatus = () => {
       )}
       {keycloak.authenticated && (
         <>
-          <Avatar className='keycloak-avatar' size={32} icon={<UserOutlined />} />
+          <Avatar className='avatar' size={32} icon={<UserOutlined />} />
           <Button
             onClick={() => keycloak.logout()}
             data-test-id="logout-button"
