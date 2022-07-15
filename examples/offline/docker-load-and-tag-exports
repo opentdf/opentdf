@@ -31,12 +31,13 @@ fi
 
 docker-load-from() {
   local prefix="$1"
-  local monolog TRACE "docker-load-from [${prefix}]"
+  monolog TRACE "docker-load-from [${prefix}]"
   if ! docker load -i "${prefix}.tar"; then
     monolog ERROR "offline bundle for [${first}] failed to load"
     exit 1
   fi
-  local meta=$(<"${prefix}.meta")
+  local meta
+  meta=$(<"${prefix}.meta")
   local reponame=${meta%%[:@ ]*}
   local prettytag=${meta##*:}
   monolog TRACE "docker-load-from [docker tag ${reponame}:{${prettytag},offline}]"
