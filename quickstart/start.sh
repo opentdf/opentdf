@@ -237,7 +237,7 @@ load-chart() {
 
 if [[ $INIT_OPENTDF ]]; then
   monolog INFO --- "OpenTDF charts"
-  for s in attributes entitlement-store entitlement-pdp entitlements kas; do
+  for s in attributes entitlement-store entitlement-pdp entitlements entity-resolution kas; do
     load-chart "opentdf-${s}" "${s}" ${BACKEND_CHART_TAG}
   done
   load-chart opentdf-abacus abacus ${FRONTEND_CHART_TAG}
