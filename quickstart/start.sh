@@ -117,7 +117,7 @@ if [[ $LOAD_IMAGES ]]; then
   monolog INFO "Caching locally-built development opentdf/backend images in dev cluster"
   # Cache locally-built `latest` images, bypassing registry.
   # If this fails, try running 'docker-compose build' in the repo root
-  for s in abacus attributes entitlement_store entitlement-pdp entitlements kas; do
+  for s in abacus attributes entitlement_store entitlement-pdp entitlements entity-resolution kas; do
     maybe_load ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}
   done
 else
@@ -237,7 +237,7 @@ load-chart() {
 
 if [[ $INIT_OPENTDF ]]; then
   monolog INFO --- "OpenTDF charts"
-  for s in attributes entitlement-store entitlement-pdp entitlements kas; do
+  for s in attributes entitlement-store entitlement-pdp entitlements entity-resolution kas; do
     load-chart "opentdf-${s}" "${s}" ${BACKEND_CHART_TAG}
   done
   load-chart opentdf-abacus abacus ${FRONTEND_CHART_TAG}
