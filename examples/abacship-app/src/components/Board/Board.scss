@@ -1,25 +1,30 @@
-.boardRow{
+.boardRow {
   display: flex;
 }
+
 .boardItem {
-  height: 50px;
-  width: 50px;
+  height: 38px;
+  width: 38px;
   transition: transform 1s;
   transform-style: preserve-3d;
   cursor: pointer;
   backface-visibility: hidden;
 
+  font-weight: 400;
+  font-size: 14px;
+  color: #459AE2;
+
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 2px 2.5px;
 
   img {
-    width: 48px;
-    height: 48px;
+    width: 38px;
+    height: 38px;
   }
 }
-.item {
-  &:hover{
-    background-color: black;
-  }
+
+.playerBoard {
+  position: relative;
 }

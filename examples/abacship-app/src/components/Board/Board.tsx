@@ -2,13 +2,16 @@ import React from "react";
 import { Square } from "../Square";
 import { CELL_TYPE, COL_INDICATORS, ROW_INDICATORS } from "../../models/cellType";
 import "./Board.scss";
+import { TypeBoardPosition } from "../../interfaces/board";
+import { PopupMessage } from "../PopupMessage";
 
 interface IBoard {
-  onCellClicked: (rowId: number, colId:number) => void,
+  onCellClicked: (rowId: number, colId: number) => void,
   grid: number[][],
+  position: TypeBoardPosition
 }
 
-export function Board({ onCellClicked, grid }: IBoard) {
+export function Board({ onCellClicked, grid, position = "left" }: IBoard) {
   const onCellClickHandler = (rowIdx: number, colIdx: number) => {
     if (rowIdx < 0 || colIdx < 0) {
       // An indicator was clicked. Ignore it.
@@ -23,16 +26,16 @@ export function Board({ onCellClicked, grid }: IBoard) {
     <>&nbsp;</>,
   ];
   COL_INDICATORS.forEach(indicator => {
-    headerColumns.push(<strong>{indicator}</strong>);
+    headerColumns.push(<span key={`${position} 0-${indicator}`}>{indicator}</span>);
   });
 
   const rows = [headerColumns];
   ROW_INDICATORS.forEach(indicator => {
-    const row = [<strong>{indicator}</strong>];
+    const row = [<span>{indicator}</span>];
     // First row is the indicator row.
     const gridRowIndex = rows.length - 1;
     grid[gridRowIndex].forEach((gridCell: number) => {
-      row.push(<Square type={gridCell}/>);
+      row.push(<Square key={`${position} ${indicator}-${gridCell}`} type={gridCell} position={position} />);
     });
     rows.push(row);
   });
@@ -40,12 +43,12 @@ export function Board({ onCellClicked, grid }: IBoard) {
     return rowIdx > 0 && colIdx > 0 && grid[rowIdx - 1][colIdx - 1] !== CELL_TYPE.UNKNOWN ? 'revealed' : 'unrevealed';
   }
 
-  return (<div className="playerBoard">
+  return (<div className={`playerBoard ${position}`}>
     {rows.map((row, rowIdx) => (
       <div className="boardRow" key={rowIdx}>
         {row.map((cell, colIdx) => (
           <div
-            className={`boardItem index${colIdx}-${rowIdx} ${isRevealed(rowIdx, colIdx, grid)} ${colIdx!==0 && rowIdx!==0?"item":""}`}
+            className={`boardItem index${colIdx}-${rowIdx} ${isRevealed(rowIdx, colIdx, grid)} ${colIdx !== 0 && rowIdx !== 0 ? "item" : ""}`}
             key={colIdx}
             onClick={() => onCellClickHandler(rowIdx - 1, colIdx - 1)}
           >
@@ -54,5 +57,6 @@ export function Board({ onCellClicked, grid }: IBoard) {
         ))}
       </div>
     ))}
+    <PopupMessage position={position} />
   </div>)
 }

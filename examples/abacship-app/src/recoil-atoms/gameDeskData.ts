@@ -30,3 +30,11 @@ export const player2Board = atom({
   key: "Player2Board",
   default: TDFDATA
 });
+
+export const boardMessageData = atom({
+  key: "BoardMessageData",
+  default: {
+    position: "",
+    message: ""
+  }
+});
