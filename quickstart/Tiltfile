@@ -16,6 +16,20 @@ HELM_VALUES_PATH = 'helm/'
 # Where helm values for quickstart
 if "HELM_VALUES_PATH" in os.environ:
     HELM_VALUES_PATH = os.getenv('HELM_VALUES_PATH')
+ALPINE_VERSION = os.environ.get("ALPINE_VERSION", "3.15")
+PY_VERSION = os.environ.get("PY_VERSION", "3.10")
+CONTAINER_REGISTRY = os.environ.get("CONTAINER_REGISTRY", "ghcr.io")
+
+docker_build(
+    "opentdf/kas",
+    build_args={
+        "ALPINE_VERSION": ALPINE_VERSION,
+        "CONTAINER_REGISTRY": CONTAINER_REGISTRY,
+        "PY_VERSION": PY_VERSION,
+        "PYTHON_BASE_IMAGE_SELECTOR": "",
+    },
+    context="../../backend/containers/kas",
+)
 
 k8s_yaml(
     helm(
@@ -154,10 +168,14 @@ helm_resource(
         "-f",
         "helm/values-kas.yaml",
         "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
+        "image.tag=%s" % "tilt-3ca4ede3f5e7eaf4",
+        "--set",
+        "image.repo=%s" % "localhost:50238/opentdf_kas",
     ],
     labels="backend",
     resource_deps=["opentdf-attributes", "keycloak"],
+    image_deps=["opentdf/kas"],
+    image_keys=["opentdf/kas"]
 )
 
 # ability to disable the quickstart defaults
@@ -199,6 +217,25 @@ helm_resource(
     ],
     labels="frontend",
     resource_deps=["keycloak-bootstrap"],
+)
+
+docker_build(
+    "opentdf/eth-pdp",
+    context="../../backend/containers/eth-pdp",
+)
+
+helm_resource(
+    "opentdf-eth-pdp",
+    "charts/eth-pdp",
+    flags=[
+        "--set",
+        "image.tag=%s" % "tilt-2724f53250901652",
+        "--set",
+        "image.repository=%s" % "localhost:50238/opentdf_eth-pdp",
+    ],
+    labels="backend",
+    image_deps=["opentdf/eth-pdp"],
+    image_keys=["opentdf/eth-pdp"]
 )
 
 # ability to pass in custom test script with path to script as env var

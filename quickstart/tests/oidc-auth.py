@@ -16,7 +16,7 @@ try:
     )
 
     client = TDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
-    client.enable_console_logging(LogLevel.Debug)
+    client.enable_console_logging(LogLevel.Info)
     plain_text = "Hello world!!"
     #################################################
     # TDF - File API
@@ -26,49 +26,14 @@ try:
     f.close()
 
     client.add_data_attribute(
-        "https://example.com/attr/Classification/value/S", KAS_URL
+        "https://kovan.network/attr/Wallet/value/0x57ADbD106A0bC1b1BAb666a63A6F674677Ccaa3e", KAS_URL
     )
-    client.add_data_attribute("https://example.com/attr/COI/value/PRX", KAS_URL)
+    client.add_data_attribute(
+        "https://virtru.com/attr/ContentExclusivity/value/Premium", KAS_URL
+    )
     client.encrypt_file("sample.txt", "sample.txt.tdf")
     client.decrypt_file("sample.txt.tdf", "sample_out.txt")
 
-    #################################################
-    # TDF - Data API
-    #################################################
-
-    tdf_data = client.encrypt_string(plain_text)
-    decrypted_plain_text = client.decrypt_string(tdf_data)
-
-    if plain_text == decrypted_plain_text:
-        print("TDF Encrypt/Decrypt is successful!!")
-    else:
-        print("Error: TDF Encrypt/Decrypt failed!!")
-
-    #################################################
-    # Nano TDF - File API
-    ################################################
-
-    # create a nano tdf client.
-    nano_tdf_client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
-    nano_tdf_client.enable_console_logging(LogLevel.Error)
-    nano_tdf_client.add_data_attribute(
-        "https://example.com/attr/Classification/value/S", KAS_URL
-    )
-    nano_tdf_client.encrypt_file("sample.txt", "sample.txt.ntdf")
-    nano_tdf_client.decrypt_file("sample.txt.ntdf", "sample_out.txt")
-
-    #################################################
-    # Nano TDF - Data API
-    #################################################
-
-    plain_text = "Hello world!!"
-    nan_tdf_data = nano_tdf_client.encrypt_string(plain_text)
-    decrypted_plain_text = nano_tdf_client.decrypt_string(nan_tdf_data).decode('utf-8')
-
-    if plain_text == decrypted_plain_text:
-        print("Nano TDF Encrypt/Decrypt is successful!!")
-    else:
-        print("Error: Nano TDF Encrypt/Decrypt failed!!")
 
 except:
     print("Unexpected error: %s" % sys.exc_info()[0])
