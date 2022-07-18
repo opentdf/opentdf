@@ -30,15 +30,16 @@ if [[ ! ${suffix} ]]; then
 fi
 
 docker-load-from() {
-  prefix="$1"
+  local prefix="$1"
   monolog TRACE "docker-load-from [${prefix}]"
   if ! docker load -i "${prefix}.tar"; then
     monolog ERROR "offline bundle for [${first}] failed to load"
     exit 1
   fi
+  local meta
   meta=$(<"${prefix}.meta")
-  reponame=${meta%%[:@ ]*}
-  prettytag=${meta##*:}
+  local reponame=${meta%%[:@ ]*}
+  local prettytag=${meta##*:}
   monolog TRACE "docker-load-from [docker tag ${reponame}:{${prettytag},offline}]"
   if ! docker tag "$reponame:$prettytag" "$reponame:offline"; then
     monolog ERROR "1st party bundle [${first}] failed to [docker tag $reponame:$prettytag $reponame:offline]"
@@ -46,7 +47,7 @@ docker-load-from() {
   fi
 }
 
-for first in abacus attributes entitlement-store entitlement-pdp entitlements kas keycloak-bootstrap keycloak; do
+for first in abacus attributes entitlement_store entitlement-pdp entitlements kas keycloak-bootstrap keycloak; do
   docker-load-from "${CONTAINERS_DIR}/opentdf-${first}-${suffix}"
 done
 

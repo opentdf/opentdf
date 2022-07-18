@@ -12,10 +12,10 @@ BACKEND_IMAGE_TAG = "main"
 BACKEND_CHART_TAG = "0.0.0-sha-fdb06cc"
 FRONTEND_IMAGE_TAG = "main"
 FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
-HELM_VALUES_PATH = 'helm/'
+HELM_VALUES_PATH = "helm/"
 # Where helm values for quickstart
 if "HELM_VALUES_PATH" in os.environ:
-    HELM_VALUES_PATH = os.getenv('HELM_VALUES_PATH')
+    HELM_VALUES_PATH = os.getenv("HELM_VALUES_PATH")
 
 k8s_yaml(
     helm(
@@ -202,6 +202,7 @@ helm_resource(
 )
 
 # ability to pass in custom test script with path to script as env var
+# e.g.: CI=1 TEST_SCRIPT=tests/wait-and-test.sh tilt up
 if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
     local_resource(
         "passed-in-test-script",
