@@ -49,3 +49,5 @@ for i in "${stuff[@]}"; do
     esac
   fi
 done
+
+monolog INFO "Finished installing macos pre-reqs"

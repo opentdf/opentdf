@@ -25,7 +25,7 @@ if [[ $# -gt 0 ]]; then
     shift
 
     case "$item" in
-      curl | docker | helm | kubectl | minikube | tilt)
+      curl | docker | helm | kubectl | minikube | tilt | jq)
         stuff+=("$item")
         ;;
       *)
@@ -34,7 +34,7 @@ if [[ $# -gt 0 ]]; then
     esac
   done
 else
-  stuff=(curl docker helm kubectl kuttl minikube)
+  stuff=(curl docker helm kubectl kuttl minikube jq)
 fi
 
 i_curl() {
@@ -89,7 +89,7 @@ i_kubectl() {
       (apt-get update && apt install -y kubectl) || e "Unable to install kubectl"
     fi
   fi
-  kubectl version || e "Bad kubectl install"
+  kubectl version --client || e "Bad kubectl install"
 }
 
 i_kuttl() (
@@ -131,6 +131,15 @@ i_tilt() (
   mv tilt "$BUILD_BIN/" || e "tilt is not mvable"
 )
 
+i_jq() (
+  monolog INFO "Installing jq binary"
+  cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
+  if ! which jq; then
+    (apt-get update && apt install -y jq) || e "Unable to install jq"
+  fi
+  jq --version || e "Bad jq install"
+)
+
 for item in "${stuff[@]}"; do
   case "$item" in
     curl)
@@ -154,10 +163,17 @@ for item in "${stuff[@]}"; do
     tilt)
       i_tilt
       ;;
+    jq)
+      i_jq
+      ;;
     *)
       e "Unrecognized options: [$*]"
       ;;
   esac
 done
 
-cp "${BUILD_BIN}/*" /bin || e "Unable to install binaries"
+if [ -n "$(ls -A "${BUILD_BIN}" 2>/dev/null)" ]; then
+   cp "${BUILD_BIN}"/* /bin || e "Unable to install binaries"
+fi
+
+monolog INFO "Finished installing linux pre-reqs"

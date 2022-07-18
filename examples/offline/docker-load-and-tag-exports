@@ -50,6 +50,6 @@ for first in abacus attributes entitlement-store entitlement-pdp entitlements ka
   docker-load-from "${CONTAINERS_DIR}/opentdf-${first}-${suffix}"
 done
 
-for third in kind postgresql ingress-nginx; do
+for third in kind postgresql ingress-nginx docker-registry; do
   docker-load-from "${CONTAINERS_DIR}/third-party-image-${third}-${suffix}"
 done
