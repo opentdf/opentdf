@@ -133,8 +133,6 @@ save-image() {
   fi
 }
 
-export save-image
-
 # TODO(PLAT-1417) add 'storage' once published to ghcr.io
 if [[ ! $no_first_party ]]; then
   for x in attributes entitlement_store entitlement-pdp entitlements entity-resolution kas keycloak keycloak-bootstrap; do
