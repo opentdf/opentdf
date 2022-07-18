@@ -1,0 +1,77 @@
+.container {
+    height: 100%;
+    width: 100%;
+    margin: 0 0 100px 0;
+
+    header {
+        .link {
+            margin: 34px 32px 52px 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #04A777;
+            text-align: right;
+        }
+    }
+
+    .content {
+        display: flex;
+        margin-top: 200px;
+        justify-content: center;
+
+        .userCameraList {
+            display: flex;
+            gap: 20px;
+
+            .userPreview {
+                .userInfo {
+                    min-height: 244px;
+                }
+
+                .userCamera {}
+            }
+
+            .cameraList {
+                margin-top: 80px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+
+                display: flex;
+            }
+        }
+    }
+}
+
+.settingsPreview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+}
+
+.cameraContainer {
+    .cameraImage {
+        width: 221px;
+        height: 237px;
+        background: #D9D9D9;
+
+        &.restricted {
+            background: black;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 400;
+        }
+
+        .canvasContainer {
+            width: 221px;
+            height: 237px;
+
+            &.hidden {
+                display: none;
+            }
+        }
+    }
+}

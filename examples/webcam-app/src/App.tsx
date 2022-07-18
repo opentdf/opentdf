@@ -1,18 +1,15 @@
-import React, {useState} from 'react';
-import './App.scss';
-import {AuthProviders, NanoTDFDatasetClient} from "@opentdf/client";
+import React, { useState } from 'react';
+import { AuthProviders, NanoTDFDatasetClient } from "@opentdf/client";
 import jwt_decode from "jwt-decode";
 import { Main } from './containers/Main';
+import { LoginPage } from './containers/LoginPage';
+import { HomePage } from './containers/HomePage';
+import { OIDC_CLIENT_ID, KAS_URL, OIDC_ENDPOINT, OIDC_REALM } from './config';
 
 const mediaConstraints = {
     audio: false,
     video: true
 };
-
-const OIDC_ENDPOINT = "http://localhost:65432";
-const OIDC_REALM = "tdf";
-const OIDC_CLIENT_ID = "examples-webcam-app";
-const KAS_URL = "http://localhost:65432/api/kas";
 
 function App() {
     let isRenderLoop = true;
@@ -27,7 +24,7 @@ function App() {
 
     const stop = () => {
         // @ts-ignore
-        window.stream.getTracks().forEach(function(track) {
+        window.stream.getTracks().forEach(function (track) {
             if (track.readyState === 'live') {
                 track.stop();
             }
@@ -120,7 +117,7 @@ function App() {
         urlencoded.append("username", "alice");
         urlencoded.append("password", "myuserpassword");
         urlencoded.append("grant_type", "password");
-        let request: Request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", {method: 'POST', headers: myHeaders, body: urlencoded});
+        let request: Request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", { method: 'POST', headers: myHeaders, body: urlencoded });
         // alice Direct Access Grants login
         urlencoded.set("username", "alice")
         let response: HttpResponse<any> = await fetch(request);
@@ -142,12 +139,12 @@ function App() {
         // @ts-ignore
         let token = await tmpClientAlice.authProvider.oidcAuth?.getCurrentAccessToken();
         // @ts-ignore
-        let decoded: {tdf_claims} = jwt_decode(token);
+        let decoded: { tdf_claims } = jwt_decode(token);
         setEntitlementsAlice(decoded.tdf_claims.entitlements);
         setClientAlice(tmpClientAlice);
         // bob Direct Access Grants login
         urlencoded.set("username", "bob")
-        request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", {method: 'POST', headers: myHeaders, body: urlencoded});
+        request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", { method: 'POST', headers: myHeaders, body: urlencoded });
         response = await fetch(request);
         responseJson = await response.json();
         // bob client
@@ -170,7 +167,7 @@ function App() {
         setClientBob(tmpClientBob);
         // eve Direct Access Grants login
         urlencoded.set("username", "eve");
-        request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", {method: 'POST', headers: myHeaders, body: urlencoded});
+        request = new Request("http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token", { method: 'POST', headers: myHeaders, body: urlencoded });
         response = await fetch(request);
         responseJson = await response.json();
         // eve client
@@ -196,7 +193,7 @@ function App() {
     function toggleContentExclusivity(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         const premium = "https://example.com/attr/ContentExclusivity/value/Premium";
         if (dataAttributes.includes(premium)) {
-            setDataAttributes(dataAttributes.filter(e => { return e !== premium}));
+            setDataAttributes(dataAttributes.filter(e => { return e !== premium }));
             event.currentTarget.style.borderStyle = '';
         } else {
             dataAttributes.push(premium);
@@ -207,7 +204,7 @@ function App() {
     function toggleAudienceGuidance(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         const restricted = "https://example.com/attr/AudienceGuidance/value/Restricted";
         if (dataAttributes.includes(restricted)) {
-            setDataAttributes(dataAttributes.filter(e => { return e !== restricted}));
+            setDataAttributes(dataAttributes.filter(e => { return e !== restricted }));
             event.currentTarget.style.borderStyle = '';
         } else {
             dataAttributes.push(restricted);
@@ -217,60 +214,60 @@ function App() {
 
     // @ts-ignore
     return (
-    // <div className="App">
-    //     <table>
-    //         <tbody>
-    //         <tr>
-    //             <td><h2>camera</h2><video id="webcamDevice" autoPlay playsInline width="320" height="240"></video></td>
-    //             <td>
-    //                 <button onClick={() => login()}>
-    //                     Login
-    //                 </button>
-    //                 <button onClick={() => start()}>
-    //                     Webcam Start
-    //                 </button>
-    //                 <button onClick={() => stop()}>
-    //                     Webcam Stop
-    //                 </button>
-    //                 <br/><br/>
-    //                 <h2>Video Operator</h2>
-    //                 <b>Data tag</b><br/>
-    //                 ContentExclusivity <button onClick={(event) => toggleContentExclusivity(event)}>Premium</button><br/>
-    //                 AudienceGuidance <button onClick={(event) => toggleAudienceGuidance(event)}>Restricted</button><br/>
-    //             </td>
-    //             <td id="img-src"><h2>Source</h2><canvas id="webcamCanvasSource" width="640" height="480"></canvas></td>
-    //             <td><h2>Entitlement Grantor</h2><a target="_new" href="http://localhost:65432/">Abacus</a><br/><i>ted/myuserpassword</i></td>
-    //         </tr>
-    //         </tbody>
-    //     </table>
-    //     <table>
-    //         <tbody>
-    //         <tr>
-    //             <td>
-    //                 <h2>Alice</h2>Adult - Paid<br/>
-    //                 <canvas id="webcamCanvasAlice" width="640" height="480"></canvas>
-    //                 <EntitlementsList entitlements={entitlementsAlice}/>
-    //             </td>
-    //             <td>
-    //                 <h2>Bob</h2>Minor - Paid<br/>
-    //                 <canvas id="webcamCanvasBob" width="640" height="480"></canvas>
-    //                 <EntitlementsList entitlements={entitlementsBob}/>
-    //             </td>
-    //             <td>
-    //                 <h2>Eve</h2>eavesdropper (authenticated)<br/>
-    //                 <canvas id="webcamCanvasEve" width="640" height="480"></canvas>
-    //                 <EntitlementsList entitlements={entitlementsEve}/>
-    //             </td>
-    //         </tr>
-    //         </tbody>
-    //     </table>
-    // </div>
-    <Main/>
-  );
+        // <div className="App">
+        //     <table>
+        //         <tbody>
+        //         <tr>
+        //             <td><h2>camera</h2><video id="webcamDevice" autoPlay playsInline width="320" height="240"></video></td>
+        //             <td>
+        //                 <button onClick={() => login()}>
+        //                     Login
+        //                 </button>
+        //                 <button onClick={() => start()}>
+        //                     Webcam Start
+        //                 </button>
+        //                 <button onClick={() => stop()}>
+        //                     Webcam Stop
+        //                 </button>
+        //                 <br/><br/>
+        //                 <h2>Video Operator</h2>
+        //                 <b>Data tag</b><br/>
+        //                 ContentExclusivity <button onClick={(event) => toggleContentExclusivity(event)}>Premium</button><br/>
+        //                 AudienceGuidance <button onClick={(event) => toggleAudienceGuidance(event)}>Restricted</button><br/>
+        //             </td>
+        //             <td id="img-src"><h2>Source</h2><canvas id="webcamCanvasSource" width="640" height="480"></canvas></td>
+        //             <td><h2>Entitlement Grantor</h2><a target="_new" href="http://localhost:65432/">Abacus</a><br/><i>ted/myuserpassword</i></td>
+        //         </tr>
+        //         </tbody>
+        //     </table>
+        //     <table>
+        //         <tbody>
+        //         <tr>
+        //             <td>
+        //                 <h2>Alice</h2>Adult - Paid<br/>
+        //                 <canvas id="webcamCanvasAlice" width="640" height="480"></canvas>
+        //                 <EntitlementsList entitlements={entitlementsAlice}/>
+        //             </td>
+        //             <td>
+        //                 <h2>Bob</h2>Minor - Paid<br/>
+        //                 <canvas id="webcamCanvasBob" width="640" height="480"></canvas>
+        //                 <EntitlementsList entitlements={entitlementsBob}/>
+        //             </td>
+        //             <td>
+        //                 <h2>Eve</h2>eavesdropper (authenticated)<br/>
+        //                 <canvas id="webcamCanvasEve" width="640" height="480"></canvas>
+        //                 <EntitlementsList entitlements={entitlementsEve}/>
+        //             </td>
+        //         </tr>
+        //         </tbody>
+        //     </table>
+        // </div>
+        <HomePage />
+    );
 }
 
 // @ts-ignore
-const EntitlementsList = ({entitlements}) => {
+const EntitlementsList = ({ entitlements }) => {
     return <ul>{entitlements.map((entitlement: { entity_identifier: string | null | undefined; entity_attributes: any[]; }) => (
         <li key={entitlement.entity_identifier}>{entitlement.entity_identifier}
             <ul>
