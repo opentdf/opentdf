@@ -82,7 +82,7 @@ helm_resource(
 
 helm_resource(
     "opentdf-entitlement-store",
-    "oci://ghcr.io/opentdf/charts/entitlement-store",
+    "oci://ghcr.io/opentdf/charts/entitlement_store",
     flags=[
         "--version",
         BACKEND_CHART_TAG,
