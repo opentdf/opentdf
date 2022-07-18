@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Slider } from "../../components/Slider";
 import { UserCard } from "../../components/UserCard";
 import { defaultUsers } from "../LoginPage/LoginPage";
@@ -25,6 +25,7 @@ export function HomePage() {
     const onSlider1Change = useCallback((value: boolean) => {
         setSlider1(value);
     }, []);
+    const canvas1 = useRef(null);
 
     return (
         <Main>
@@ -32,7 +33,7 @@ export function HomePage() {
                 <header><p className={styles.link}><span>Go to ABACUS</span></p></header>
                 <div className={styles.settingsPreview}>
                     <video className={styles.cameraContainer} id="webcamDevice" autoPlay playsInline></video>
-                    <CameraImage title="Datatagged Camera" />
+                    <CameraImage ref={canvas1} title="Datatagged Camera" />
                 </div>
                 <div className={styles.content}>
                     <div className={styles.settings}>
