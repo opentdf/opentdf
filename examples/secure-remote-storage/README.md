@@ -18,22 +18,14 @@
 
 
 ### Starting Infrastructure
-- Follow the instructions at [documentation/quickstart](https://github.com/opentdf/opentdf/tree/main/quickstart) to start the required backend services.
+- Follow the instructions at [documentation/quickstart](https://github.com/opentdf/opentdf/tree/main/quickstart) to start the required backend services, but run them from this directory (`opentdf/examples/secure-remote-storage`)
 
-- Once all services are up and running execute the following commands in the root folder of this application (opentdf/examples/secure-remote-storage) to seed Keycloak with the appropriate client information.
 
-  - `pipenv install --dev`
-  - `pipenv run bootstrap`
 
 ### Starting Application
 
-- Install dependencies: `npm i`
-- Start app in local development mode: `npm run serve`
+- Once all services are up and running the application will be hosted at `http://localhost:65432/secure-remote-storage`
+- Authenticate via the app's login button with
 
-   - Application will be hosted at `http://localhost:3001`
-   - Authenticate via the app's login flow with
-
-      - Username: `user1`
-      - Password: `testuser123`
-
-- Generate a production bundle: `npm run build`
+    - Username: `user1`
+    - Password: `testuser123`

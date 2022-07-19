@@ -43,6 +43,9 @@ for i in "${stuff[@]}"; do
       tilt)
         brew install tilt-dev/tap/tilt
         ;;
+      policy)
+        brew install opcr-io/tap/policy
+        ;;
       *)
         brew install "${i}" || e "Failed installing [${i}]"
         ;;

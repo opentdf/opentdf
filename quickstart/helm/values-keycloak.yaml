@@ -17,6 +17,8 @@ extraEnv: |
   - name: JAVA_OPTS_APPEND
     value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
 # - name: DB_VENDOR
+#   value: h2
+# - name: DB_VENDOR
 #   value: postgres
 # - name: DB_ADDR
 #   value: postgresql

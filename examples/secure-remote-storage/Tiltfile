@@ -1,0 +1,18 @@
+# Tiltfile for development
+# https://docs.tilt.dev/api.html
+#
+
+include('../../quickstart/Tiltfile')
+
+# frontend
+k8s_yaml("kubernetes.yaml")
+k8s_resource(
+    "opentdf-secure-remote-storage",
+    resource_deps = ["keycloak-bootstrap"],
+    labels="secure-remote-storage",
+)
+
+docker_build(
+    "opentdf/secure-remote-storage",
+    "."
+)

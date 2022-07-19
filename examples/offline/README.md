@@ -58,10 +58,11 @@ that the quickstart and image installer scripts will use. You can also install
 these manually.
 They include, but are not limited to:
 
-- for installation and testing: curl
-- for image registry management: docker
-- for kubernetes control: kubectl, helm, and tilt
-- for local demos: minikube or kind
+- for installation and testing: `curl`
+- for image registry management: `docker`
+- for kubernetes control: `kubectl`, `helm`, and `tilt`
+- for local demos: `minikube` or `kind`
+- for working with rego policies: `opa` and policy
 
 If the pre-reqs fails for you, please let us know.
 

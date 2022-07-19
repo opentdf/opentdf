@@ -120,6 +120,29 @@ i_minikube() (
   docker system prune --volumes -af
 )
 
+i_opa() (
+  monolog INFO "Installing opa binary ${OPA_VERSION?tilt version required}"
+  cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
+  rm -rf opa
+  mkdir opa || e "mkdir opa fail"
+  cd opa || e "no opa build folder"
+  curl -fsSL -o opa "https://openpolicyagent.org/downloads/v${OPA_VERSION}/opa_linux_amd64_static" || e "opa download failure"
+  chmod +x opa || e "opa is not executableable"
+  mv opa "$BUILD_BIN/" || e "opa is not mvable"
+)
+
+i_policy() (
+  monolog INFO "Installing policy binary ${POLICY_VERSION?policy version required}"
+  cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
+  rm -rf policy
+  mkdir policy || e "mkdir policy fail"
+  cd policy || e "no policy build folder"
+  curl -fsSL "https://github.com/opcr-io/policy/releases/download/v${POLICY_VERSION}/policy${POLICY_VERSION}_linux_x86_64.zip" -o policy.zip || e "policy download failure"
+  unzip policy.zip || e "policy.zip unzip failure"
+  chmod +x policy || e "policy binary is not executableable"
+  mv policy "$BUILD_BIN/" || e "policy is not mvable"
+)
+
 i_tilt() (
   monolog INFO "Installing Tilt binary ${TILT_VERSION?tilt version required}"
   cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
@@ -159,6 +182,12 @@ for item in "${stuff[@]}"; do
       ;;
     minikube)
       i_minikube
+      ;;
+    opa)
+      i_opa
+      ;;
+    policy)
+      i_policy
       ;;
     tilt)
       i_tilt
