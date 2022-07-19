@@ -1,8 +1,16 @@
 load("ext://helm_resource", "helm_resource", "helm_repo")
 load("ext://min_tilt_version", "min_tilt_version")
+load("ext://min_k8s_version", "min_k8s_version")
+load('../version-tool/Tiltfile', 'min_helm_version', "min_kind_version", "min_ctlptl_version")
 
 # The helm_resource extension uses the 'new extensions api' introduced in tilt 0.25
 min_tilt_version("0.25")
+min_k8s_version("1.23.0")
+min_helm_version("3.8.0")
+min_kind_version("0.12.0")
+min_ctlptl_version("0.7.4")
+
+
 
 # Where the redirect URI should go to, for example
 EXTERNAL_URL = "http://localhost:65432"
