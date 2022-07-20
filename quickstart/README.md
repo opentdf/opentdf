@@ -234,4 +234,4 @@ See [Solutions](../solutions) page on how to integrate opentdf.
 
 ## Troubleshooting
 
-See `opentdf/troubleshoot/README.md` for troubleshooting information on Quickstart
+See `opentdf/troubleshooting/README.md` for troubleshooting information on Quickstart
