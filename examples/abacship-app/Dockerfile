@@ -4,7 +4,7 @@ ARG NODE_VERSION=lts
 # depender - get production dependencies
 FROM node:${NODE_VERSION} as depender
 WORKDIR /build/
-COPY package-lock.json package.json opentdf-client-0.2.1.tgz ./
+COPY package-lock.json package.json opentdf-client-*.tgz ./
 RUN npm ci
 
 # builder - create-react-app build
@@ -14,8 +14,8 @@ COPY public/ public/
 COPY src/ src/
 COPY tsconfig.json/ .
 COPY webpack.config.js/ .
-#RUN npm run build
-COPY dist/ dist/
+RUN npm run build
+#COPY dist/ dist/
 
 # server - nginx alpine
 FROM nginx:stable-alpine as server
