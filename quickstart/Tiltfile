@@ -82,7 +82,7 @@ helm_resource(
         "--set",
         "image.tag=%s" % BACKEND_IMAGE_TAG,
         "--set",
-        "oidc.externalHost=%s/auth/" % EXTERNAL_URL,
+        "oidc.externalHost=%s/auth" % EXTERNAL_URL,
     ],
     labels="backend",
     resource_deps=["postgresql"],
