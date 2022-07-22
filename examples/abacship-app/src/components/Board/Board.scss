@@ -27,4 +27,16 @@
 
 .playerBoard {
   position: relative;
+
+  &.left {
+    .boardLabel {
+      color: #459AE2;
+    }
+  }
+
+  &.right {
+    .boardLabel {
+      color: #5EB29E;
+    }
+  }
 }

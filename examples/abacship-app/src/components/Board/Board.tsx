@@ -26,12 +26,12 @@ export function Board({ onCellClicked, grid, position = "left" }: IBoard) {
     <>&nbsp;</>,
   ];
   COL_INDICATORS.forEach(indicator => {
-    headerColumns.push(<span key={`${position} 0-${indicator}`}>{indicator}</span>);
+    headerColumns.push(<span key={`${position} 0-${indicator}`} className="boardLabel">{indicator}</span>);
   });
 
   const rows = [headerColumns];
   ROW_INDICATORS.forEach(indicator => {
-    const row = [<span>{indicator}</span>];
+    const row = [<span className="boardLabel">{indicator}</span>];
     // First row is the indicator row.
     const gridRowIndex = rows.length - 1;
     grid[gridRowIndex].forEach((gridCell: number) => {
