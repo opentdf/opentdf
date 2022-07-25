@@ -147,7 +147,7 @@ Manage attributes with rules used in ABAC
 
 The abacus web service provides a visual management interface for entitlements and attribute rules.
 
-To access, we must first add a redirect uri in keycloak. Run `tilt up`, wait for services to start, navigate to `https://localhost:65432/auth`, and click on `Administration Console`.
+To access, we must first add a redirect uri in keycloak. Run `tilt up`, wait for services to start, navigate to `http://localhost:65432/auth`, and click on `Administration Console`.
 
 ![Screenshot of the current Keycloak home page. 'Administration console' is a header available on the center left of the page](../examples/client-app/static/keycloak-home.png)
 
@@ -228,9 +228,13 @@ Generate entitlements on-demand (using OpenPolicyAgent and pluggable Rego policy
 Access control of the key using ABAC
 Swagger http://localhost:65432/api/kas/ui/ (update `/kas/openapi.json`)
 
-## Solutions
+## Examples
 
-See [Solutions](../solutions) page on how to integrate opentdf.
+See [Examples](../examples) for examples of OpenTDF in action.
+
+## Integrate
+
+See [Integrate](../integrate) for instructions on how to integrate opentdf.
 
 ## Troubleshooting
 
