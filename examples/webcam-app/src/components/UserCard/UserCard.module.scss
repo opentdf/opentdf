@@ -1,0 +1,38 @@
+.user {
+    display: flex;
+    justify-content: left;
+    gap: 15px;
+    padding: 24px 0;
+
+    &.active {
+        border: 1px solid black;
+        padding: 24px 20px;
+    }
+
+    .avatar {
+        background: gray;
+        width: 67px;
+        height: 67px;
+        border-radius: 67px;
+    }
+
+    .userInfo {
+        text-align: left;
+        width: 156px;
+
+        .hashtag,
+        .userName {
+            font-weight: 400;
+            font-size: 20px;
+        }
+
+        .userName {
+            margin-bottom: 40px;
+        }
+
+        .hashtag {
+            padding: 0;
+            margin: 0;
+        }
+    }
+}

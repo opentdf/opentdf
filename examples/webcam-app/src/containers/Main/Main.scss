@@ -1,0 +1,15 @@
+.wrapper {
+  display: grid;
+  grid-template-rows: 50px 1fr 362px;
+  height: 100%;
+}
+
+.header {
+  background: #081d49;
+}
+
+.footer {
+  background: #081d49;
+}
+
+.content {}
