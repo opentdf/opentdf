@@ -1,13 +1,13 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
 import "./index.scss";
 import { App } from "./App";
 import reportWebVitals from "./reportWebVitals";
 
-// @ts-ignore: Not yet supported by definitely typed
-const root = ReactDOM.createRoot(
+const root = createRoot(
   document.getElementById("root") as HTMLElement
 );
+
 root.render(
   <React.StrictMode>
     <App />

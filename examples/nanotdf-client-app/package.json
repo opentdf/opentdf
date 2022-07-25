@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@opentdf/client": "0.1.0-beta.77",
+    "@react-keycloak/web": "^3.4.0",
+    "keycloak-js": "^15.0.2",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
     "web-vitals": "^2.1.4"
@@ -17,6 +19,7 @@
     "@types/react": "^18.0.9",
     "@types/react-dom": "^18.0.5",
     "react-scripts": "5.0.1",
+    "sass": "^1.52.1",
     "typescript": "^4.7.2"
   },
   "scripts": {

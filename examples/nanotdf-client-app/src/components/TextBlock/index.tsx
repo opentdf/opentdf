@@ -1,8 +1,9 @@
 import "./TextBlock.scss";
 import { useEffect, useState } from "react";
 import { AuthProviders, NanoTDFClient } from "@opentdf/client";
-import { KAS_BASE_ENDPOINT, OIDC_BASE_ENDPOINT } from "../../configs";
-import { type RefreshTokenCredentials } from "@opentdf/client/dist/types/src/nanotdf/types/OIDCCredentials";
+import { serverData } from "../../configs";
+import { RefreshTokenCredentials } from "@opentdf/client/dist/types/src/nanotdf/types/OIDCCredentials";
+import { useKeycloak } from "@react-keycloak/web";
 
 interface TextArea {
   text: string;
@@ -10,6 +11,18 @@ interface TextArea {
 }
 const MyTextArea = ({ text, updateValue }: TextArea) => {
   const [value, setValue] = useState("");
+
+  // keycloak authentication
+  const { keycloak, initialized } = useKeycloak();
+
+  keycloak.onAuthError = console.log;
+
+  useEffect(() => {
+    if (initialized) {
+      console.log(keycloak.idToken);
+      sessionStorage.setItem("keycloak", keycloak.token || "");
+    }
+  }, [initialized, keycloak]);
 
   useEffect(() => {
     setValue(text);
@@ -34,25 +47,32 @@ function TextBlock() {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
 
+  const { keycloak, initialized } = useKeycloak();
   useEffect(() => {
-    const oidcCredentials: RefreshTokenCredentials = {
-      exchange: "refresh",
-      oidcRefreshToken: "FIXME",
-      clientId: "tdf-client",
-      organizationName: "tdf",
-      oidcOrigin: OIDC_BASE_ENDPOINT,
-    };
-    async function fireThis(): Promise<void> {
-      const authProvider = await AuthProviders.refreshAuthProvider(
-        oidcCredentials
-      );
-      console.log(authProvider);
-      client = new NanoTDFClient(authProvider, KAS_BASE_ENDPOINT);
+    const { refreshToken } = keycloak;
+    if (!client && refreshToken) {
+      const oidcCredentials: RefreshTokenCredentials = {
+        clientId: serverData.clientId,
+        exchange: "refresh",
+        oidcRefreshToken: refreshToken,
+        // remove /auth/
+        oidcOrigin: serverData.authority.replace("/auth/", ""),
+        organizationName: serverData.realm,
+      };
+      async function fireThis(): Promise<void> {
+        const authProvider = await AuthProviders.refreshAuthProvider(
+          oidcCredentials
+        );
+        console.log(authProvider);
+        client = new NanoTDFClient(authProvider, serverData.access);
+        await client.fetchOIDCToken();
+      }
+      fireThis();
     }
-    fireThis();
-  }, []);
+  }, [initialized, keycloak]);
 
   const encrypt = async () => {
+    console.log(inputText);
     const res = await client.encrypt(inputText);
     const res2 = await client.decrypt(res);
     setOutputText(arrayBufferToString(res2));
@@ -76,6 +96,9 @@ function TextBlock() {
       <div className="buttons">
         <button onClick={encrypt}>Encrypt</button>
         <button onClick={decrypt}>Decrypt</button>
+        {!keycloak.authenticated && (
+          <button onClick={() => keycloak.login()}>Log in</button>
+        )}
       </div>
     </div>
   );
