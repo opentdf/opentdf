@@ -1,9 +1,9 @@
 {
   "name": "webcam-app",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "dependencies": {
-    "@opentdf/client": "^0.2.2-beta.203",
+    "@opentdf/client": "0.2.2-beta.216",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.1.1",
     "@testing-library/user-event": "^13.5.0",
@@ -14,7 +14,7 @@
     "jwt-decode": "^3.1.2",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "typescript": "^4.6.4",
     "web-vitals": "^2.1.4"
   },

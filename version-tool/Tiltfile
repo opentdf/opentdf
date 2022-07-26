@@ -1,0 +1,130 @@
+def min_helm_version(min_version):
+    version_str = _get_helm_server_version()
+    cur_ver = _version_tuple(version_str)
+    min_ver = _version_tuple(min_version)
+    
+    if cur_ver < min_ver:
+        print(" ---------------------------------------------------------- ")
+        print("|                                                          |")
+        print("|            Minimum Helm Version Not Met!           |")
+        print("|                Current Version : v{}                 |".format(version_str))
+        print("|            Minimum Required Version : v{}            |".format(min_version))
+        print("|                                                          |")
+        print(" ---------------------------------------------------------- ")
+        fail('Minimum Heml Version Not Met! Current Version is %s' % version_str)
+
+def _get_helm_server_version():
+    # This relies on the fact that the shell command returning something in the
+    # form 'vX.X.X+xxxxxxxx'.
+    #
+    # The previous version used 'grep' to filter out the server version. Use a
+    # native way to support systems without 'grep'.
+    version_output = str(local('helm version --short', quiet=True))
+    version_str = ''
+    for line in version_output.split('\n'):
+        if line.startswith('v'):
+            version_str = line
+            break
+    # Get the string, separate it at the colon, remove the 'v' and any spaces.
+    return version_str.split('+')[0].replace('v','').strip()
+
+def min_kind_version(min_version):
+    version_str = _get_kind_server_version()
+    if version_str == None:
+        print("Error running command kind")
+        return
+    cur_ver = _version_tuple(version_str)
+    min_ver = _version_tuple(min_version)
+    
+    if cur_ver < min_ver:
+        print(" ---------------------------------------------------------- ")
+        print("|                                                          |")
+        print("|            Minimum Kind Version Not Met!           |")
+        print("|                Current Version : v{}                 |".format(version_str))
+        print("|            Minimum Required Version : v{}            |".format(min_version))
+        print("|                                                          |")
+        print(" ---------------------------------------------------------- ")
+        fail('Minimum Kind Version Not Met! Current Version is %s' % version_str)
+
+def _get_kind_server_version():
+    # This relies on the fact that the shell command returning something in the
+    # form 'kind vX.X.X goX.X.X darwin/arm64'.
+    #
+    # The previous version used 'grep' to filter out the server version. Use a
+    # native way to support systems without 'grep'.
+    # Kind is not necessary so we check if it's installed
+    if not str(local('command -v kind || true', quiet=True)):
+        return None
+    version_output = str(local('kind version', quiet=True))
+    version_str = ''
+    for line in version_output.split('\n'):
+        if line.startswith('kind'):
+            version_str = line
+            break
+    # Get the string, separate it at the colon, remove the 'v' and any spaces.
+    return version_str.split('go')[0].split('v')[1].strip()
+
+def min_ctlptl_version(min_version):
+    version_str = _get_ctlptl_server_version()
+    if version_str == None:
+        print("Error running command ctlptl")
+        return
+    cur_ver = _version_tuple(version_str)
+    min_ver = _version_tuple(min_version)
+    
+    if cur_ver < min_ver:
+        print(" ---------------------------------------------------------- ")
+        print("|                                                          |")
+        print("|            Minimum Ctlptl Version Not Met!           |")
+        print("|                Current Version : v{}                 |".format(version_str))
+        print("|            Minimum Required Version : v{}            |".format(min_version))
+        print("|                                                          |")
+        print(" ---------------------------------------------------------- ")
+        fail('Minimum Ctlptl Version Not Met! Current Version is %s' % version_str)
+
+def _get_ctlptl_server_version():
+    # This relies on the fact that the shell command returning something in the
+    # form 'vX.X.X, built xxxx-xx-x'.
+    #
+    # The previous version used 'grep' to filter out the server version. Use a
+    # native way to support systems without 'grep'.
+    # ctlptl is not necessary so we check if it's installed
+    if not str(local('command -v ctlptl || true', quiet=True)):
+        return None
+    version_output = str(local('ctlptl version', quiet=True))
+    version_str = ''
+    for line in version_output.split('\n'):
+        if line.startswith('v'):
+            version_str = line
+            break
+    # Get the string, separate it at the colon, remove the 'v' and any spaces.
+    return version_str.split(', built')[0].replace('v','').strip()
+
+
+def _version_tuple(v):
+  # splits a string into a list of contiguous numeric and non-numeric parts, and makes the numeric parts ints, e.g.:
+  # _version_tuple("1.2020.3-beta.2") == [1, ".", 2020, ".", 3, "-beta.", 2]
+  # this allows version comparison such that "1.10" > "1.9"
+
+  ret = []
+  if len(v) == 0:
+    return ret
+
+  cur_part_is_number = v[0].isdigit()
+  cur_part = ''
+  for c in v.elems():
+    if c.isdigit() != cur_part_is_number:
+      if cur_part.isdigit():
+        ret.append(int(cur_part))
+      else:
+        ret.append(cur_part)
+      cur_part = ''
+      cur_part_is_number = c.isdigit()
+    cur_part += c
+
+  if cur_part.isdigit():
+    ret.append(int(cur_part))
+  else:
+    ret.append(cur_part)
+
+  return ret

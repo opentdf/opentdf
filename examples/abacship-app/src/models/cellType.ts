@@ -3,6 +3,10 @@ export const CELL_TYPE = {
   PLAYER_ONE: 1,
   PLAYER_TWO: 2,
   UNKNOWN: 3,
+  UNKNOWN_OCEAN_HIT: 4,
+  UNKNOWN_SHIP_HIT: 5,
+  OCEAN_HIT: 6,
+  SHIP_HIT: 7,
 };
 
 

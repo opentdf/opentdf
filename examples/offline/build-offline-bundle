@@ -69,7 +69,7 @@ suffix="${today}-${digest}"
 : "${OUTPUT_DIRECTORY:="${PROJECT_ROOT}/build/export"}"
 
 : "${BACKEND_IMAGE_TAG:="main"}"
-: "${BACKEND_CHART_TAG:="0.0.0-sha-2d36544"}"
+: "${BACKEND_CHART_TAG:="0.0.0-sha-fdb06cc"}"
 : "${FRONTEND_IMAGE_TAG:="main"}"
 : "${FRONTEND_CHART_TAG:="0.0.0-sha-93bb332"}"
 
@@ -133,11 +133,9 @@ save-image() {
   fi
 }
 
-export save-image
-
 # TODO(PLAT-1417) add 'storage' once published to ghcr.io
 if [[ ! $no_first_party ]]; then
-  for x in attributes entitlement-store entitlement-pdp entitlements kas keycloak keycloak-bootstrap; do
+  for x in attributes entitlement_store entitlement-pdp entitlements entity-resolution kas keycloak keycloak-bootstrap; do
     save-image "ghcr.io/opentdf/${x}" "${BACKEND_IMAGE_TAG}" "opentdf-${x}"
   done
   # shellcheck disable=SC2043 # Keep this similar to the backend loop
@@ -179,9 +177,13 @@ if ! helm pull --repo https://charts.bitnami.com/bitnami --version 10.16.2 --des
   monolog ERROR "Unable to helm pull postgresql"
   exit 1
 fi
+if ! helm pull --repo https://helm.twun.io --version 2.1.0 --destination "${OUT_DIR}/charts" docker-registry; then
+  monolog ERROR "Unable to helm pull twuni/docker-registry"
+  exit 1
+fi
 
 # First party helm charts
-for x in attributes entitlement-store entitlement-pdp entitlements kas keycloak-bootstrap; do
+for x in attributes entitlement-store entitlement-pdp entitlements entity-resolution kas keycloak-bootstrap; do
   i="oci://ghcr.io/opentdf/charts/${x}"
   if ! helm pull "${i}" --version "${BACKEND_CHART_TAG}" --destination "${OUT_DIR}/charts"; then
     monolog ERROR "Failed to [helm pull ${i} --version $BACKEND_CHART_TAG]"

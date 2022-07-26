@@ -1,20 +1,38 @@
 // Assets
 import React from "react";
-import { ASSETS_LIST }  from "../../assets";
+import { useRecoilValue } from "recoil";
+import { ASSETS_LIST } from "../../assets";
+import { TypeBoardPosition } from "../../interfaces/board";
 import { CELL_TYPE } from '../../models/cellType';
+import { playerState } from "../../recoil-atoms/player";
 import "./Square.scss";
 
 const { IMAGES } = ASSETS_LIST;
 
-export function Square({type}:{type:number}) {
-    // Return a group of images to facilitate CSS transitions.
-    // Only the actual image for the cell value should be displayed at a time.
+export function Square({ type, position = "left" }: { type: number, position: TypeBoardPosition }) {
+  // Return a group of images to facilitate CSS transitions.
+  // Only the actual image for the cell value should be displayed at a time.
+  const { name } = useRecoilValue(playerState);
+  console.log('render cell');
+  const isPlayerOneShip = type === CELL_TYPE.UNKNOWN_SHIP_HIT && position === "left";
+  const isPlayerTwoShip = type === CELL_TYPE.UNKNOWN_SHIP_HIT && position === "right";
 
-    return (
-        <>
-            <img alt="Unknown" src={IMAGES.unknown_img} className={type === CELL_TYPE.UNKNOWN ? "unknown-value" : "unknown-value value-hidden"} />
-            <img alt="Ocean" src={IMAGES.ocean_img} className={type === CELL_TYPE.OCEAN ? "actual-value" : "value-hidden"} />
-            <img alt="Player One" src={IMAGES.player_one_img} className={type === CELL_TYPE.PLAYER_ONE ? "actual-value" : "value-hidden"} />
-        </>
-    );
+  return (
+    <>
+      <div className={`unknown_cell ${position} ${type === CELL_TYPE.UNKNOWN ? "actual-value" : "value-hidden"}`}>?</div>
+      <div className={`unknown_cell_hit ${position} ${type === CELL_TYPE.UNKNOWN_OCEAN_HIT ? "actual-value" : "value-hidden"}`}>
+        <div className="lineA"></div>
+        <div className="lineB"></div>
+      </div>
+      <div className={`ocean_cell ${position} ${type === CELL_TYPE.OCEAN ? "actual-value" : "value-hidden"}`}></div>
+      <div className={`ocean_cell_hit ${position} ${type === CELL_TYPE.OCEAN_HIT ? "actual-value" : "value-hidden"}`}></div>
+      <div className={`ship_cell_hit ${position} ${type === CELL_TYPE.SHIP_HIT ? "actual-value" : "value-hidden"}`}></div>
+      <img alt="Player 1" src={IMAGES.player_active_img}
+        className={`player_one ${type === CELL_TYPE.PLAYER_ONE || isPlayerOneShip ? "actual-value" : "value-hidden"}`}
+      />
+      <img alt="Player 2" src={IMAGES.player_gray_img}
+        className={`player_two ${type === CELL_TYPE.PLAYER_TWO || isPlayerTwoShip ? "actual-value" : "value-hidden"}`}
+      />
+    </>
+  );
 }

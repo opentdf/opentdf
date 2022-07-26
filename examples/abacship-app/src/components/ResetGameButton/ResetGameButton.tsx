@@ -6,9 +6,9 @@ import { putGameReset } from "../../services/axios";
 export function ResetGameButton() {
   const setPlayer = useSetRecoilState(playerState);
   const handleClick = () => {
-    localStorage.removeItem("player");
-    setPlayer({ id: "", name: "", enemyName: "" });
     putGameReset();
+    setPlayer({ id: "", name: "", enemyName: "" });
+    ["player", "enemy_board", "my_board", "my_secret_board"].forEach(key => localStorage.removeItem(key));
   };
   return (<button className="resetGameButton" onClick={handleClick}>{"Reset Game"}</button>);
 }
