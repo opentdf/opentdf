@@ -18,7 +18,7 @@ export const defaultUsers = [
         hashtags: ["evesdropper"]
     }
 ];
-export const LoginPage = function LoginPage() {
+export const LoginPage = function LoginPage({ onLogin }: { onLogin: () => void }) {
     const [users, setUsers] = useState(defaultUsers);
     return (
         <Main>
@@ -26,7 +26,7 @@ export const LoginPage = function LoginPage() {
                 <div className={styles.title}>Log in as three people</div>
                 <UserList users={users} />
                 <div className={styles.loginAction}>
-                    <Button title="Log in as everyone" />
+                    <Button title="Log in as everyone" handleClick={onLogin} />
                 </div>
             </div>
         </Main>

@@ -50,6 +50,17 @@
 }
 
 .cameraContainer {
+
+    // object-fit: fill;
+    .cameraWrapper {
+        width: 221px;
+        height: 237px;
+        background: black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .cameraImage {
         width: 221px;
         height: 237px;
