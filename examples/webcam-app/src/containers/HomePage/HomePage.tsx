@@ -7,12 +7,6 @@ import { loginUser } from "../../hooks/useLogin";
 import { defaultUsers, LoginPage } from "../LoginPage/LoginPage";
 import { Main } from "../Main";
 import styles from "./HomePage.module.scss";
-
-const mediaConstraints = {
-    audio: false,
-    video: { width: 221, height: 237 }
-};
-
 interface ICameraImage {
     title?: string;
     restricted?: boolean;
@@ -151,29 +145,11 @@ export function HomePage() {
             console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
         }
 
+        const mediaConstraints = {
+            audio: false,
+            video: { width: 221, height: 237 }
+        };
         navigator.mediaDevices.getUserMedia(mediaConstraints).then(handleSuccess).catch(handleError);
-    }
-
-    function toggleContentExclusivity(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-        const premium = "https://example.com/attr/ContentExclusivity/value/Premium";
-        if (dataAttributes.includes(premium)) {
-            setDataAttributes(dataAttributes.filter(e => { return e !== premium }));
-            event.currentTarget.style.borderStyle = '';
-        } else {
-            dataAttributes.push(premium);
-            event.currentTarget.style.borderStyle = 'inset';
-        }
-    }
-
-    function toggleAudienceGuidance(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-        const restricted = "https://example.com/attr/AudienceGuidance/value/Restricted";
-        if (dataAttributes.includes(restricted)) {
-            setDataAttributes(dataAttributes.filter(e => { return e !== restricted }));
-            event.currentTarget.style.borderStyle = '';
-        } else {
-            dataAttributes.push(restricted);
-            event.currentTarget.style.borderStyle = 'inset';
-        }
     }
 
     if (!authorized) {
@@ -188,11 +164,11 @@ export function HomePage() {
                     <div className={styles.cameraContainer}>
                         <p>Camera</p>
                         <div className={styles.cameraWrapper}><video width="221" height="237" ref={videoRef} autoPlay playsInline></video></div>
-                        <div><Button title="Start" handleClick={start} /></div>
+                        <div className={styles.cameraButton}><Button title="Start" handleClick={start} /></div>
                     </div>
                     <div>
                         <CameraImage forwardedRef={canvas1} title="Datatagged Camera" />
-                        <button onClick={stop}>Stop</button>
+                        <div className={styles.cameraButton}><Button title="Stop" handleClick={stop} /></div>
                     </div>
                 </div>
                 <div className={styles.content}>
