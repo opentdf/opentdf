@@ -25,7 +25,7 @@ if [[ $# -gt 0 ]]; then
     shift
 
     case "$item" in
-      curl | docker | helm | kubectl | minikube | tilt | jq)
+      curl | docker | helm | kubectl | make | minikube | tilt | jq)
         stuff+=("$item")
         ;;
       *)
@@ -34,7 +34,7 @@ if [[ $# -gt 0 ]]; then
     esac
   done
 else
-  stuff=(curl docker helm kubectl kuttl minikube jq)
+  stuff=(curl docker helm kubectl kuttl make minikube jq)
 fi
 
 i_curl() {
@@ -101,6 +101,15 @@ i_kuttl() (
   curl -LO https://github.com/kudobuilder/kuttl/releases/download/v"${KUTTL_VERSION}"/kubectl-kuttl_"${KUTTL_VERSION}"_linux_x86_64 || e "Unable to download kuttl"
   chmod +x kubectl-kuttl_"${KUTTL_VERSION}"_linux_x86_64 || e "kuttl is not executableable"
   mv kubectl-kuttl_"${KUTTL_VERSION}"_linux_x86_64 "$BUILD_BIN/kubectl-kuttl" || e "kuttl is not mvable"
+)
+
+i_make() (
+  monolog INFO "Installing make"
+  cd "${BUILD_DIR}" || e "no ${BUILD_DIR}"
+  if ! which make; then
+    (apt-get update && apt install -y make) || e "Unable to install make"
+  fi
+  make --version || e "Bad make install"
 )
 
 i_minikube() (
@@ -179,6 +188,9 @@ for item in "${stuff[@]}"; do
       ;;
     kuttl)
       i_kuttl
+      ;;
+    make)
+      i_make
       ;;
     minikube)
       i_minikube
