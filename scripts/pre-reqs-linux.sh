@@ -25,7 +25,7 @@ if [[ $# -gt 0 ]]; then
     shift
 
     case "$item" in
-      curl | docker | helm | kubectl | make | minikube | tilt | jq)
+      curl | docker | helm | kubectl | make | minikube | opa | policy | tilt | jq)
         stuff+=("$item")
         ;;
       *)
@@ -34,7 +34,7 @@ if [[ $# -gt 0 ]]; then
     esac
   done
 else
-  stuff=(curl docker helm kubectl kuttl make minikube jq)
+  stuff=(curl docker helm kubectl kuttl make minikube opa policy jq)
 fi
 
 i_curl() {
