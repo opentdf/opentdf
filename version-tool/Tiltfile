@@ -15,11 +15,6 @@ def min_k8s_version(min_version):
         fail('Minimum Kubernetes Version Not Met! Current Version is %s' % version_str)
 
 def _get_k8s_version():
-    # This relies on the fact that the shell command returning something in the
-    # form 'Server Version: vX.X.X'.
-    #
-    # The previous version used 'grep' to filter out the server version. Use a
-    # native way to support systems without 'grep'.
     kubectl_version_output = decode_json(local('kubectl version --output=json', quiet=True))
     
     # Get the string, separate it at the colon, remove the 'v' and any spaces.
