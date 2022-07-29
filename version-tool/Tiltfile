@@ -1,3 +1,36 @@
+def min_k8s_version(min_version):
+    version_str = _get_k8s_version()
+    cur_ver = _version_tuple(version_str)
+    min_ver = _version_tuple(min_version)
+    
+    if cur_ver < min_ver:
+        print(" ---------------------------------------------------------- ")
+        print("|                                                          |")
+        print("|            Minimum Kubernetes Version Not Met!           |")
+        print("|                Current Version : v{}                 |".format(version_str))
+        print("|            Minimum Required Version : v{}            |".format(min_version))
+        print("|            Current Kubernetes Cluster : {}         |".format( k8s_context()))
+        print("|                                                          |")
+        print(" ---------------------------------------------------------- ")
+        fail('Minimum Kubernetes Version Not Met! Current Version is %s' % version_str)
+
+def _get_k8s_version():
+    # This relies on the fact that the shell command returning something in the
+    # form 'Server Version: vX.X.X'.
+    #
+    # The previous version used 'grep' to filter out the server version. Use a
+    # native way to support systems without 'grep'.
+    kubectl_version_output = str(local('kubectl version', quiet=True))
+    version_str = ''
+    for line in kubectl_version_output.split('\n'):
+        if line.startswith('Server Version'):
+            version_str = line
+            break
+    # Get the string, separate it at the colon, remove the 'v' and any spaces.
+    return version_str.split("GitVersion:")[1].split('"')[1].replace('v','').strip()
+
+
+
 def min_helm_version(min_version):
     version_str = _get_helm_server_version()
     cur_ver = _version_tuple(version_str)

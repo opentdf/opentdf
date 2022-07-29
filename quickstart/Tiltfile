@@ -1,7 +1,7 @@
 load("ext://helm_resource", "helm_resource", "helm_repo")
 load("ext://min_tilt_version", "min_tilt_version")
-load("ext://min_k8s_version", "min_k8s_version")
-load('../version-tool/Tiltfile', 'min_helm_version', "min_kind_version", "min_ctlptl_version")
+# load("ext://min_k8s_version", "min_k8s_version")
+load('../version-tool/Tiltfile', 'min_helm_version', "min_kind_version", "min_ctlptl_version", "min_k8s_version")
 
 # The helm_resource extension uses the 'new extensions api' introduced in tilt 0.25
 min_tilt_version("0.25")
