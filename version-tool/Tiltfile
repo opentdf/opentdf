@@ -22,12 +22,14 @@ def _get_k8s_version():
     # native way to support systems without 'grep'.
     kubectl_version_output = str(local('kubectl version', quiet=True))
     version_str = ''
-    for line in kubectl_version_output.split('\n'):
-        if line.startswith('Server Version'):
-            version_str = line
-            break
+    if "GitVersion:" not in kubectl_version_output:
+        for line in kubectl_version_output.split('\n'):
+            if line.startswith('Client Version'):
+                version_str = line
+                break
+        return version_str.split(':')[1].replace('v','').strip()
     # Get the string, separate it at the colon, remove the 'v' and any spaces.
-    return version_str.split("GitVersion:")[1].split('"')[1].replace('v','').strip()
+    return kubectl_version_output.split("GitVersion:")[1].split('"')[1].replace('v','').strip()
 
 
 
