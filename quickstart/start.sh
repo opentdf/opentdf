@@ -162,6 +162,26 @@ if [[ $INGRESS_HOSTNAME ]]; then
   done
 fi
 
+
+if [[ $INIT_POSTGRES ]]; then
+  monolog INFO --- "Installing Postgresql for opentdf backend"
+  if [[ $LOAD_IMAGES ]]; then
+    monolog INFO "Caching postgresql image"
+    maybe_load bitnami/postgresql:${SERVICE_IMAGE_TAG}
+  fi
+  if [[ $RUN_OFFLINE ]]; then
+    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade postgresql"
+  else
+    helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" || e "Unable to helm upgrade postgresql"
+  fi
+  monolog INFO "Waiting until postgresql is ready"
+
+  while [[ $(kubectl get pods postgresql-postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+    echo "waiting for postgres..."
+    sleep 5
+  done
+fi
+
 # Only do this if we were told to disable Keycloak
 # This should be removed eventually, as Keycloak isn't going away
 if [[ $USE_KEYCLOAK ]]; then
@@ -180,25 +200,6 @@ if [[ $USE_KEYCLOAK ]]; then
 
   while [[ $(kubectl get pods keycloak-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
     echo "waiting for keycloak..."
-    sleep 5
-  done
-fi
-
-if [[ $INIT_POSTGRES ]]; then
-  monolog INFO --- "Installing Postgresql for opentdf backend"
-  if [[ $LOAD_IMAGES ]]; then
-    monolog INFO "Caching postgresql image"
-    maybe_load bitnami/postgresql:${SERVICE_IMAGE_TAG}
-  fi
-  if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade postgresql"
-  else
-    helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" || e "Unable to helm upgrade postgresql"
-  fi
-  monolog INFO "Waiting until postgresql is ready"
-
-  while [[ $(kubectl get pods postgresql-postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
-    echo "waiting for postgres..."
     sleep 5
   done
 fi
