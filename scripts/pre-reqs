@@ -27,6 +27,7 @@ monolog TRACE "pre-reqs: [$0 $*]"
 export HELM_VERSION
 export KIND_VERSION
 export KUTTL_VERSION
+export OPA_VERSION
 export POLICY_VERSION
 export TILT_VERSION
 

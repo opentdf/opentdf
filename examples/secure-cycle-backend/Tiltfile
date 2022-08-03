@@ -1,7 +1,8 @@
+QUICKSTART_PATH = "../../quickstart/"
 load("ext://helm_resource", "helm_resource", "helm_repo")
 load("ext://min_tilt_version", "min_tilt_version")
 # load("ext://min_k8s_version", "min_k8s_version")
-load('../version-tool/Tiltfile', 'min_helm_version', "min_kind_version", "min_ctlptl_version", "min_k8s_version")
+load("../../quickstart/../version-tool/Tiltfile", 'min_helm_version', "min_kind_version", "min_ctlptl_version", "min_k8s_version")
 
 # The helm_resource extension uses the 'new extensions api' introduced in tilt 0.25
 min_tilt_version("0.25")
@@ -9,7 +10,6 @@ min_k8s_version("1.23.0")
 min_helm_version("3.8.0")
 min_kind_version("0.12.0")
 min_ctlptl_version("0.7.4")
-
 
 
 # Where the redirect URI should go to, for example
@@ -27,7 +27,7 @@ if "HELM_VALUES_PATH" in os.environ:
 
 k8s_yaml(
     helm(
-        "./helm/secrets",
+        "%s./helm/secrets" % QUICKSTART_PATH,
     ),
 )
 
@@ -66,9 +66,11 @@ helm_resource(
 helm_resource(
     "postgresql",
     "bitnami/postgresql",
-    flags=["--version", "10.16.2", "-f", "helm/values-postgresql.yaml"],
+    flags=["--version", "10.16.2", "-f", "helm-values/values-postgresql-custom.yaml"],
     labels="third-party",
     resource_deps=["bitnami"],
+    port_forwards="5432"
+
 )
 
 helm_resource(
@@ -78,7 +80,7 @@ helm_resource(
         "--version",
         BACKEND_CHART_TAG,
         "-f",
-        "helm/values-attributes.yaml",
+        "%shelm/values-attributes.yaml" % QUICKSTART_PATH,
         "--set",
         "image.tag=%s" % BACKEND_IMAGE_TAG,
         "--set",
@@ -95,7 +97,7 @@ helm_resource(
         "--version",
         BACKEND_CHART_TAG,
         "-f",
-        "helm/values-entitlement-store.yaml",
+        "%shelm/values-entitlement-store.yaml" % QUICKSTART_PATH,
         "--set",
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
@@ -110,7 +112,7 @@ helm_resource(
         "--version",
         BACKEND_CHART_TAG,
         "-f",
-        "helm/values-entitlement-pdp.yaml",
+        "%shelm/values-entitlement-pdp.yaml" % QUICKSTART_PATH,
         "--set",
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
@@ -125,7 +127,7 @@ helm_resource(
         "--version",
         BACKEND_CHART_TAG,
         "-f",
-        "helm/values-entitlements.yaml",
+        "%shelm/values-entitlements.yaml" % QUICKSTART_PATH,
         "--set",
         "image.tag=%s" % BACKEND_IMAGE_TAG,
         "--set",
@@ -145,7 +147,7 @@ helm_resource(
         "--version",
         "17.0.1",
         "-f",
-        "helm/values-keycloak.yaml",
+        "%shelm/values-keycloak.yaml" % QUICKSTART_PATH,
         "--set",
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
@@ -160,7 +162,7 @@ helm_resource(
         "--version",
         BACKEND_CHART_TAG,
         "-f",
-        "helm/values-kas.yaml",
+        "%shelm/values-kas.yaml" % QUICKSTART_PATH,
         "--set",
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
@@ -177,7 +179,7 @@ if not os.environ.get("QUICKSTART_BOOTSTRAP_DISABLED"):
             "--version",
             BACKEND_CHART_TAG,
             "-f",
-            "helm/values-keycloak-bootstrap.yaml",
+            "helm-values/values-keycloak-bootstrap-custom.yaml", ## use custom bootstrap
             "--set",
             "externalUrl=%s" % EXTERNAL_URL,
             "--set",
@@ -195,7 +197,7 @@ helm_resource(
         "--version",
         FRONTEND_CHART_TAG,
         "-f",
-        "%svalues-abacus.yaml" % HELM_VALUES_PATH,
+        "%shelm/values-abacus.yaml" % QUICKSTART_PATH,
         "--set",
         "attributes.serverUrl=%s/api/attributes" % EXTERNAL_URL,
         "--set",
@@ -209,12 +211,38 @@ helm_resource(
     resource_deps=["keycloak-bootstrap"],
 )
 
+
+#backend
+docker_build(
+    "opentdf/secure-cycle-backend",
+    "."
+)
+
+secure_cycle_backend_set = [
+    "image.name=opentdf/secure-cycle-backend"
+    ]
+
+k8s_yaml(
+    helm(
+        "./helm",
+        "secure-cycle-backend",
+        set=secure_cycle_backend_set,
+        values=["helm-values/secure-cycle-backend-values.yaml"],
+    )
+)
+
+k8s_resource(
+   "secure-cycle-backend", 
+    resource_deps=["keycloak-bootstrap", "opentdf-abacus"],
+    labels="secure-cycle"
+)
+
 # ability to pass in custom test script with path to script as env var
 # e.g.: CI=1 TEST_SCRIPT=tests/wait-and-test.sh tilt up
-if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
-    local_resource(
-        "passed-in-test-script",
-        os.environ.get("TEST_SCRIPT"),
-        labels="tests",
-        resource_deps=["ingress-nginx", "opentdf-kas", "keycloak-bootstrap"],
-    )
+# if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
+#     local_resource(
+#         "passed-in-test-script",
+#         os.environ.get("TEST_SCRIPT"),
+#         labels="tests",
+#         resource_deps=["ingress-nginx", "opentdf-kas", "keycloak-bootstrap"],
+#     )
