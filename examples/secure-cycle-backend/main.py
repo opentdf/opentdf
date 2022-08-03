@@ -720,7 +720,7 @@ async def get_uuid_from_client_id(client_id):
 
 
 @app.get("/uuid", 
-        dependencies=[Depends(get_auth)], 
+        # dependencies=[Depends(get_auth)], 
         responses={
         200: {"content": {"data": {"example":"abcd-1234-abcd-1234"}
     }}}
