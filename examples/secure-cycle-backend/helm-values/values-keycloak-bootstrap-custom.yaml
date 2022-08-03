@@ -5,13 +5,15 @@ image:
 externalUrl: http://offline.demo.internal/
 
 keycloak:
-  hostname: http://keycloak-http
+  hostname: http://keycloak-http/auth
   username: keycloakadmin
   password: mykeycloakpassword
   clientId: tdf-client
   clientSecret: 123-456
   realm: tdf
   preloadedClients:
+    - clientId: secure-cycle
+      clientSecret: 123-456
     - clientId: regina
       clientSecret: 123-456
     - clientId: cady
