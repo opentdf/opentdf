@@ -10,15 +10,15 @@ FROM python:${PY_VERSION} as build
 WORKDIR /build
 
 COPY requirements.txt requirements.txt
-COPY ./app ./app
+COPY main.py main.py
 RUN echo $(arch)
 RUN pip3 install --no-cache-dir --upgrade pip setuptools
 RUN pip3 install --no-cache-dir --requirement requirements.txt
 
 # Server
-ENV SERVER_ROOT_PATH "/"
+# ENV SERVER_ROOT_PATH "/"
 ENV SERVER_PORT "4060"
-ENV SERVER_PUBLIC_NAME ""
+# ENV SERVER_PUBLIC_NAME ""
 ENV SERVER_LOG_LEVEL "DEBUG"
 
 #Endpoints
@@ -29,6 +29,23 @@ ENV KAS_URL "http://opentdf-kas:8000"
 ENV KEYCLOAK_URL "http://keycloak-http/auth/"
 ENV EXTERNAL_KAS_URL "http://localhost:65432/api/kas"
 
+ENV POSTGRES_HOST "postgresql"
+ENV POSTGRES_PORT "5432"
+ENV POSTGRES_USER "secure_cycle_manager"
+ENV POSTGRES_PASSWORD "myPostgresPassword"
+ENV POSTGRES_DATABASE "tdf_database"
+ENV POSTGRES_SCHEMA "secure_cycle"
+ENV OIDC_REALM "tdf"
+ENV OIDC_CLIENT_ID "dcr-test"
+ENV OIDC_CLIENT_SECRET "123-456"
+ENV OIDC_AUTHORIZATION_URL "http://localhost:65432/auth/realms/tdf/protocol/openid-connect/auth"
+ENV OIDC_SERVER_URL "http://keycloak-http/auth/"
+ENV OIDC_TOKEN_URL "http://localhost:65432/auth/realms/tdf/protocol/openid-connect/token"
+ENV OIDC_CONFIGURATION_URL "http://keycloak-http/auth/realms/tdf/.well-known/openid-configuration"
+ENV OIDC_SCOPES "email"
+ENV SERVER_PUBLIC_NAME "Secure Cycle Backend"
+ENV SERVER_ROOT_PATH "/secure-cycle-backend"
+
 
 ENTRYPOINT python3 -m uvicorn \
     --host 0.0.0.0 \
@@ -36,4 +53,4 @@ ENTRYPOINT python3 -m uvicorn \
     --root-path ${SERVER_ROOT_PATH} \
     --no-use-colors \
     --no-server-header \
-    app.main:app
+    main:app

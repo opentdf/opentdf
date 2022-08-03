@@ -67,16 +67,16 @@ initdbScripts:
     CREATE TABLE IF NOT EXISTS secure_cycle.uuids
     (
         id          SERIAL PRIMARY KEY,
-        keycloak_id VARCHAR COLLATE NOCASE NOT NULL UNIQUE
+        keycloak_id VARCHAR COLLATE NOCASE NOT NULL UNIQUE,
         uuid        VARCHAR NOT NULL
-    );
+        );
     CREATE TABLE IF NOT EXISTS secure_cycle.cycle_data
     (
         id         SERIAL PRIMARY KEY,
         uuid       VARCHAR NOT NULL,
-        startdates VARCHAR NOT NULL,
-        enddats    VARCHAR NOT NULL,
-        symotoms   VARCHAR NOT NULL
+        date       VARCHAR NOT NULL,
+        on_period  VARCHAR NOT NULL,
+        symptoms  VARCHAR NOT NULL
     );
 
     -- tdf_attribute
@@ -104,7 +104,7 @@ initdbScripts:
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_entity TO tdf_entity_manager;
 
     -- secure_cycle
-    CREATE ROLE tdf_entity_manager WITH LOGIN PASSWORD 'myPostgresPassword';
+    CREATE ROLE secure_cycle_manager WITH LOGIN PASSWORD 'myPostgresPassword';
     GRANT USAGE ON SCHEMA secure_cycle TO secure_cycle_manager;
     GRANT USAGE ON ALL SEQUENCES IN SCHEMA secure_cycle TO secure_cycle_manager;
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA secure_cycle TO secure_cycle_manager;

@@ -31,6 +31,7 @@ attributes:
   password: testuser123
   preloadedAuthorities:
   - https://example.com
+  - http://period.com
   preloadedAttributes:
   - authority: https://example.com
     name: Classification
@@ -52,6 +53,12 @@ attributes:
     - PRC
     - PRD
     - PRF
+  - authority: http://period.com
+    name: backend
+    rule: allOf
+    state: published
+    order:
+    - backend
 
 entitlements:
   hostname: http://opentdf-entitlements:4030
@@ -76,6 +83,7 @@ entitlements:
       dcr-test:
         - https://example.com/attr/Classification/value/C
         - https://example.com/attr/COI/value/PRF
+        - http://period.com/attr/backend/value/backend
       service-account-tdf-client:
         - https://example.com/attr/Classification/value/C
         - https://example.com/attr/COI/value/PRB
