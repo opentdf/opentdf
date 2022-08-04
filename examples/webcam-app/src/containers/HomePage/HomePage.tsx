@@ -135,9 +135,8 @@ export function HomePage() {
                         imageDataBob?.data.set(incomingBuffer);
                         // @ts-ignore
                         canvasContext?.putImageData(imageData, 0, 0);
-                        console.log('render');
                     } catch (e) {
-                        console.error(e);
+                        // console.error(e);
                     }
                 };
                 if (cipherImageData) {
@@ -220,7 +219,7 @@ export function HomePage() {
                                     <UserCard active={index === 0} key={name} name={name} hashtags={hashtags} />
                                 </div>
                                 <div className={styles.userCamera}>
-                                    <CameraImage forwardedRef={(ref: any) => (refList.current[index] = ref)} />
+                                    <CameraImage restricted={((name === "Bob" || name === "Eve") && (isRestricted)) || (name === "Eve" && isPremium)} forwardedRef={(ref: any) => (refList.current[index] = ref)} />
                                 </div>
                             </div>
                         ))}
