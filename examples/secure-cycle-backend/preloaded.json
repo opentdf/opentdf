@@ -1,126 +1,158 @@
 {
-    "tdf-client": [{
-        "date": "1655583027000",
-        "on_period": true,
-        "symptoms": "['headache', 'cramps']"
-      }, {
-        "date": "1657459284000",
-        "on_period": false,
-        "symptoms": "['headache']"
-      }, {
-        "date": "1647225487000",
-        "on_period": false,
-        "symptoms": "['headache', 'cramps', 'bloating', 'nausea']"
-      }, {
-        "date": "1642435019000",
-        "on_period": false,
-        "symptoms": "['headache']"
-      }, {
-        "date": "1644365797000",
-        "on_period": true,
-        "symptoms": "['headache', 'cramps']"
-      }, {
-        "date": "1644427351000",
-        "on_period": false,
-        "symptoms": "['headache', 'cramps', 'bloating']"
-      }, {
-        "date": "1637306537000",
-        "on_period": false,
-        "symptoms": "['headache']"
-      }, {
-        "date": "1643943446000",
-        "on_period": false,
-        "symptoms": "['headache', 'cramps']"
-      }, {
-        "date": "1658842238000",
-        "on_period": true,
-        "symptoms": "['headache', 'cramps', 'bloating']"
-      }, {
-        "date": "1645304367000",
-        "on_period": true,
-        "symptoms": "['headache']"
-      }],
-      "regina":[{
-        "date": "1645194544000",
-        "on_period": true,
-        "symptoms": "['headache', 'cramps', 'bloating']"
-      }, {
-        "date": "1628092291000",
-        "on_period": true,
-        "symptoms": "['headache']"
-      }, {
-        "date": "1656917556000",
-        "on_period": true,
-        "symptoms": "['headache', 'cramps']"
-      }, {
-        "date": "1653461309000",
-        "on_period": true,
-        "symptoms": "['headache', 'cramps', 'bloating', 'nausea']"
-      }, {
-        "date": "1659390022000",
-        "on_period": false,
-        "symptoms": "['headache', 'cramps', 'bloating']"
-      }, {
-        "date": "1640989410000",
-        "on_period": true,
-        "symptoms": "['headache', 'cramps', 'bloating']"
-      }, {
-        "date": "1659070058000",
-        "on_period": true,
-        "symptoms": "['headache', 'cramps']"
-      }, {
-        "date": "1626119644000",
-        "on_period": false,
-        "symptoms": "['headache']"
-      }, {
-        "date": "1625259560000",
-        "on_period": false,
-        "symptoms": "['headache', 'cramps', 'bloating']"
-      }, {
-        "date": "1635311722000",
-        "on_period": false,
-        "symptoms": "['headache', 'cramps', 'bloating']"
-      }],
-      "cady":[{
-        "date": "1634427849000",
-        "on_period": true,
-        "symptoms": "['headache']"
-      }, {
-        "date": "1643023297000",
-        "on_period": true,
-        "symptoms": "['headache']"
-      }, {
-        "date": "1626459265000",
-        "on_period": false,
-        "symptoms": "['headache', 'cramps', 'bloating']"
-      }, {
-        "date": "1636374850000",
-        "on_period": true,
-        "symptoms": "['headache', 'cramps']"
-      }, {
-        "date": "1633760542000",
-        "on_period": true,
-        "symptoms": "['headache', 'cramps', 'bloating', 'nausea']"
-      }, {
-        "date": "1643668474000",
-        "on_period": false,
-        "symptoms": "['headache']"
-      }, {
-        "date": "1630324796000",
-        "on_period": false,
-        "symptoms": "['headache', 'cramps', 'bloating']"
-      }, {
-        "date": "1641334117000",
-        "on_period": false,
-        "symptoms": "['headache', 'cramps', 'bloating']"
-      }, {
-        "date": "1625114406000",
-        "on_period": true,
-        "symptoms": "['headache']"
-      }, {
-        "date": "1643964785000",
-        "on_period": false,
-        "symptoms": "['headache', 'cramps', 'bloating', 'nausea']"
-      }]
-      
+  "tdf-client": [
+    {
+      "date": "2022-08-01T06:45:56Z",
+      "on_period": true,
+      "symptoms": "bloating"
+    },
+    {
+      "date": "2022-08-27T04:51:12Z",
+      "on_period": true,
+      "symptoms": "tired"
+    },
+    {
+      "date": "2022-08-28T11:42:49Z",
+      "on_period": false,
+      "symptoms": "headache"
+    },
+    {
+      "date": "2022-08-08T02:44:22Z",
+      "on_period": false,
+      "symptoms": "my head hurts"
+    },
+    {
+      "date": "2022-08-07T02:39:39Z",
+      "on_period": true,
+      "symptoms": "my head hurts"
+    },
+    {
+      "date": "2022-08-11T01:28:14Z",
+      "on_period": true,
+      "symptoms": "nausea"
+    },
+    {
+      "date": "2022-08-10T19:30:51Z",
+      "on_period": true,
+      "symptoms": "headache"
+    },
+    {
+      "date": "2022-08-29T21:57:18Z",
+      "on_period": false,
+      "symptoms": "nausea"
+    },
+    {
+      "date": "2022-08-10T08:09:56Z",
+      "on_period": false,
+      "symptoms": "nausea"
+    },
+    {
+      "date": "2022-08-15T08:48:40Z",
+      "on_period": false,
+      "symptoms": "bloating"
+    }
+  ],
+  "regina": [
+    {
+      "date": "2022-08-23T21:20:50Z",
+      "on_period": true,
+      "symptoms": "tired"
+    },
+    {
+      "date": "2022-08-22T18:20:10Z",
+      "on_period": false,
+      "symptoms": "headache"
+    },
+    {
+      "date": "2022-08-29T06:25:11Z",
+      "on_period": false,
+      "symptoms": "bloating"
+    },
+    {
+      "date": "2022-08-20T07:11:02Z",
+      "on_period": true,
+      "symptoms": "my head hurts"
+    },
+    {
+      "date": "2022-08-25T16:41:19Z",
+      "on_period": true,
+      "symptoms": "bloating"
+    },
+    {
+      "date": "2022-08-03T03:59:53Z",
+      "on_period": true,
+      "symptoms": "bloating"
+    },
+    {
+      "date": "2022-08-18T11:26:50Z",
+      "on_period": false,
+      "symptoms": "bloating"
+    },
+    {
+      "date": "2022-08-28T04:51:29Z",
+      "on_period": true,
+      "symptoms": "tired"
+    },
+    {
+      "date": "2022-08-18T16:16:36Z",
+      "on_period": true,
+      "symptoms": "headache"
+    },
+    {
+      "date": "2022-08-17T08:26:44Z",
+      "on_period": false,
+      "symptoms": "tired"
+    }
+  ],
+  "cady": [
+    {
+      "date": "2022-08-22T15:49:42Z",
+      "on_period": true,
+      "symptoms": "headache"
+    },
+    {
+      "date": "2022-08-28T08:24:35Z",
+      "on_period": true,
+      "symptoms": "fatique"
+    },
+    {
+      "date": "2022-08-10T11:32:52Z",
+      "on_period": false,
+      "symptoms": "headache"
+    },
+    {
+      "date": "2022-08-21T21:09:46Z",
+      "on_period": true,
+      "symptoms": "tired"
+    },
+    {
+      "date": "2022-08-06T01:10:33Z",
+      "on_period": true,
+      "symptoms": "fatique"
+    },
+    {
+      "date": "2022-08-29T07:45:14Z",
+      "on_period": true,
+      "symptoms": "tired"
+    },
+    {
+      "date": "2022-08-29T00:15:04Z",
+      "on_period": true,
+      "symptoms": "nausea"
+    },
+    {
+      "date": "2022-08-27T07:52:28Z",
+      "on_period": false,
+      "symptoms": "headache"
+    },
+    {
+      "date": "2022-08-16T01:24:30Z",
+      "on_period": false,
+      "symptoms": "fatique"
+    },
+    {
+      "date": "2022-08-07T02:18:10Z",
+      "on_period": false,
+      "symptoms": "bloating"
+    }
+  ]
 }
