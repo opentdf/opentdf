@@ -21,7 +21,7 @@ const requestToken = async (username: string, password: string) => {
     let response: HttpResponse<unknown> = await fetch(request);
     return response.json();
 };
-export const loginUser = async (username: string, password: string) => { 
+export const loginUser = async (username: string, password: string, attrs?: string[]) => {
     let responseJson = await requestToken(username, password);
     const authProviderEve = await AuthProviders.refreshAuthProvider({
         clientId: OIDC_CLIENT_ID,
@@ -31,6 +31,9 @@ export const loginUser = async (username: string, password: string) => {
         organizationName: OIDC_REALM
     });
     const tmpClient = new NanoTDFDatasetClient(authProviderEve, KAS_URL);
+    if (attrs) {
+        tmpClient.dataAttributes = attrs;
+    }
     // BEGIN this triggers an OIDC access token with claims to be fetched
     await tmpClient.decrypt(await tmpClient.encrypt("dummy"));
     // END

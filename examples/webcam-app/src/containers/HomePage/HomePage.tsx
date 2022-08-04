@@ -1,5 +1,5 @@
 import { NanoTDFDatasetClient } from "@opentdf/client";
-import { RefObject, useCallback, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../../components/Button";
 import { Slider } from "../../components/Slider";
 import { UserCard } from "../../components/UserCard";
@@ -7,6 +7,7 @@ import { loginUser } from "../../hooks/useLogin";
 import { defaultUsers, LoginPage } from "../LoginPage/LoginPage";
 import { Main } from "../Main";
 import styles from "./HomePage.module.scss";
+import { toggleByAttribute } from "./utils";
 interface ICameraImage {
     title?: string;
     restricted?: boolean;
@@ -26,10 +27,11 @@ const CameraImage: React.FC<ICameraImage> = ({ title = "", restricted = false, f
         </div>
     );
 }
+let isRenderLoop = true;
 export function HomePage() {
-    const [slider1, setSlider1] = useState(false);
+    const [isPremium, setPremium] = useState(false);
+    const [isRestricted, setRestricted] = useState(false);
     const [authorized, setAuthorized] = useState(false);
-    let isRenderLoop = true;
     // const [entitlementsAlice, setEntitlementsAlice] = useState([]);
     // const [entitlementsBob, setEntitlementsBob] = useState([]);
     // const [entitlementsEve, setEntitlementsEve] = useState([]);
@@ -38,21 +40,36 @@ export function HomePage() {
     const [clientEve, setClientEve] = useState<NanoTDFDatasetClient>();
     const [clientWebcam, setClientWebcam] = useState<NanoTDFDatasetClient>();
     const [dataAttributes, setDataAttributes] = useState<string[]>([]);
+    const [streamStarted, setStartStream] = useState<boolean>(false);
+    const [streamReset, setStartReset] = useState<boolean>(false);
 
-    const onSlider1Change = useCallback((value: boolean) => {
-        setSlider1(value);
-    }, []);
+    const resetStream = useCallback(() => {
+        if (streamStarted) {
+            setStartReset(true);
+            setStartStream(false);
+        }
+    }, [streamStarted]);
+    const onRestrictedChange = useCallback((value: boolean) => {
+        const restricted = "https://example.com/attr/AudienceGuidance/value/Restricted";
+        setRestricted(value);
+        toggleByAttribute(restricted, dataAttributes, setDataAttributes);
+        resetStream();
+    }, [dataAttributes, resetStream]);
+    const onPremiumChange = useCallback((value: boolean) => {
+        const premium = "https://example.com/attr/ContentExclusivity/value/Premium";
+        setPremium(value);
+        toggleByAttribute(premium, dataAttributes, setDataAttributes);
+        resetStream();
+    }, [dataAttributes, resetStream]);
     const canvas1 = useRef<HTMLCanvasElement>(null);
     const refList = useRef<HTMLCanvasElement[]>([]);
     const videoRef = useRef<HTMLVideoElement>(null);
 
-    console.log(refList?.current[0]?.getContext('2d'));
-
-    const login = async () => {
+    const login = useCallback(async () => {
         const password = "myuserpassword";
-        // hack
-        const userAlice = await loginUser("alice", password);
+        const userAlice = await loginUser("alice", password, dataAttributes);
         setClientWebcam(userAlice.client);
+        const userMain = await loginUser("alice", password, dataAttributes);
         // setEntitlementsAlice(userAlice.entitlements);
         setClientAlice(userAlice.client);
 
@@ -65,20 +82,17 @@ export function HomePage() {
         setClientEve(userEve.client);
 
         setAuthorized(true);
-    }
+        return {
+            clientAlice: userAlice.client,
+            clientBob: userBob.client,
+            clientEve: userEve.client,
+            clientWebcam: userMain.client
+        };
+    }, [dataAttributes]);
 
-    const stop = () => {
-        // @ts-ignore
-        window.stream.getTracks().forEach(function (track) {
-            if (track.readyState === 'live') {
-                track.stop();
-            }
-        });
-        isRenderLoop = false;
-    }
-
-    const start = async () => {
-        if (refList === null) return;
+    const start = useCallback(async () => {
+        if (refList === null || !streamStarted) return;
+        const { clientAlice, clientBob, clientEve, clientWebcam } = await login();
         const height = 237,
             width = 221;
 
@@ -94,9 +108,6 @@ export function HomePage() {
         let contextBob = canvasElementBob.getContext('2d');
         // @ts-ignore
         let contextEve = canvasElementEve.getContext('2d');
-        // handle aspect ratio 
-        // var heightRatio = (canvasRef.width / videoRef.width) * videoRef.height;
-        // ctx.drawImage(webcamDevice, 0, 0, c.width, hRatio); // add Y center 
         // OpenTDF
         function handleSuccess(stream: any) {
             // @ts-ignore
@@ -113,8 +124,6 @@ export function HomePage() {
                 ctx?.drawImage(webcamDevice, 0, 0, width, height);
                 const imageData = ctx?.getImageData(0, 0, width, height);
                 // encrypt frame
-                // tag with data attributes
-                clientWebcam && (clientWebcam.dataAttributes = dataAttributes);
                 // FIXME buffer is all 0
                 // @ts-ignore
                 const cipherImageData = await clientWebcam?.encrypt(imageData.data.buffer);
@@ -126,6 +135,7 @@ export function HomePage() {
                         imageDataBob?.data.set(incomingBuffer);
                         // @ts-ignore
                         canvasContext?.putImageData(imageData, 0, 0);
+                        console.log('render');
                     } catch (e) {
                         console.error(e);
                     }
@@ -147,10 +157,37 @@ export function HomePage() {
 
         const mediaConstraints = {
             audio: false,
-            video: { width: 221, height: 237 }
+            video: { width, height }
         };
         navigator.mediaDevices.getUserMedia(mediaConstraints).then(handleSuccess).catch(handleError);
-    }
+    }, [login, streamStarted]);
+    const startStream = useCallback(() => {
+        setStartStream(true);
+    }, []);
+    const stopStream = useCallback(() => {
+        setStartStream(false);
+        // @ts-ignore
+        window.stream.getTracks().forEach(function (track) {
+            if (track.readyState === 'live') {
+                track.stop();
+            }
+        });
+        isRenderLoop = false;
+    }, []);
+
+    useEffect(() => {
+        if (streamStarted) {
+            start();
+        }
+    }, [streamStarted]);
+
+    useEffect(() => {
+        if (streamReset) {
+            stopStream();
+            setStartReset(false);
+            setStartStream(true);
+        }
+    }, [stopStream, streamReset]);
 
     if (!authorized) {
         return (<LoginPage onLogin={login} />);
@@ -164,17 +201,17 @@ export function HomePage() {
                     <div className={styles.cameraContainer}>
                         <p>Camera</p>
                         <div className={styles.cameraWrapper}><video width="221" height="237" ref={videoRef} autoPlay playsInline></video></div>
-                        <div className={styles.cameraButton}><Button title="Start" handleClick={start} /></div>
+                        <div className={styles.cameraButton}><Button title="Start" handleClick={startStream} /></div>
                     </div>
                     <div>
                         <CameraImage forwardedRef={canvas1} title="Datatagged Camera" />
-                        <div className={styles.cameraButton}><Button title="Stop" handleClick={stop} /></div>
+                        <div className={styles.cameraButton}><Button title="Stop" handleClick={stopStream} /></div>
                     </div>
                 </div>
                 <div className={styles.content}>
                     <div className={styles.settings}>
-                        <Slider title="Restricted" onChange={onSlider1Change} />
-                        <Slider title="Paid Users" onChange={onSlider1Change} />
+                        <Slider title="Restricted" onChange={onRestrictedChange} />
+                        <Slider title="Paid Users" onChange={onPremiumChange} />
                     </div>
                     <div className={styles.userCameraList}>
                         {defaultUsers.map(({ name, hashtags }, index) => (
@@ -183,7 +220,7 @@ export function HomePage() {
                                     <UserCard active={index === 0} key={name} name={name} hashtags={hashtags} />
                                 </div>
                                 <div className={styles.userCamera}>
-                                    <CameraImage restricted={index === 2} forwardedRef={(ref: any) => (refList.current[index] = ref)} />
+                                    <CameraImage forwardedRef={(ref: any) => (refList.current[index] = ref)} />
                                 </div>
                             </div>
                         ))}

@@ -7,15 +7,15 @@ import styles from "./LoginPage.module.scss";
 // we should have another userList fetch option 
 export const defaultUsers = [
     {
-        name: "User1",
+        name: "Alice",
         hashtags: ["paiduser", "adult"]
     },
     {
-        name: "User2",
+        name: "Bob",
         hashtags: ["paiduser", "minor"]
     },
     {
-        name: "User3",
+        name: "Eve",
         hashtags: ["evesdropper"]
     }
 ];
