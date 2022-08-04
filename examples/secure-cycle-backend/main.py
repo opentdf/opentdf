@@ -35,7 +35,7 @@ from pydantic.main import BaseModel
 #from python_base import Pagination, get_query
 from sqlalchemy import and_, insert
 from sqlalchemy.orm import Session, sessionmaker, declarative_base
-from opentdf import NanoTDFClient, OIDCCredentials, LogLevel
+from opentdf import TDFClient, NanoTDFClient, OIDCCredentials, LogLevel
 
 
 # POSTGRES_HOST = "localhost"
@@ -49,7 +49,7 @@ AUTH_NAMESPACE = "http://period.com"
 
 BACKEND_ATTR = "http://period.com/attr/backend/value/backend"
 
-BACKEND_CLIENTID = "dcr-test"
+BACKEND_CLIENTID = "secure-cycle"
 BACKEND_CLIENT_SECRET = "123-456"
 
 # to get authToken for posting attributes and entitlements
@@ -66,6 +66,7 @@ ENTITLEMENTS_URL = os.getenv("ENTITLEMENTS_URL", "http://localhost:65432/api/ent
 ATTRIBUTES_URL = os.getenv("ATTRIBUTES_URL","http://localhost:65432/api/attributes")
 KAS_URL = os.getenv("KAS_URL", "http://localhost:65432/api/kas")
 EXTERNAL_KAS_URL = os.getenv("EXTERNAL_KAS_URL", "http://localhost:65432/api/kas")
+OTHER_KAS_URL = os.getenv("OTHER_KAS_URL", "http://localhost:65432/api/kas")
 
 KAS_PUB_KEY_URL = "/kas_public_key?algorithm=ec:secp256r1"
 
@@ -76,7 +77,13 @@ POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "myPostgresPassword")
 POSTGRES_DATABASE = os.getenv("POSTGRES_DATABASE", "tdf_database")
 POSTGRES_SCHEMA = os.getenv("POSTGRES_SCHEMA", "secure_cycle")
 
+PRELOADED = os.getenv("PRELOADED", "./preloaded.json")
+
 DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DATABASE}"
+
+resp = requests.get(KAS_URL+KAS_PUB_KEY_URL)
+KAS_KEY_STRING = resp.json()
+KAS_KEY_STRING = KAS_KEY_STRING.replace("\\n", "\n")
 
 # OIDC_REALM = "tdf"
 # OIDC_CLIENT_ID = "dcr-test"
@@ -258,6 +265,17 @@ async def get_auth(token: str = Security(oauth2_scheme)) -> Json:
             detail=str(e),  # "Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+def getAttributeDefinition(authToken):
+    loc = f"{ATTRIBUTES_URL}/definitions/attributes"
+    logger.debug(f"Getting attr def")
+    params = {"name": "tracker", "authority": AUTH_NAMESPACE}
+    response = requests.get(loc, headers={"Authorization": f"Bearer {authToken}"}, params=params)
+    definitions = response.json()
+    if len(definitions) != 1:
+        return False
+    else:
+        return definitions[0]["order"]
 
 
 def createAttributeDefinition(definition, authToken):
@@ -462,9 +480,24 @@ class UUIDSchema(declarative_base()):
 
 ####################### Helpers ##################################
 
-def backen_encrypt(items):
+def backend_encrypt(items, uuid=None):
     # where items is a list of things
-    pass
+    encrypted_items = []
+    if uuid is not None:
+        client = TDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
+        client.enable_console_logging(LogLevel.Error)
+        attr = "http://period.com/attr/tracker/value/"+uuid
+        client.add_data_attribute(attr, OTHER_KAS_URL)
+        # client.set_decrypter_public_key(KAS_KEY_STRING)
+    else:
+        client = TDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
+        client.enable_console_logging(LogLevel.Error)
+        attr="http://period.com/attr/backend/value/backend"
+        client.add_data_attribute(attr, KAS_URL)
+    for item in items:
+        encrypted_items += [base64.b64encode(client.encrypt_string(item)).decode('ascii')]
+    return encrypted_items
+
 
 def backend_decrypt(items):
     #where items is a list of encrypted strings with backend attr
@@ -496,7 +529,7 @@ async def setup_keycloak():
         await teardown_keycloak(uuids)
         createAttributes(uuids) #
         entitleClients(keycloak_admin, client_ids, uuids)
-    return ids, uuids
+    return ids, uuids, client_ids
 
 async def teardown_keycloak(uuids=None):
     logger.debug(f"Tearing down up keycloak {KEYCLOAK_URL}")
@@ -519,6 +552,10 @@ async def teardown_keycloak(uuids=None):
         removeEntitlements(keycloak_admin, client_ids, uuids)
         deleteAttributes(uuids)
 
+def check_attr_values():
+    logger.debug(f"Checking attr values")
+    authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
+    return getAttributeDefinition(authToken)
 
 
 
@@ -566,6 +603,46 @@ async def get_cycle_data():
     query = table_cycle_data.select()
     result = await database.fetch_all(query)
     return result
+
+async def check_persistance():
+    logger.info("checking persistance")
+    uuids = await get_uuids()
+    logger.info(f"uuids {uuids}")
+    attr_vals = check_attr_values()
+    logger.info(f"attr_vals {attr_vals}")
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
+    client_ids, ids = get_clients_and_ids(keycloak_admin)
+    if ((attr_vals and list(uuids.values())) and (set(attr_vals)==set(list(uuids.values()))) and 
+        (set(ids)==set(list(uuids.keys())))):
+            return True
+    else:
+        await delete_uuids()
+        await delete_cycle_data()
+        await teardown_keycloak()
+        return False
+
+async def populate_preloaded(client_ids, uuids, ids):
+    logger.info("Populating with prelaoded data")
+    f = open(PRELOADED)
+    data = json.load(f)
+    new_data = {}
+    for client, days in data.items():
+        new_data[client] = []
+        uuid = uuids[client_ids.index(client)]
+        for item in days:
+            encrypted_vals = backend_encrypt([str(i) for i in item.values()], uuid=uuid)
+            new_day = dict(zip(item.keys(), encrypted_vals))
+            new_data[client].append(new_day)
+            await insert_date(uuid, Day.parse_obj(new_day))
+    
+
+    
     
 
 @app.on_event("startup")
@@ -573,17 +650,22 @@ async def startup():
     # delete all old stuff?
     # create new stuff?
     await database.connect()
-    await teardown_keycloak()
-    ids, uuids = await setup_keycloak()
-    b64ids = [base64.b64encode(item.encode('ascii')).decode('ascii') for item in ids]
-    #add step to encrypt uuids
-    try:
-        await delete_uuids()
-        await delete_cycle_data()
+    persistance = await check_persistance()
+    if not persistance:
+        logger.info("lack persistance, tore down")
+        ids, uuids, _ = await setup_keycloak()
+        b64ids = [base64.b64encode(item.encode('ascii')).decode('ascii') for item in ids]
         await populate_uuids(uuids, b64ids)
-    except Exception as e:
-        logger.error(f"ERROR {str(e)}")
-        teardown_keycloak(uuids)
+        if PRELOADED:
+            await populate_preloaded(client_ids, uuids, ids)
+    # #add step to encrypt uuids
+    # try:
+    #     await delete_uuids()
+    #     await delete_cycle_data()
+    #     await populate_uuids(uuids, b64ids)
+    # except Exception as e:
+    #     logger.error(f"ERROR {str(e)}")
+    #     teardown_keycloak(uuids)
 
 
 @app.on_event("shutdown")
@@ -593,9 +675,9 @@ async def shutdown():
     # delete contents of other table ?
     # remove entitlements? 
     # delete attributes?
-    await teardown_keycloak()
-    await delete_uuids()
-    await delete_cycle_data()
+    # await teardown_keycloak()
+    # await delete_uuids()
+    # await delete_cycle_data()
     await database.disconnect()
 
 
@@ -621,12 +703,6 @@ class Day(BaseModel):
     on_period: str
     symptoms: str
 
-class EndDates(BaseModel):
-    enddates: str
-    
-
-class Symptoms(BaseModel):
-    symptoms: str
 
 async def get_uuid_from_client_id(client_id):
     keycloak_admin = KeycloakAdmin(
@@ -753,12 +829,12 @@ async def post_reset():
     await teardown_keycloak()
     await delete_uuids()
     await delete_cycle_data()
-    ids, uuids = await setup_keycloak()
+    ids, uuids, client_ids = await setup_keycloak()
     b64ids = [base64.b64encode(item.encode('ascii')).decode('ascii') for item in ids]
     #add step to encrypt uuids
-    await delete_uuids()
-    await delete_cycle_data()
     await populate_uuids(uuids, b64ids)
+    if PRELOADED:
+            await populate_preloaded(client_ids, uuids, ids)
     return
 
 

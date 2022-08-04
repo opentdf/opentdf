@@ -10,6 +10,7 @@ FROM python:${PY_VERSION} as build
 WORKDIR /build
 
 COPY requirements.txt requirements.txt
+COPY preloaded.json preloaded.json
 COPY main.py main.py
 RUN echo $(arch)
 RUN pip3 install --no-cache-dir --upgrade pip setuptools
@@ -45,6 +46,7 @@ ENV OIDC_CONFIGURATION_URL "http://keycloak-http/auth/realms/tdf/.well-known/ope
 ENV OIDC_SCOPES "email"
 ENV SERVER_PUBLIC_NAME "Secure Cycle Backend"
 ENV SERVER_ROOT_PATH "/secure-cycle-backend"
+ENV OTHER_KAS_URL "http://192.168.86.39:3000/api/kas"
 
 
 ENTRYPOINT python3 -m uvicorn \
