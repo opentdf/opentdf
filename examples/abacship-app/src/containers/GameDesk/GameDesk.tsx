@@ -1,31 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { CELL_TYPE } from '../../models/cellType';
 import { Board } from "../../components/Board";
-import { getMyGrid, getOpponentGrid, hitGridItem } from './utils';
+import { getMyGrid, getOpponentGrid, hitGridItem, shareAccess, updatePlayerBoardByPreviousTurnData } from './utils';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { playerState } from '../../recoil-atoms/player';
-import { boardState, player1Board, player2Board, ServerStatus } from "../../recoil-atoms/gameDeskData";
-import { postGrandAccess, requestCheckSquare } from "../../services/axios";
+import { boardMessageData, boardState, ServerStatus } from "../../recoil-atoms/gameDeskData";
+import { requestCheckSquare } from "../../services/axios";
 import { usePingServer } from "../../hooks/usePingServer";
 import { useClientTDF } from "../../hooks/useClientTDF";
 import { ServerModeStatus } from '../../components/ServerModeStatus';
 import { ResetGameButton } from '../../components/ResetGameButton';
 import { sendBoard, setBoard } from '../../utils/board';
+import { PlayerNameTitle } from '../../components/PlayerNameTitle';
 import './GameDesk.scss';
+import { TypeBoardPosition } from '../../interfaces/board';
+import { BOARD_POPUP_MESSAGE } from '../../components/PopupMessage/PopupMessage';
 
 export function GameDesk() {
   const [myGrid, setMyGrid] = useState<number[][] | null>(null);
   const [opponentGrid, setOpponentGrid] = useState<number[][] | null>(null);
   const { status: currentServerStatus } = useRecoilValue(boardState);
-  const setServerStatus = useSetRecoilState(boardState)
+  const setServerStatus = useSetRecoilState(boardState);
+  const setPopupMessage = useSetRecoilState(boardMessageData);
   const { startPing, stopPing } = usePingServer();
   const { setTextToDecrypt, decryptedText, decryptString } = useClientTDF();
   const playerData = useRecoilValue(playerState);
-
-  const setPlayer1Board = useSetRecoilState(player1Board);
-  const setPlayer2Board = useSetRecoilState(player2Board);
-
-  // const setBoardStatus = useSetRecoilState(boardState);
   const generateGrids = async (): Promise<void> => {
     const _myGrid = await getMyGrid();
     const _opponentGrid = await getOpponentGrid();
@@ -36,23 +35,22 @@ export function GameDesk() {
 
   useEffect(() => {
     generateGrids();
-    startPing();
+    startPing(); // TODO ENABLE IT !!!!
 
-    return function () {
+    return function cleanup() {
       stopPing();
     }
   }, []);
 
-  const shareAccess = () => {
-    const token = sessionStorage.getItem("token") || "";
-    const refreshToken = sessionStorage.getItem("refreshToken") || "";
-
-    const dataInfo = {
-      name: playerData.name,
-      refresh_token: refreshToken,
-      access_token: token,
-    };
-    postGrandAccess(dataInfo);
+  const updateMyBoard = async () => {
+    const { localBoard, secretValue } = await updatePlayerBoardByPreviousTurnData();
+    setBoard("my_board", localBoard);
+    setMyGrid(localBoard);
+    //show popup  message
+    setPopupMessage({
+      message: secretValue === "ocean" ? BOARD_POPUP_MESSAGE.ENEMY_MISS : BOARD_POPUP_MESSAGE.ENEMY_HIT,
+      position: playerData.name === "player1" ? "left" : "right"
+    });
   };
 
   useEffect(() => {
@@ -83,23 +81,27 @@ export function GameDesk() {
     // REQUEST ATTR
     if (currentServerStatus === ServerStatus.p1_request_attr_from_p2 && playerData.name === "player2") {
       // PLAYER 1
-      shareAccess();
+      shareAccess(playerData.name);
     }
 
     if (currentServerStatus === ServerStatus.p2_request_attr_from_p1 && playerData.name === "player1") {
       //PLAYER 2
-      shareAccess();
+      shareAccess(playerData.name);
     }
 
     // PLAYER TURN
     if (currentServerStatus === ServerStatus.p1_turn) {
       // PLAYER 1
-
+      if (playerData.name === "player1") {
+        updateMyBoard();
+      }
     }
 
     if (currentServerStatus === ServerStatus.p2_turn) {
       //PLAYER 2
-
+      if (playerData.name === "player2") {
+        updateMyBoard();
+      }
     }
   }, [currentServerStatus, playerData]);
 
@@ -135,6 +137,11 @@ export function GameDesk() {
       const newStatusBoard = hitGridItem(opponentGrid, rowIdx, colIdx, secretValue)
       setBoard("enemy_board", newStatusBoard);
       setOpponentGrid(newStatusBoard);
+      // show popup message
+      setPopupMessage({
+        message: secretValue === "ocean" ? BOARD_POPUP_MESSAGE.MISS : BOARD_POPUP_MESSAGE.HIT,
+        position: playerData.name === "player1" ? "right" : "left"
+      });
     }
   };
 
@@ -142,27 +149,29 @@ export function GameDesk() {
     return (<></>);
   }
 
+  const renderBoard = (position: TypeBoardPosition, isEnemy: boolean) => {
+    return (
+      <div className="board1" key={`board-${position}`}>
+        <PlayerNameTitle playerName={isEnemy ? playerData.enemyName : playerData.name} />
+        <Board position={position} grid={isEnemy ? opponentGrid : myGrid} onCellClicked={isEnemy ? onOpponentCellClicked : onMyCellClicked} />
+      </div>
+    );
+  };
+  const renderDesk = () => {
+    const normalFlow = playerData.name === "player1";
+    const board1 = renderBoard("left", !normalFlow),
+      board2 = renderBoard("right", normalFlow);
+    return [board1, board2];
+  };
+
   return (
-    <div className="mainContainer centered">
+    <div className="mainContainer">
       <div className="wrapper">
         <ServerModeStatus />
         <div className="boardsDesk">
-          <div className="board1">
-            <h1>{`You are ${playerData.name}`}</h1>
-            <Board grid={myGrid} onCellClicked={onMyCellClicked} />
-          </div>
-          <div className="board2">
-            <h1>{"Enemy"}</h1>
-            <Board grid={opponentGrid} onCellClicked={onOpponentCellClicked} />
-          </div>
+          {renderDesk()}
         </div>
         <div className="resetGamePanel"><ResetGameButton /></div>
-        <div className="rules">
-          <h3>
-            There must be one aircraft carrier (size 5), one battleship (size 4), one cruiser (size 3), 2 destroyers (size 2) and 2 submarines (size 1).
-            Any additional ships or missing ships are not allowed. To win you must sink all of your opponent's ships.
-          </h3>
-        </div>
       </div>
     </div>
   );

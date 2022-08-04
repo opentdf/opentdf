@@ -19,7 +19,7 @@ e() {
 
 : "${SERVICE_IMAGE_TAG:="offline"}"
 
-BACKEND_CHART_TAG="0.0.0-sha-53411b7"
+BACKEND_CHART_TAG="0.0.0-sha-fdb06cc"
 FRONTEND_CHART_TAG="0.0.0-sha-93bb332"
 LOAD_IMAGES=1
 LOAD_SECRETS=1
@@ -117,7 +117,7 @@ if [[ $LOAD_IMAGES ]]; then
   monolog INFO "Caching locally-built development opentdf/backend images in dev cluster"
   # Cache locally-built `latest` images, bypassing registry.
   # If this fails, try running 'docker-compose build' in the repo root
-  for s in abacus attributes entitlement-store entitlement-pdp entitlements kas; do
+  for s in abacus attributes entitlement_store entitlement-pdp entitlements entity-resolution kas; do
     maybe_load ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}
   done
 else
@@ -162,6 +162,26 @@ if [[ $INGRESS_HOSTNAME ]]; then
   done
 fi
 
+
+if [[ $INIT_POSTGRES ]]; then
+  monolog INFO --- "Installing Postgresql for opentdf backend"
+  if [[ $LOAD_IMAGES ]]; then
+    monolog INFO "Caching postgresql image"
+    maybe_load bitnami/postgresql:${SERVICE_IMAGE_TAG}
+  fi
+  if [[ $RUN_OFFLINE ]]; then
+    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade postgresql"
+  else
+    helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" || e "Unable to helm upgrade postgresql"
+  fi
+  monolog INFO "Waiting until postgresql is ready"
+
+  while [[ $(kubectl get pods postgresql-postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+    echo "waiting for postgres..."
+    sleep 5
+  done
+fi
+
 # Only do this if we were told to disable Keycloak
 # This should be removed eventually, as Keycloak isn't going away
 if [[ $USE_KEYCLOAK ]]; then
@@ -180,25 +200,6 @@ if [[ $USE_KEYCLOAK ]]; then
 
   while [[ $(kubectl get pods keycloak-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
     echo "waiting for keycloak..."
-    sleep 5
-  done
-fi
-
-if [[ $INIT_POSTGRES ]]; then
-  monolog INFO --- "Installing Postgresql for opentdf backend"
-  if [[ $LOAD_IMAGES ]]; then
-    monolog INFO "Caching postgresql image"
-    maybe_load bitnami/postgresql:${SERVICE_IMAGE_TAG}
-  fi
-  if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade postgresql"
-  else
-    helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" || e "Unable to helm upgrade postgresql"
-  fi
-  monolog INFO "Waiting until postgresql is ready"
-
-  while [[ $(kubectl get pods postgresql-postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
-    echo "waiting for postgres..."
     sleep 5
   done
 fi
@@ -237,7 +238,7 @@ load-chart() {
 
 if [[ $INIT_OPENTDF ]]; then
   monolog INFO --- "OpenTDF charts"
-  for s in attributes entitlement-store entitlement-pdp entitlements kas; do
+  for s in attributes entitlement-store entitlement-pdp entitlements entity-resolution kas; do
     load-chart "opentdf-${s}" "${s}" ${BACKEND_CHART_TAG}
   done
   load-chart opentdf-abacus abacus ${FRONTEND_CHART_TAG}

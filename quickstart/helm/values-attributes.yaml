@@ -1,5 +1,6 @@
 logLevel: DEBUG
-serverRootPath: /attributes
+serverRootPath: /api/attributes
+openapiUrl: /openapi
 serverPublicName: "Attribute Authority"
 serverCorsOrigins: "*"
 oidc:

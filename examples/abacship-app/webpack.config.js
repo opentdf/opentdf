@@ -24,16 +24,16 @@ module.exports = {
     rules: [
       {
         test: /\.scss$/,
-        use: ['style-loader', 'css-loader', 'sass-loader'],
+        use: ["style-loader", "css-loader", "sass-loader"],
       },
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: "ts-loader",
         exclude: /node_modules/,
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif|mp3)$/i,
-        type: 'asset/resource',
+        type: "asset/resource",
       },
     ],
   },
@@ -42,9 +42,9 @@ module.exports = {
       title: "ABAC Ship",
       template: "./public/index.html",
       filename: "index.html",
-    })
+    }),
   ],
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: [".tsx", ".ts", ".js"],
   },
 };

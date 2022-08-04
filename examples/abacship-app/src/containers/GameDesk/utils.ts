@@ -1,6 +1,7 @@
 import { ASSETS_LIST } from "../../assets";
-import { BoardKeyType, SecretBoard, ShipType, StatusBoard } from "../../interfaces/board";
+import { SecretBoard, ShipType, StatusBoard } from "../../interfaces/board";
 import { CELL_TYPE, COL_INDICATORS, ROW_INDICATORS } from "../../models/cellType";
+import { getPreviousTurn, postGrandAccess } from "../../services/axios";
 import { defaulBoardSize, getBoard, setBoard } from "../../utils/board";
 import { generateRandomBoard } from "../../utils/randomBoard";
 
@@ -18,8 +19,9 @@ export function getAudioForCell(cell: number) {
 
 export function revealCell(value: string) {
   if (value === "ocean") return CELL_TYPE.OCEAN;
+  if (value === "unknown_ocean") return CELL_TYPE.UNKNOWN_OCEAN_HIT;
+  if (value === "unknown_ship") return CELL_TYPE.UNKNOWN_SHIP_HIT;
   if (Object.values(ShipType).includes(value as unknown as ShipType)) return CELL_TYPE.PLAYER_ONE;
-  // if (Object.values(ShipType).includes(data as unknown as ShipType)) return CELL_TYPE.PLAYER_TWO; // todo player two
 }
 
 export const hitGridItem = (statusBoard: number[][], rowIdx: number, colIdx: number, secretValue: string) => {
@@ -27,8 +29,8 @@ export const hitGridItem = (statusBoard: number[][], rowIdx: number, colIdx: num
     return oldRow.map((oldCell, oldColIdx) => {
       if (rowIdx === oldRowIdx && colIdx === oldColIdx) {
         // This is the cell we are revealing.
-        // const _secret_board = getBoard<>();
-        const cell = revealCell(secretValue);
+        const mapSecretValueToCell = secretValue === "ocean" ? "unknown_ocean" : "unknown_ship";
+        const cell = revealCell(mapSecretValueToCell);
         const audioForCell = getAudioForCell(cell);
         if (audioForCell !== null) {
           audioForCell.play();
@@ -42,18 +44,20 @@ export const hitGridItem = (statusBoard: number[][], rowIdx: number, colIdx: num
 };
 
 export const getMyGrid = async (): Promise<number[][]> => {
-  const boardKey = "my_secret_board";
-  const localBoard = getBoard<SecretBoard>(boardKey);
-  let board: SecretBoard;
+  const boardKey = "my_board";
+  const localBoard = getBoard<StatusBoard>(boardKey);
+  let board: StatusBoard;
   if (localBoard.length === 0) {
+    const secretBoardKey = "my_secret_board";
     const randomBoard = generateRandomBoard(defaulBoardSize);
-    setBoard(boardKey, randomBoard);
-    board = randomBoard;
+    setBoard(secretBoardKey, randomBoard);
+    board = randomBoard.map((row, rowIdx) => row.map((cell, colIdx) => revealCell(cell)));
+    setBoard(boardKey, board);
   } else {
     board = localBoard;
   }
 
-  return board.map((row, rowIdx) => row.map((cell, colIdx) => revealCell(cell)));
+  return board;
 }
 
 export const getOpponentGrid = async (): Promise<number[][]> => {
@@ -69,4 +73,29 @@ export const getOpponentGrid = async (): Promise<number[][]> => {
   }
 
   return board;
+}
+
+export const shareAccess = (name: string) => {
+  const token = sessionStorage.getItem("token") || "";
+  const refreshToken = sessionStorage.getItem("refreshToken") || "";
+
+  const dataInfo = {
+    name,
+    refresh_token: refreshToken,
+    access_token: token,
+  };
+  postGrandAccess(dataInfo);
+};
+
+export const updatePlayerBoardByPreviousTurnData = async (): Promise<{ localBoard: StatusBoard, secretValue: string }> => {
+  const previousTurn = await getPreviousTurn();
+  console.log(previousTurn);
+  const secretBoardKey = "my_secret_board";
+  const boardKey = "my_board";
+  const localBoard = getBoard<StatusBoard>(boardKey);
+  const localSecretBoard = getBoard<SecretBoard>(secretBoardKey);
+  const secretValue = localSecretBoard[previousTurn.row][previousTurn.col];
+  localBoard[previousTurn.row][previousTurn.col] = secretValue === "ocean" ? CELL_TYPE.OCEAN_HIT : CELL_TYPE.SHIP_HIT;
+
+  return { localBoard, secretValue };
 }

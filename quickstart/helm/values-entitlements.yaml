@@ -1,6 +1,7 @@
-rootPath: /entitlements
+serverRootPath: /api/entitlements
 publicName: "Entitlement"
 serverCorsOrigins: "*"
+openapiUrl: /openapi
 logLevel: DEBUG
 postgres:
   host: postgresql

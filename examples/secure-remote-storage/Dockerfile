@@ -7,15 +7,15 @@ WORKDIR /build/
 COPY package-lock.json package.json opentdf-client-*.tgz ./
 RUN npm ci
 
+
 # builder - create-react-app build
 FROM depender as builder
 WORKDIR /build/
-COPY public/ public/
+COPY resource/ resource/
 COPY src/ src/
-COPY tsconfig.json/ .
 COPY webpack.config.js/ .
+COPY .babelrc/ .
 RUN npm run build
-#COPY dist/ dist/
 
 # server - nginx alpine
 FROM nginx:stable-alpine as server

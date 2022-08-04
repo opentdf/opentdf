@@ -5,6 +5,7 @@ import { Client, FileClient } from '@opentdf/client';
 import { Button, Divider, Input, Layout, Select, Space, Spin, Table, Tooltip, Typography, Upload } from 'antd';
 import { ToolOutlined } from '@ant-design/icons';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
+import { toWebReadableStream } from "web-streams-node";
 import fileReaderStream from 'filereader-stream';
 import UserStatus from "./components/UserStatus";
 import openTDFLogo from './assets/images/logo-masked-group.png';
@@ -193,7 +194,7 @@ const App = () => {
       const client = new Client.Client(CLIENT_CONFIG);
 
       const encryptParams = new Client.EncryptParamsBuilder()
-        .withStreamSource(fileReaderStream(selectedFile))
+        .withStreamSource(toWebReadableStream(fileReaderStream(selectedFile)))
         .withOffline()
         .build();
 

@@ -1,8 +1,16 @@
 #  configuration https://github.com/bitnami/charts/tree/master/bitnami/postgresql/#parameters
 image:
   debug: true
+# The auth block here configures Postgres to use a fixed value
+# rather than an auto-generated one.  More information
+# is available: https://github.com/bitnami/containers/tree/main/bitnami/postgresql 
+auth:
+  postgresPassword: myPostgresPassword
 initdbUser: postgres
-initdbPassword: mydbapassword
+initdbPassword: myPostgresPassword
+extraEnv: |
+  - name: POSTGRESQL_PASSWORD
+    value: myPostgresPassword
 initdbScripts:
   init.sql: |
     -- Keycloak DB
