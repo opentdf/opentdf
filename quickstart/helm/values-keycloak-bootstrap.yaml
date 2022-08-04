@@ -5,7 +5,7 @@ image:
 externalUrl: http://offline.demo.internal/
 
 keycloak:
-  hostname: http://keycloak-http
+  hostname: http://keycloak-http/auth
   username: keycloakadmin
   password: mykeycloakpassword
   clientId: tdf-client
