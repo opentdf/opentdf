@@ -484,13 +484,15 @@ def backend_encrypt(items, uuid=None):
     # where items is a list of things
     encrypted_items = []
     if uuid is not None:
+        # used for backend encryption
         client = TDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
         client.enable_console_logging(LogLevel.Error)
         attr = "http://period.com/attr/tracker/value/"+uuid
         client.add_data_attribute(attr, OTHER_KAS_URL)
         # client.set_decrypter_public_key(KAS_KEY_STRING)
     else:
-        client = TDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
+        #used for non backend specific encryption
+        client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
         client.enable_console_logging(LogLevel.Error)
         attr="http://period.com/attr/backend/value/backend"
         client.add_data_attribute(attr, KAS_URL)
@@ -501,7 +503,12 @@ def backend_encrypt(items, uuid=None):
 
 def backend_decrypt(items):
     #where items is a list of encrypted strings with backend attr
-    pass
+    client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
+    client.enable_console_logging(LogLevel.Error)
+    decrypted_items = []
+    for item in items:
+        decrypted_items += [client.decrypt_string(base64.b64decode(item))]
+    return decrypted_items
 
 def get_clients_and_ids(keycloak_admin):
     clients = [(item["clientId"],item["id"]) for item in keycloak_admin.get_clients()]
@@ -653,9 +660,11 @@ async def startup():
     persistance = await check_persistance()
     if not persistance:
         logger.info("lack persistance, tore down")
-        ids, uuids, _ = await setup_keycloak()
+        ids, uuids, client_ids = await setup_keycloak()
         b64ids = [base64.b64encode(item.encode('ascii')).decode('ascii') for item in ids]
-        await populate_uuids(uuids, b64ids)
+        # encrypt uuids
+        encrypted_uuids = backend_encrypt(uuids)
+        await populate_uuids(encrypted_uuids, b64ids)
         if PRELOADED:
             await populate_preloaded(client_ids, uuids, ids)
     # #add step to encrypt uuids
@@ -715,8 +724,9 @@ async def get_uuid_from_client_id(client_id):
     keycloak_id = base64.b64encode(keycloak_admin.get_client_id(client_id).encode('ascii')).decode('ascii')
     query = table_uuid.select().where(table_uuid.c.keycloak_id == keycloak_id)
     result = await database.fetch_one(query)
+    decrypted_uuid = backend_decrypt([result.uuid])
     # need to do some decrypting here
-    return result.uuid
+    return decrypted_uuid
 
 
 @app.get("/uuid", 
@@ -725,7 +735,13 @@ async def get_uuid_from_client_id(client_id):
         200: {"content": {"data": {"example":"abcd-1234-abcd-1234"}
     }}}
 )
-async def get_uuid(client_id: str):
+async def get_uuid(client_id: str):#, decoded_token: str = Depends(get_auth)):
+    # if client_id != decoded_token["azp"]:
+    #     raise HTTPException(
+    #             status_code=status.HTTP_401_UNAUTHORIZED,
+    #             detail="Invalid authentication credentials",
+    #             headers={"WWW-Authenticate": "Bearer"},
+    #         )
     return await get_uuid_from_client_id(client_id)
     # return await get_cycle_data()
 
@@ -832,7 +848,8 @@ async def post_reset():
     ids, uuids, client_ids = await setup_keycloak()
     b64ids = [base64.b64encode(item.encode('ascii')).decode('ascii') for item in ids]
     #add step to encrypt uuids
-    await populate_uuids(uuids, b64ids)
+    encrypted_uuids = backend_encrypt(uuids)
+    await populate_uuids(encrypted_uuids, b64ids)
     if PRELOADED:
             await populate_preloaded(client_ids, uuids, ids)
     return
