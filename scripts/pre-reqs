@@ -21,7 +21,7 @@ monolog TRACE "pre-reqs: [$0 $*]"
 # Find latest opa tool: https://www.openpolicyagent.org/docs/latest/#running-opa
 : "${OPA_VERSION:=0.42.2}"
 # Find latest policy tool: https://github.com/opcr-io/policy/releases
-: "${POLICY_VERSION:=0.1.34}"
+: "${POLICY_VERSION:=0.1.36}"
 : "${TILT_VERSION:=0.29.0}"
 
 export HELM_VERSION
