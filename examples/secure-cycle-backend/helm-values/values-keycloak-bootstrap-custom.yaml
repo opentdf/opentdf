@@ -85,7 +85,6 @@ entitlements:
       dcr-test:
         - https://example.com/attr/Classification/value/C
         - https://example.com/attr/COI/value/PRF
-        - http://period.com/attr/backend/value/backend
       service-account-tdf-client:
         - https://example.com/attr/Classification/value/C
         - https://example.com/attr/COI/value/PRB
@@ -99,6 +98,8 @@ entitlements:
       user1:
         - https://example.com/attr/Classification/value/S
         - https://example.com/attr/COI/value/PRX
+      secure-cycle:
+        - http://period.com/attr/backend/value/backend
 
 job:
   backoffLimit: 3
