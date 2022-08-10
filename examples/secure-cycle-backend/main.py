@@ -923,7 +923,7 @@ async def get_entitlement_from_client(client_id):
         # dependencies=[Depends(get_auth)], 
         status_code=201
 )
-async def get_shared(client_id: str, uuid: str):#), decoded_token: str = Depends(get_auth)):
+async def get_shared(client_id: str, uuid: str, ids: Optional[List[int]]):#), decoded_token: str = Depends(get_auth)):
     # lookup client_id from uuid
     # if user_client_id != decoded_token["azp"]:
     #     raise HTTPException(
@@ -940,4 +940,4 @@ async def get_shared(client_id: str, uuid: str):#), decoded_token: str = Depends
     #             detail="You don't have the right entitlements",
     #             headers={"WWW-Authenticate": "Bearer"},
     #         )
-    return await retrieve_dates(client_uuid[0].decode("ascii"), [])
+    return await retrieve_dates(client_uuid[0].decode("ascii"), ids if ids is not null else [])
