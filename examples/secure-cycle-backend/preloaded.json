@@ -507,7 +507,7 @@
     {
       "date": "2022-08-30T02:07:18Z",
       "on_period": true,
-      "symptoms": "[\"headache\"\"]"
+      "symptoms": "[\"headache\"]"
     },
     {
       "date": "2022-09-17T21:41:19Z",
@@ -547,7 +547,7 @@
     {
       "date": "2022-08-21T00:34:09Z",
       "on_period": false,
-      "symptoms": "[\"headache\"\"]"
+      "symptoms": "[\"headache\"]"
     },
     {
       "date": "2022-09-20T07:22:09Z",
@@ -627,7 +627,7 @@
     {
       "date": "2022-09-21T15:58:46Z",
       "on_period": true,
-      "symptoms": "[\"headache\"\"]"
+      "symptoms": "[\"headache\"]"
     },
     {
       "date": "2022-08-16T08:23:09Z",
@@ -657,7 +657,7 @@
     {
       "date": "2022-08-13T19:53:17Z",
       "on_period": false,
-      "symptoms": "[\"headache\"\"]"
+      "symptoms": "[\"headache\"]"
     },
     {
       "date": "2022-09-17T14:24:35Z",
@@ -687,7 +687,7 @@
     {
       "date": "2022-09-03T09:00:40Z",
       "on_period": false,
-      "symptoms": "[\"headache\"\"]"
+      "symptoms": "[\"headache\"]"
     },
     {
       "date": "2022-08-08T16:23:04Z",
