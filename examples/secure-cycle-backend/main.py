@@ -386,7 +386,7 @@ def insertAttrsForClients(keycloak_admin, entitlement_host, client_attr_map, aut
             )
             raise HTTPException(
                 status_code=BAD_REQUEST,
-                detail=f"Failed to entitle client {user['clientId']} with {attrs}",
+                detail=f"Failed to entitle client {client['clientId']} with {attrs}",
             )
 
 def deleteAttrsForClients(keycloak_admin, entitlement_host, client_attr_map, authToken):
@@ -419,6 +419,38 @@ def deleteAttrsForClients(keycloak_admin, entitlement_host, client_attr_map, aut
             detail=f"Failed to delete entitlements for client {client['clientId']} with {attrs}",
             )
 
+def getAttrsForClients(keycloak_admin, entitlement_host, client_ids, authToken):
+    clients = keycloak_admin.get_clients()
+    attr_map = {}
+    for client in clients:
+        if client["clientId"] not in client_ids:
+            continue
+        loc = f"{entitlement_host}/entitlements?entityId={client['id']}"
+        attrs = []
+        logger.info(
+            "Getting entitlements for client: [%s] at [%s]", client["clientId"], loc
+        )
+        logger.debug("Using auth JWT: [%s]", authToken)
+        response = requests.get(
+            loc,
+            headers={"Authorization": f"Bearer {authToken}"},
+        )
+        if response.status_code != 200:
+            logger.error(
+                "Unexpected code [%s] from entitlements service when attempting to get entitlements! [%s]",
+                response.status_code,
+                response.text,
+                exc_info=True,
+            )
+            raise HTTPException(
+                status_code=BAD_REQUEST,
+                detail=f"Failed to get entitlements for client {client['clientId']}",
+            )
+        else:
+            attr_map[client["clientId"]] = response.json()[0][client['id']]
+    return attr_map
+
+
 
 def entitleClients(keycloak_admin, client_ids, uuids):
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
@@ -431,6 +463,10 @@ def removeEntitlements(keycloak_admin, client_ids, uuids):
     attr_map = {client_ids[i]: [f"{AUTH_NAMESPACE}/attr/tracker/value/"
                                 + uuids[i]] for i in range(len(client_ids))}
     deleteAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
+
+def getEntitlements(keycloak_admin, client_ids):
+    authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
+    return getAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, client_ids, authToken)
 
 
 ####################### Database ##################################
@@ -484,13 +520,15 @@ def backend_encrypt(items, uuid=None):
     # where items is a list of things
     encrypted_items = []
     if uuid is not None:
+        # used for backend encryption
         client = TDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
         client.enable_console_logging(LogLevel.Error)
         attr = "http://period.com/attr/tracker/value/"+uuid
         client.add_data_attribute(attr, OTHER_KAS_URL)
         # client.set_decrypter_public_key(KAS_KEY_STRING)
     else:
-        client = TDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
+        #used for non backend specific encryption
+        client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
         client.enable_console_logging(LogLevel.Error)
         attr="http://period.com/attr/backend/value/backend"
         client.add_data_attribute(attr, KAS_URL)
@@ -501,7 +539,12 @@ def backend_encrypt(items, uuid=None):
 
 def backend_decrypt(items):
     #where items is a list of encrypted strings with backend attr
-    pass
+    client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
+    client.enable_console_logging(LogLevel.Error)
+    decrypted_items = []
+    for item in items:
+        decrypted_items += [client.decrypt_string(base64.b64decode(item))]
+    return decrypted_items
 
 def get_clients_and_ids(keycloak_admin):
     clients = [(item["clientId"],item["id"]) for item in keycloak_admin.get_clients()]
@@ -653,9 +696,11 @@ async def startup():
     persistance = await check_persistance()
     if not persistance:
         logger.info("lack persistance, tore down")
-        ids, uuids, _ = await setup_keycloak()
+        ids, uuids, client_ids = await setup_keycloak()
         b64ids = [base64.b64encode(item.encode('ascii')).decode('ascii') for item in ids]
-        await populate_uuids(uuids, b64ids)
+        # encrypt uuids
+        encrypted_uuids = backend_encrypt(uuids)
+        await populate_uuids(encrypted_uuids, b64ids)
         if PRELOADED:
             await populate_preloaded(client_ids, uuids, ids)
     # #add step to encrypt uuids
@@ -715,8 +760,9 @@ async def get_uuid_from_client_id(client_id):
     keycloak_id = base64.b64encode(keycloak_admin.get_client_id(client_id).encode('ascii')).decode('ascii')
     query = table_uuid.select().where(table_uuid.c.keycloak_id == keycloak_id)
     result = await database.fetch_one(query)
+    decrypted_uuid = backend_decrypt([result.uuid])
     # need to do some decrypting here
-    return result.uuid
+    return decrypted_uuid
 
 
 @app.get("/uuid", 
@@ -725,7 +771,13 @@ async def get_uuid_from_client_id(client_id):
         200: {"content": {"data": {"example":"abcd-1234-abcd-1234"}
     }}}
 )
-async def get_uuid(client_id: str):
+async def get_uuid(client_id: str):#, decoded_token: str = Depends(get_auth)):
+    # if client_id != decoded_token["azp"]:
+    #     raise HTTPException(
+    #             status_code=status.HTTP_401_UNAUTHORIZED,
+    #             detail="Invalid authentication credentials",
+    #             headers={"WWW-Authenticate": "Bearer"},
+    #         )
     return await get_uuid_from_client_id(client_id)
     # return await get_cycle_data()
 
@@ -832,44 +884,60 @@ async def post_reset():
     ids, uuids, client_ids = await setup_keycloak()
     b64ids = [base64.b64encode(item.encode('ascii')).decode('ascii') for item in ids]
     #add step to encrypt uuids
-    await populate_uuids(uuids, b64ids)
+    encrypted_uuids = backend_encrypt(uuids)
+    await populate_uuids(encrypted_uuids, b64ids)
     if PRELOADED:
             await populate_preloaded(client_ids, uuids, ids)
     return
 
 
-# @app.get("/onperiod", 
-#         # dependencies=[Depends(get_auth)], 
-#         responses={
-#         200: {"content": {"application/json": {"example":{"enddates": {"encrypted_string"}}}
-#     }}}
-# )
-# async def get_enddates(uuid: str):
-#     pass
+async def share_entitlement_with_client(client_id, uuid):
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
+    entitleClients(keycloak_admin, [client_id], [uuid])
 
-# @app.post("/onperiod", 
-#         # dependencies=[Depends(get_auth)], 
-#         responses={
-#         200: {"content": {"application/json": {"example":{"enddates": {"encrypted_string"}}}
-#     }}}
-# )
-# async def post_enddates(uuid: str, enddates: EndDates):
-#     pass
+@app.post("/share", 
+        # dependencies=[Depends(get_auth)], 
+        status_code=201
+)
+async def share_with(client_id: str, uuid: str):
+    await share_entitlement_with_client(client_id, uuid)
 
-# @app.get("/symptoms", 
-#         # dependencies=[Depends(get_auth)], 
-#         responses={
-#         200: {"content": {"application/json": {"example":{"startdates": {"encrypted_string"}}}
-#     }}}
-# )
-# async def get_symptoms(uuid: str):
-#     pass
 
-# @app.get("/symptoms", 
-#         # dependencies=[Depends(get_auth)], 
-#         responses={
-#         200: {"content": {"application/json": {"example":{"symptoms": {"encrypted_string"}}}
-#     }}}
-# )
-# async def post_symptoms(uuid: str, symptoms: Symptoms):
-#     pass
+async def get_entitlement_from_client(client_id):
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
+    return getEntitlements(keycloak_admin, [client_id])
+
+@app.get("/share",
+        # dependencies=[Depends(get_auth)], 
+        status_code=201
+)
+async def get_shared(client_id: str, uuid: str, ids: Optional[List[int]]):#), decoded_token: str = Depends(get_auth)):
+    # lookup client_id from uuid
+    # if user_client_id != decoded_token["azp"]:
+    #     raise HTTPException(
+    #             status_code=status.HTTP_401_UNAUTHORIZED,
+    #             detail="Invalid authentication credentials",
+    #             headers={"WWW-Authenticate": "Bearer"},
+    #         )
+    # entitlements = await get_entitlement_from_client(decoded_token["azp"])
+    client_uuid = await get_uuid_from_client_id(client_id)
+    # client_entitlements = [item for item in entitlements[decoded_token["azp"]] if client_uuid[0].decode("ascii") in item]
+    # if not client_entitlements:
+    #     raise HTTPException(
+    #             status_code=status.HTTP_401_UNAUTHORIZED,
+    #             detail="You don't have the right entitlements",
+    #             headers={"WWW-Authenticate": "Bearer"},
+    #         )
+    return await retrieve_dates(client_uuid[0].decode("ascii"), ids if ids is not null else [])
