@@ -18,5 +18,6 @@ Full-motion video with OpenTDF
 
 ## Setup
 
-1. Start Examples backend.  `cd examples` then `tilt up` 
-2. `npm run start` - follow Steps above 
+1. Start Examples backend.  `cd examples` then `tilt up`  
+2. The library is published to GitHub Packages instead of npmjs.com.  Setup NPM to download it here: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry#authenticating-to-github-packages 
+3. `cd webcam app` then `npm install` and `npm run start` - follow Steps above 
