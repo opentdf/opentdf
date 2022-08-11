@@ -26,7 +26,7 @@ function Home() {
 <p style={headerDetailStyle} ><a style={linkStyle} href="https://www.keycloak.org/">Keycloak</a> is an identity and access management solution that provides the basis for Attribute Based Access Control (ABAC) for the OpenTDF. You’re free to use any identity and access solution you like in your OpenTDF-based projects, but the repo has a <a href="https://github.com/opentdf/backend/pkgs/container/keycloak">custom build of Keycloak </a>ready to use for reduced time to solution for a proof of concept or minimum viable product (MVP) solution.</p>
 <h2>More to Come</h2>
 <p style={headerDetailStyle} >The OpenTDF project was only recently announced in June of 2022. There is still a lot of work to be done, but also a lot of opportunity and possibility, as well. We’re excited you’re here. If you don’t find what you’re looking for today, please stop back by regularly. The Virtru team behind OpenTDF and the community as a whole will be continuing our joint efforts to make OpenTDF an easy to understand, easy to implement way for everyone to start owning and controlling their own data as they see fit.</p>
-<h2><br>If there’s something specific you’d love to see, please get involved. Join the <a style={linkStyle} href="https://twitter.com/openTDF">conversation on Twitter</a> or in the <a href="https://opentdf.slack.com/">OpenTDF Slack community</a>!</h2> 
+<h2><br/>If there’s something specific you’d love to see, please get involved. Join the <a style={linkStyle} href="https://twitter.com/openTDF">conversation on Twitter</a> or in the <a href="https://opentdf.slack.com/">OpenTDF Slack community</a>!</h2> 
 
         <a
           style={getStartedButtonStyle}
