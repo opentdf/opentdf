@@ -967,3 +967,21 @@ async def get_shared(client_id: str, uuid: str, ids: Optional[List[int]]=None):#
     #             headers={"WWW-Authenticate": "Bearer"},
     #         )
     return await retrieve_dates(client_uuid[0].decode("ascii"), ids if ids is not None else [])
+
+
+async def revoke_entitlement_with_client(client_id, uuid):
+    keycloak_admin = KeycloakAdmin(
+    server_url=KEYCLOAK_URL,
+    username=KC_ADMIN_USER,
+    password=KC_ADMIN_PASSWORD,
+    realm_name=REALM,
+    user_realm_name="master",
+    )
+    removeEntitlements(keycloak_admin, [client_id], [uuid])
+
+@app.post("/revoke", 
+        # dependencies=[Depends(get_auth)], 
+        status_code=201
+)
+async def revoke(client_id: str, uuid: str):
+    await revoke_entitlement_with_client(client_id, uuid)
