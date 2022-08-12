@@ -7,7 +7,7 @@ function Home() {
 <p style={headerDetailStyle} >The OpenTDF (Trusted Data Format) is a foundational platform that allows you to build and integrate “forever control” of your or your users’ respective data into new and existing applications. Yes, OpenTDF includes encryption, but it is much more than that.</p>
 
 <p style={headerDetailStyle} >The OpenTDF includes additional cryptographically secured metadata that can ensure policy control throughout the lifecycle of data. Imagine being able to grant or revoke, “turn off”, access to your data at any time, even if it is not contained within your own network or application anymore.</p>
-<a
+        <a
           style={getStartedButtonStyle}
           href="https://github.com/opentdf/documentation/tree/main/quickstart#opentdf-quickstart"
         >
