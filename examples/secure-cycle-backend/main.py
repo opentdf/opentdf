@@ -5,6 +5,8 @@ import sys
 import requests
 import uuid
 import base64
+import time
+import gc
 from enum import Enum
 from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
 from urllib.parse import urlparse
@@ -670,6 +672,17 @@ async def check_persistance():
         await teardown_keycloak()
         return False
 
+# async def insert_preloaded(uuids, days):
+#     rows = [{"uuid": uuids[i], "date": days[i].date, "on_period": days[i].on_period, "symptoms": days[i].symptoms} for i in range(len(uuids))]
+#     try:
+#         await database.execute(table_cycle_data.insert(rows))
+#         return
+#     except UniqueViolationError as e:
+#         raise HTTPException(
+#             status_code=BAD_REQUEST, detail=f"duplicate: {str(e)}"
+#         ) from e
+
+
 async def populate_preloaded(client_ids, uuids, ids):
     logger.info("Populating with prelaoded data")
     f = open(PRELOADED)
@@ -677,16 +690,24 @@ async def populate_preloaded(client_ids, uuids, ids):
     new_data = {}
     for client, days in data.items():
         new_data[client] = []
+        # insert_uuids = []
+        # insert_days = []
         uuid = uuids[client_ids.index(client)]
         for item in days:
             encrypted_vals = backend_encrypt([str(i) for i in item.values()], uuid=uuid)
             new_day = dict(zip(item.keys(), encrypted_vals))
             new_data[client].append(new_day)
+            # insert_uuids.append(uuid)
+            # insert_days.append(Day.parse_obj(new_day))
             await insert_date(uuid, Day.parse_obj(new_day))
+            # await time.sleep(0.1)
+    #     await insert_preloaded(insert_uuids, insert_days)
+    #     gc.collect()
+    # logger.info("Sleeping")
+    # time.sleep(60)
+    return
     
 
-    
-    
 
 @app.on_event("startup")
 async def startup():
@@ -703,6 +724,8 @@ async def startup():
         await populate_uuids(encrypted_uuids, b64ids)
         if PRELOADED:
             await populate_preloaded(client_ids, uuids, ids)
+            gc.collect()
+            return
     # #add step to encrypt uuids
     # try:
     #     await delete_uuids()
@@ -921,9 +944,12 @@ async def get_entitlement_from_client(client_id):
 
 @app.get("/share",
         # dependencies=[Depends(get_auth)], 
-        status_code=201
+        responses={
+        200: {"content": {"application/json": {"example":[{"id": 10, "uuid": "1234", 
+        "date": "encryptedString", "on_period": "encryptedString", "symptoms": "encrypte_string"}]}
+    }}}
 )
-async def get_shared(client_id: str, uuid: str, ids: Optional[List[int]]):#), decoded_token: str = Depends(get_auth)):
+async def get_shared(client_id: str, uuid: str, ids: Optional[List[int]]=None):#), decoded_token: str = Depends(get_auth)):
     # lookup client_id from uuid
     # if user_client_id != decoded_token["azp"]:
     #     raise HTTPException(
@@ -940,4 +966,4 @@ async def get_shared(client_id: str, uuid: str, ids: Optional[List[int]]):#), de
     #             detail="You don't have the right entitlements",
     #             headers={"WWW-Authenticate": "Bearer"},
     #         )
-    return await retrieve_dates(client_uuid[0].decode("ascii"), ids if ids is not null else [])
+    return await retrieve_dates(client_uuid[0].decode("ascii"), ids if ids is not None else [])
