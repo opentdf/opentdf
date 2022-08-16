@@ -2,6 +2,12 @@
 # Non-tilt variant of quickstart. Useful for people who want to run quickstart
 # with 'standard' kubectl operator controls.
 
+#Do not allow root user
+if [ "$EUID" -eq 0 ]
+  then echo "Not allowed to run as root"
+  exit 1
+fi
+
 WORK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${WORK_DIR}/../" >/dev/null && pwd)}"
 
