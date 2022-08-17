@@ -1,7 +1,13 @@
 load("ext://helm_resource", "helm_resource", "helm_repo")
 load("ext://min_tilt_version", "min_tilt_version")
 # load("ext://min_k8s_version", "min_k8s_version")
-load('../version-tool/Tiltfile', 'min_helm_version', "min_kind_version", "min_ctlptl_version", "min_k8s_version")
+load(
+    "../version-tool/Tiltfile",
+    "min_helm_version",
+    "min_kind_version",
+    "min_ctlptl_version",
+    "min_k8s_version",
+)
 
 # The helm_resource extension uses the 'new extensions api' introduced in tilt 0.25
 min_tilt_version("0.25")
@@ -11,16 +17,50 @@ min_kind_version("0.12.0")
 min_ctlptl_version("0.7.4")
 
 
-
 # Where the redirect URI should go to, for example
 EXTERNAL_URL = "http://localhost:65432"
 
+# Customizable version selection.
+# 1. Defaults (no parameters): Latest release (currently 1.0.0)
+# 2. If USE_HEAD_SERVICES is set, default to SHA tagged versions provided by LATEST_GREEN_X_SHA
+# 3. Both are overridable by X_IMAGE_TAG and X_CHART_TAG parameters
+#
+# TODO: lookup LATEST_GREEN in CI and set the values before calling this.
+# NOTE: keycloak v. keycloakX - codecentric has a different chart for keycloak X, so
+#       be sure to also set the USE_KEYCLOAK_X variable to False if you are using 1.0.0 or less.
+STABLE_BACKEND_TAG = os.environ.get("STABLE_BACKEND_TAG", "1.0.0")
+STABLE_FRONTEND_TAG = os.environ.get("STABLE_FRONTEND_TAG", "1.0.0")
+
+USE_HEAD_SERVICES = os.environ.get("USE_HEAD_SERVICES", False)
+LATEST_GREEN_BACKEND_SHA = os.environ.get("LATEST_GREEN_BACKEND_SHA", "03c1bd4")
+LATEST_GREEN_FRONTEND_SHA = os.environ.get("LATEST_GREEN_FRONTEND_SHA", "93bb332")
+
 # Versions of things backend to pull (attributes, kas, etc)
-BACKEND_IMAGE_TAG = "sha-03c1bd4"
-BACKEND_CHART_TAG = "0.0.0-sha-03c1bd4"
-FRONTEND_IMAGE_TAG = "main"
-FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
+BACKEND_IMAGE_TAG = os.environ.get(
+    "BACKEND_IMAGE_TAG",
+    ("sha-" + LATEST_GREEN_BACKEND_SHA) if USE_HEAD_SERVICES else STABLE_BACKEND_TAG,
+)
+BACKEND_CHART_TAG = os.environ.get(
+    "BACKEND_CHART_TAG",
+    ("0.0.0-sha-" + LATEST_GREEN_BACKEND_SHA)
+    if USE_HEAD_SERVICES
+    else STABLE_BACKEND_TAG,
+)
+FRONTEND_IMAGE_TAG = os.environ.get(
+    "FRONTEND_IMAGE_TAG",
+    ("sha-" + LATEST_GREEN_FRONTEND_SHA) if USE_HEAD_SERVICES else STABLE_FRONTEND_TAG,
+)
+FRONTEND_CHART_TAG = os.environ.get(
+    "FRONTEND_CHART_TAG",
+    ("0.0.0-sha-" + LATEST_GREEN_FRONTEND_SHA)
+    if USE_HEAD_SERVICES
+    else STABLE_FRONTEND_TAG,
+)
+
+USE_KEYCLOAK_X = os.environ.get("USE_KEYCLOAK_X", BACKEND_IMAGE_TAG != "1.0.0")
+
 HELM_VALUES_PATH = "helm/"
+
 # Where helm values for quickstart
 if "HELM_VALUES_PATH" in os.environ:
     HELM_VALUES_PATH = os.getenv("HELM_VALUES_PATH")
@@ -138,20 +178,38 @@ helm_resource(
     resource_deps=["opentdf-postgresql"],
 )
 
-helm_resource(
-    "keycloak",
-    "codecentric/keycloakx",
-    flags=[
-        "--version",
-        "1.4.2",
-        "-f",
-        "helm/values-keycloak.yaml",
-        "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
-    ],
-    labels="third-party",
-    resource_deps=["opentdf-entitlement-pdp", "codecentric"],
-)
+
+if USE_KEYCLOAK_X:
+    helm_resource(
+        "keycloak",
+        "codecentric/keycloakx",
+        flags=[
+            "--version",
+            "1.4.2",
+            "-f",
+            "helm/values-keycloakx.yaml",
+            "--set",
+            "image.tag=%s" % BACKEND_IMAGE_TAG,
+        ],
+        labels="third-party",
+        resource_deps=["opentdf-entitlement-pdp", "codecentric"],
+    )
+else:
+    helm_resource(
+        "keycloak",
+        "codecentric/keycloak",
+        flags=[
+            "--version",
+            "17.0.1",
+            "-f",
+            "helm/values-keycloak.yaml",
+            "--set",
+            "image.tag=%s" % BACKEND_IMAGE_TAG,
+        ],
+        labels="third-party",
+        resource_deps=["opentdf-entitlement-pdp", "codecentric"],
+    )
+
 
 helm_resource(
     "opentdf-kas",
@@ -211,10 +269,14 @@ helm_resource(
 
 # ability to pass in custom test script with path to script as env var
 # e.g.: CI=1 TEST_SCRIPT=tests/wait-and-test.sh tilt up
-if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
+if "TEST_SCRIPT" in os.environ:
+    if not os.environ.get("CI"):
+        warn("Running TEST_SCRIPT=[%s] not in CI mode" % os.environ.get("TEST_SCRIPT"))
     local_resource(
         "passed-in-test-script",
         os.environ.get("TEST_SCRIPT"),
         labels="tests",
         resource_deps=["ingress-nginx", "opentdf-kas", "keycloak-bootstrap"],
     )
+elif os.environ.get("CI"):
+    warn("Running in CI mode but no TEST_SCRIPT defined")
