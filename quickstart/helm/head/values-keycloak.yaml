@@ -14,7 +14,7 @@ command:
 postgresql:
   enabled: false
 externalDatabase:
-  host: opentdf-postgresql
+  host: postgresql
   database: keycloak_database
 
 extraEnv: |
@@ -29,7 +29,7 @@ extraEnv: |
   - name: KC_DB
     value: postgres
   - name: KC_DB_URL_HOST
-    value: opentdf-postgresql
+    value: postgresql
   - name: KC_DB_URL_DATABASE
     value: keycloak_database
   - name: KC_DB_URL_PORT

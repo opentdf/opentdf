@@ -1,0 +1,18 @@
+endpoints:
+  attrHost: &attrHost http://opentdf-attributes:4020
+  easHost: *attrHost
+  oidcPubkeyEndpoint: http://keycloak-http
+ingress:
+  enabled: true
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  className: nginx
+  hosts:
+    localhost: &paths
+      "/api/kas(/|$)(.*)":
+        pathType: Prefix
+    host.docker.internal: *paths
+    offline.demo.internal: *paths
+    opentdf.local: *paths
+secretRef:
+  name: opentdf-kas-secrets
