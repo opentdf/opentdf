@@ -16,8 +16,8 @@ min_ctlptl_version("0.7.4")
 EXTERNAL_URL = "http://localhost:65432"
 
 # Versions of things backend to pull (attributes, kas, etc)
-BACKEND_IMAGE_TAG = "main"
-BACKEND_CHART_TAG = "0.0.0-sha-fdb06cc"
+BACKEND_IMAGE_TAG = "sha-03c1bd4"
+BACKEND_CHART_TAG = "0.0.0-sha-03c1bd4"
 FRONTEND_IMAGE_TAG = "main"
 FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
 HELM_VALUES_PATH = "helm/"
@@ -64,7 +64,7 @@ helm_resource(
 )
 
 helm_resource(
-    "postgresql",
+    "opentdf-postgresql",
     "bitnami/postgresql",
     flags=["--version", "10.16.2", "-f", "helm/values-postgresql.yaml"],
     labels="third-party",
@@ -85,7 +85,7 @@ helm_resource(
         "oidc.externalHost=%s/auth" % EXTERNAL_URL,
     ],
     labels="backend",
-    resource_deps=["postgresql"],
+    resource_deps=["opentdf-postgresql"],
 )
 
 helm_resource(
@@ -100,7 +100,7 @@ helm_resource(
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
     labels="backend",
-    resource_deps=["postgresql"],
+    resource_deps=["opentdf-postgresql"],
 )
 
 helm_resource(
@@ -135,15 +135,15 @@ helm_resource(
         "oidc.tokenUrl=%s/auth/realms/tdf/protocol/openid-connect/token" % EXTERNAL_URL,
     ],
     labels="backend",
-    resource_deps=["postgresql"],
+    resource_deps=["opentdf-postgresql"],
 )
 
 helm_resource(
     "keycloak",
-    "codecentric/keycloak",
+    "codecentric/keycloakx",
     flags=[
         "--version",
-        "17.0.1",
+        "1.4.2",
         "-f",
         "helm/values-keycloak.yaml",
         "--set",

@@ -3,7 +3,7 @@ secretRef:
 service:
   port: 5000
 postgres:
-  host: postgresql
+  host: opentdf-postgresql
   port: 5432
   user: tdf_entitlement_reader
   password: bXlQb3N0Z3Jlc1Bhc3N3b3Jk

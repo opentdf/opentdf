@@ -1,4 +1,5 @@
 #  configuration https://github.com/bitnami/charts/tree/master/bitnami/postgresql/#parameters
+fullnameOverride: opentdf-postgresql
 image:
   debug: true
 # The auth block here configures Postgres to use a fixed value
