@@ -9,7 +9,7 @@ EXTERNAL_URL = "http://localhost:65432"
 
 # Versions of things backend to pull (attributes, kas, etc)
 BACKEND_IMAGE_TAG = "sha-5fe60f0"
-BACKEND_CHART_TAG = "0.0.0-sha-5fe60f0"
+BACKEND_CHART_TAG = "1.0.0"
 FRONTEND_IMAGE_TAG = "sha-93bb332"
 FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
 
@@ -128,7 +128,7 @@ helm_resource(
         "-f",
         "helm/values-kas.yaml",
         "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
+        "image.tag=sha-f5bd4ef",
     ],
     labels="backend",
     resource_deps=["attributes", "keycloak"],
