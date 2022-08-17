@@ -8,9 +8,9 @@ min_tilt_version("0.25")
 EXTERNAL_URL = "http://localhost:65432"
 
 # Versions of things backend to pull (attributes, kas, etc)
-BACKEND_IMAGE_TAG = "main"
-BACKEND_CHART_TAG = "0.0.0-sha-e58137b"
-FRONTEND_IMAGE_TAG = "main"
+BACKEND_IMAGE_TAG = "sha-5fe60f0"
+BACKEND_CHART_TAG = "0.0.0-sha-5fe60f0"
+FRONTEND_IMAGE_TAG = "sha-93bb332"
 FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
 
 k8s_yaml(
