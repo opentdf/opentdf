@@ -1,0 +1,1176 @@
+openapi: 3.0.3
+info:
+  title: OpenTDF
+  license:
+    name: BSD 3-Clause Clear
+    url: 'https://github.com/opentdf/backend/blob/main/LICENSE'
+  version: 0.9.0
+  x-logo:
+    url: 'https://avatars.githubusercontent.com/u/90051847?s=200&v=4'
+externalDocs:
+  description: Developer Hub
+  url: 'https://developer.virtru.com/'
+tags:
+  - name: Attributes
+    description: >-
+      Operations to view data attributes. TDF protocol supports ABAC (Attribute
+      Based Access Control). 
+              This allows TDF protocol to implement policy driven and highly scalable access control mechanism.
+  - name: Authorities
+    description: Operations to view and create attribute authorities.
+  - name: Attributes Definitions
+    description: 'Operations to manage the rules and metadata of attributes. '
+  - name: Entitlements
+    description: Operations to manage entitlements entitled to entities.
+paths:
+  /api/attributes/attributes:
+    get:
+      tags:
+        - Attributes
+      summary: Read Attributes
+      operationId: read_attributes_attributes_get
+      parameters:
+        - required: false
+          schema:
+            title: Authority
+            maxLength: 2000
+            minLength: 1
+            type: string
+            format: uri
+          name: authority
+          in: query
+        - required: false
+          schema:
+            title: Name
+            type: string
+          name: name
+          in: query
+        - required: false
+          schema:
+            title: Rule
+            type: string
+          name: rule
+          in: query
+        - required: false
+          schema:
+            title: Order
+            type: string
+          name: order
+          in: query
+        - required: false
+          schema:
+            title: Sort
+            pattern: >-
+              ^(-*((state)|(rule)|(name)|(values_array)),)*-*((state)|(rule)|(name)|(values_array))$
+            type: string
+            default: ''
+          name: sort
+          in: query
+        - required: false
+          schema:
+            title: Offset
+            minimum: 1
+            type: integer
+            default: 1
+          name: offset
+          in: query
+        - required: false
+          schema:
+            title: Limit
+            maximum: 1000
+            minimum: 1
+            type: integer
+            default: 100
+          name: limit
+          in: query
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                title: Response Read Attributes Attributes Get
+                type: array
+                items:
+                  maxLength: 65536
+                  minLength: 1
+                  type: string
+                  format: uri
+              example:
+                - 'https://opentdf.io/attr/IntellectualProperty/value/TradeSecret'
+                - 'https://opentdf.io/attr/ClassificationUS/value/Unclassified'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/attributes/definitions/attributes:
+    get:
+      tags:
+        - Attributes Definitions
+      summary: Read Attributes Definitions
+      operationId: read_attributes_definitions_definitions_attributes_get
+      parameters:
+        - required: false
+          schema:
+            title: Authority
+            maxLength: 2000
+            minLength: 1
+            type: string
+            format: uri
+          name: authority
+          in: query
+        - required: false
+          schema:
+            title: Name
+            type: string
+          name: name
+          in: query
+        - required: false
+          schema:
+            title: Rule
+            type: string
+          name: rule
+          in: query
+        - required: false
+          schema:
+            title: Order
+            type: string
+          name: order
+          in: query
+        - required: false
+          schema:
+            title: Sort
+            pattern: >-
+              ^(-*((id)|(state)|(rule)|(name)|(values_array)),)*-*((id)|(state)|(rule)|(name)|(values_array))$
+            type: string
+            default: ''
+          name: sort
+          in: query
+        - required: false
+          schema:
+            title: Offset
+            minimum: 1
+            type: integer
+            default: 1
+          name: offset
+          in: query
+        - required: false
+          schema:
+            title: Limit
+            maximum: 1000
+            minimum: 1
+            type: integer
+            default: 100
+          name: limit
+          in: query
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                title: >-
+                  Response Read Attributes Definitions Definitions Attributes
+                  Get
+                type: array
+                items:
+                  $ref: '#/components/schemas/AttributeDefinition'
+              example:
+                - authority: 'https://opentdf.io'
+                  name: IntellectualProperty
+                  rule: hierarchy
+                  state: published
+                  order:
+                    - TradeSecret
+                    - Proprietary
+                    - BusinessSensitive
+                    - Open
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2AuthorizationCodeBearer: []
+    put:
+      tags:
+        - Attributes Definitions
+      summary: Update Attribute Definition
+      operationId: update_attribute_definition_definitions_attributes_put
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttributeDefinition'
+            example:
+              authority: 'https://opentdf.io'
+              name: IntellectualProperty
+              rule: hierarchy
+              state: published
+              order:
+                - TradeSecret
+                - Proprietary
+                - BusinessSensitive
+                - Open
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributeDefinition'
+              example:
+                authority: 'https://opentdf.io'
+                name: IntellectualProperty
+                rule: hierarchy
+                state: published
+                order:
+                  - TradeSecret
+                  - Proprietary
+                  - BusinessSensitive
+                  - Open
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2AuthorizationCodeBearer: []
+    post:
+      tags:
+        - Attributes Definitions
+      summary: Create Attributes Definitions
+      operationId: create_attributes_definitions_definitions_attributes_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttributeDefinition'
+            example:
+              authority: 'https://opentdf.io'
+              name: IntellectualProperty
+              rule: hierarchy
+              state: published
+              order:
+                - TradeSecret
+                - Proprietary
+                - BusinessSensitive
+                - Open
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttributeDefinition'
+              example:
+                authority: 'https://opentdf.io'
+                name: IntellectualProperty
+                rule: hierarchy
+                state: published
+                order:
+                  - TradeSecret
+                  - Proprietary
+                  - BusinessSensitive
+                  - Open
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2AuthorizationCodeBearer: []
+    delete:
+      tags:
+        - Attributes Definitions
+      summary: Delete Attributes Definitions
+      operationId: delete_attributes_definitions_definitions_attributes_delete
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttributeDefinition'
+            example:
+              authority: 'https://opentdf.io'
+              name: IntellectualProperty
+              rule: hierarchy
+              state: published
+              order:
+                - TradeSecret
+                - Proprietary
+                - BusinessSensitive
+                - Open
+        required: true
+      responses:
+        '202':
+          description: No Content
+          content:
+            application/json:
+              schema: {}
+              example:
+                detail: Item deleted
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2AuthorizationCodeBearer: []
+  /api/attributes/authorities:
+    get:
+      tags:
+        - Authorities
+      summary: Read Authorities
+      operationId: read_authorities_authorities_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+              example:
+                - 'https://opentdf.io'
+      security:
+        - OAuth2AuthorizationCodeBearer: []
+    post:
+      tags:
+        - Authorities
+      summary: Create Authorities
+      operationId: create_authorities_authorities_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorityDefinition'
+            example:
+              authority: 'https://opentdf.io'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+              example:
+                - 'https://opentdf.io'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2AuthorizationCodeBearer: []
+  /api/entitlements/entitlements:
+    get:
+      tags:
+        - Entitlements
+      summary: Read Entitlements
+      operationId: read_entitlements_entitlements_get
+      parameters:
+        - required: false
+          schema:
+            title: Authority
+            maxLength: 2000
+            minLength: 1
+            type: string
+            format: uri
+          name: authority
+          in: query
+        - required: false
+          schema:
+            title: Name
+            type: string
+          name: name
+          in: query
+        - required: false
+          schema:
+            title: Entityid
+            type: string
+          name: entityId
+          in: query
+        - required: false
+          schema:
+            title: Order
+            type: string
+          name: order
+          in: query
+        - required: false
+          schema:
+            title: Sort
+            pattern: >-
+              ^(-*((id)|(state)|(rule)|(name)|(values)),)*-*((id)|(state)|(rule)|(name)|(values))$
+            type: string
+            default: ''
+          name: sort
+          in: query
+        - required: false
+          schema:
+            title: Offset
+            minimum: 1
+            type: integer
+            default: 1
+          name: offset
+          in: query
+        - required: false
+          schema:
+            title: Limit
+            maximum: 1000
+            minimum: 1
+            type: integer
+            default: 100
+          name: limit
+          in: query
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                title: Response Read Entitlements Entitlements Get
+                type: array
+                items:
+                  $ref: '#/components/schemas/Entitlements'
+              example:
+                123e4567-e89b-12d3-a456-426614174000:
+                  - 'https://opentdf.io/attr/SecurityClearance/value/Unclassified'
+                  - 'https://opentdf.io/attr/OperationalRole/value/Manager'
+                  - 'https://opentdf.io/attr/OperationGroup/value/HR'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2AuthorizationCodeBearer: []
+  '/api/entitlements/entitlements/{entityId}':
+    post:
+      tags:
+        - Entitlements
+      summary: Add Entitlements To Entity
+      operationId: add_entitlements_to_entity_entitlements__entityId__post
+      parameters:
+        - required: true
+          schema:
+            title: Entityid
+            type: string
+          example: tdf-client
+          name: entityId
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Request
+              type: array
+              items:
+                type: string
+            example:
+              - 'https://opentdf.io/attr/IntellectualProperty/value/TradeSecret'
+              - 'https://opentdf.io/attr/ClassificationUS/value/Unclassified'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+              example:
+                - 'https://opentdf.io/attr/IntellectualProperty/value/TradeSecret'
+                - 'https://opentdf.io/attr/ClassificationUS/value/Unclassified'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2AuthorizationCodeBearer: []
+    delete:
+      tags:
+        - Entitlements
+      summary: Remove Entitlement From Entity
+      operationId: remove_entitlement_from_entity_entitlements__entityId__delete
+      parameters:
+        - required: true
+          schema:
+            title: Entityid
+            type: string
+          example: tdf-client
+          name: entityId
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              title: Request
+              type: array
+              items:
+                type: string
+            example:
+              - 'https://opentdf.io/attr/IntellectualProperty/value/TradeSecret'
+              - 'https://opentdf.io/attr/ClassificationUS/value/Unclassified'
+        required: true
+      responses:
+        '202':
+          description: No Content
+          content:
+            application/json:
+              schema: {}
+              example:
+                detail: Item deleted
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2AuthorizationCodeBearer: []
+  /api/kas/:
+    get:
+      summary: Get the current version
+      description: |
+        This endpoint is for OPS so they have something to ping on to verify
+        that the server hasn't died.
+      operationId: tdf3_kas_core.web.heartbeat.ping
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: 0.0.0
+  /api/kas/healthz:
+    get:
+      tags:
+        - heartbeat
+      summary: Return current version as semver; useful for liveness checks
+      operationId: tdf3_kas_core.web.heartbeat.healthz
+      parameters:
+        - name: probe
+          description: liveness or readiness
+          in: query
+          schema:
+            default: liveness
+            enum:
+              - liveness
+              - readiness
+            type: string
+      responses:
+        '200':
+          description: Success with a detail message
+        '204':
+          description: Success with no detail message
+        '500':
+          description: 'Unhealthy, per the requested probe'
+  /api/kas/kas_public_key:
+    get:
+      summary: Get the public key for KAS
+      deprecated: true
+      description: |
+        This endpoint provides a public key for the private key that the
+        kas has internally. The public key is used to wrap object keys in
+        the TDF3 or NanoTDF files.
+      operationId: tdf3_kas_core.web.public_key.get
+      parameters:
+        - name: algorithm
+          description: 'algorithm type rsa:<keysize> or ec:<curvename>'
+          in: query
+          schema:
+            default: 'rsa:2048'
+            type: string
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicKey'
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyNotFoundError'
+  /api/kas/rewrap:
+    post:
+      summary: Request a rewrap
+      description: |
+        This endpoint performs the primary service of the KAS; to re-wrap
+        data keys as needed to provide access for entities with a TDF that they
+        would like to open.
+      operationId: tdf3_kas_core.web.rewrap.rewrap
+      requestBody:
+        $ref: '#/components/requestBodies/Rewrap'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metadata:
+                    type: object
+                    default: {}
+                  kasWrappedKey:
+                    type: string
+                    nullable: true
+                  entityWrappedKey:
+                    type: string
+                    nullable: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AdjudicatorError'
+                  - $ref: '#/components/schemas/AuthorizationError'
+                  - $ref: '#/components/schemas/EntityError'
+                  - $ref: '#/components/schemas/KeyAccessError'
+                  - $ref: '#/components/schemas/KeyNotFoundError'
+                  - $ref: '#/components/schemas/PluginFailedError'
+                  - $ref: '#/components/schemas/PolicyError'
+  /api/kas/v2/rewrap:
+    post:
+      summary: Request a rewrap
+      description: |
+        This endpoint performs the primary service of the KAS; to re-wrap
+        data keys as needed to provide access for entities with a TDF that they
+        would like to open.
+      operationId: tdf3_kas_core.web.rewrap.rewrap_v2
+      requestBody:
+        $ref: '#/components/requestBodies/RewrapV2'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metadata:
+                    type: object
+                    default: {}
+                  kasWrappedKey:
+                    type: string
+                    nullable: true
+                  entityWrappedKey:
+                    type: string
+                    nullable: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AdjudicatorError'
+                  - $ref: '#/components/schemas/AuthorizationError'
+                  - $ref: '#/components/schemas/EntityError'
+                  - $ref: '#/components/schemas/KeyAccessError'
+                  - $ref: '#/components/schemas/KeyNotFoundError'
+                  - $ref: '#/components/schemas/PluginFailedError'
+                  - $ref: '#/components/schemas/PolicyError'
+  /api/kas/upsert:
+    post:
+      summary: Request a upsert
+      description: |
+        The upsert service is a proxy to the back-end services that persist
+        policies and keys.
+      operationId: tdf3_kas_core.web.upsert.upsert
+      requestBody:
+        $ref: '#/components/requestBodies/Upsert'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                default: []
+                items: {}
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AuthorizationError'
+                  - $ref: '#/components/schemas/EntityError'
+                  - $ref: '#/components/schemas/KeyAccessError'
+                  - $ref: '#/components/schemas/KeyNotFoundError'
+                  - $ref: '#/components/schemas/PluginFailedError'
+                  - $ref: '#/components/schemas/PolicyError'
+  /api/kas/v2/upsert:
+    post:
+      summary: Request a upsert
+      description: |
+        The upsert service is a proxy to the back-end services that persist
+        policies and keys.
+      operationId: tdf3_kas_core.web.upsert.upsert_v2
+      requestBody:
+        $ref: '#/components/requestBodies/UpsertV2'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                default: []
+                items: {}
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/AuthorizationError'
+                  - $ref: '#/components/schemas/EntityError'
+                  - $ref: '#/components/schemas/KeyAccessError'
+                  - $ref: '#/components/schemas/KeyNotFoundError'
+                  - $ref: '#/components/schemas/PluginFailedError'
+                  - $ref: '#/components/schemas/PolicyError'
+components:
+  schemas:
+    AttributeDefinition:
+      title: AttributeDefinition
+      required:
+        - authority
+        - name
+        - order
+        - rule
+      type: object
+      properties:
+        authority:
+          title: Authority
+          maxLength: 2000
+          minLength: 1
+          type: string
+          format: uri
+        name:
+          title: Name
+          maxLength: 2000
+          type: string
+        order:
+          title: Order
+          maxLength: 2000
+          type: array
+          items:
+            maxLength: 2000
+            type: string
+        rule:
+          $ref: '#/components/schemas/RuleEnum'
+        state:
+          title: State
+          maxLength: 64
+          type: string
+      example:
+        authority: 'https://opentdf.io'
+        name: IntellectualProperty
+        rule: hierarchy
+        state: published
+        order:
+          - TradeSecret
+          - Proprietary
+          - BusinessSensitive
+          - Open
+    AuthorityDefinition:
+      title: AuthorityDefinition
+      required:
+        - authority
+      type: object
+      properties:
+        authority:
+          title: Authority
+          maxLength: 2000
+          minLength: 1
+          type: string
+          format: uri
+    HTTPValidationError:
+      title: HTTPValidationError
+      type: object
+      properties:
+        detail:
+          title: Detail
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+    RuleEnum:
+      title: RuleEnum
+      enum:
+        - hierarchy
+        - anyOf
+        - allOf
+      type: string
+      description: An enumeration.
+    ValidationError:
+      title: ValidationError
+      required:
+        - loc
+        - msg
+        - type
+      type: object
+      properties:
+        loc:
+          title: Location
+          type: array
+          items:
+            type: string
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+    Entitlements:
+      title: Entitlements
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          type: string
+      example:
+        123e4567-e89b-12d3-a456-426614174000:
+          - 'https://opentdf.io/attr/SecurityClearance/value/Unclassified'
+          - 'https://opentdf.io/attr/OperationalRole/value/Manager'
+          - 'https://opentdf.io/attr/OperationGroup/value/HR'
+    Algorithm:
+      title: The algorithm used to encrypt the ciphertext
+      type: string
+      enum:
+        - AES-256-GCM
+    Aliases:
+      title: Array of userIds
+      type: array
+      items:
+        $ref: '#/components/schemas/UserId'
+    AuthToken:
+      $ref: '#/components/schemas/JWT'
+    Cert:
+      title: Entity certificate
+      type: string
+    Ciphertext:
+      title: Encrypted object
+      type: string
+    EncryptedMetadata:
+      title: Metadata in encrypted format
+      type: string
+    Entity:
+      description: Entity object
+      type: object
+      required:
+        - cert
+        - publicKey
+        - userId
+      maxProperties: 6
+      properties:
+        aliases:
+          $ref: '#/components/schemas/Aliases'
+        attributes:
+          $ref: '#/components/schemas/EntityAttributes'
+        cert:
+          $ref: '#/components/schemas/Cert'
+        exp:
+          $ref: '#/components/schemas/Exp'
+        publicKey:
+          $ref: '#/components/schemas/PublicKey'
+        userId:
+          $ref: '#/components/schemas/UserId'
+    EntityAttribute:
+      title: Entity attribute
+      required:
+        - jwt
+      properties:
+        jwt:
+          $ref: '#/components/schemas/JWT'
+    EntityAttributes:
+      title: Entity attributes
+      type: array
+      items:
+        $ref: '#/components/schemas/EntityAttribute'
+    Exp:
+      title: JWT expiration date
+      type: number
+    IV:
+      title: Initial vector used to encrypt the ciphertext
+      type: string
+    JWT:
+      title: JSON Web token
+      type: string
+      pattern: '^[a-zA-Z0-9\-_]+?\.[a-zA-Z0-9\-_]+?\.([a-zA-Z0-9\-_]+)?$'
+    KeyAccess:
+      title: Key access object
+      type: object
+      required:
+        - type
+        - url
+        - protocol
+      properties:
+        encryptedMetadata:
+          $ref: '#/components/schemas/EncryptedMetadata'
+        policySyncOptions:
+          $ref: '#/components/schemas/Policy'
+        policyBinding:
+          $ref: '#/components/schemas/PolicyBinding'
+        protocol:
+          type: string
+          enum:
+            - kas
+        type:
+          type: string
+          enum:
+            - remote
+            - remoteWrapped
+            - wrapped
+        url:
+          type: string
+        wrappedKey:
+          $ref: '#/components/schemas/WrappedKey'
+    Policy:
+      title: Policy
+      type: string
+    PolicyBinding:
+      title: Policy binding
+      type: string
+    PolicySyncOptions:
+      title: Policy sync options
+      type: object
+      properties:
+        url:
+          type: string
+    PublicKey:
+      title: Public key
+      type: string
+      pattern: '-----BEGIN PUBLIC KEY-----(.|\s)*-----END PUBLIC KEY-----(\s)*'
+    UserId:
+      title: User id
+      type: string
+    WrappedKey:
+      title: Wrapped key
+      type: string
+    TDF_Algorithm:
+      description: >-
+        String to define the type of algorithm the client performing the TDF
+        operations.
+      type: string
+      example: 'ec:secp256r1'
+    AttributePolicyConfigError:
+      title: Attribute policy config error (500)
+      type: string
+    AdjudicatorError:
+      title: Adjudicator error (403)
+      type: string
+    AuthorizationError:
+      title: Authorization error (403)
+      type: string
+    CryptoError:
+      title: Crypto error (403)
+      type: string
+    EntityError:
+      title: Entity error (400)
+      type: string
+    InvalidBindingError:
+      title: Invalid binding error (403)
+      type: string
+    JWTError:
+      title: JWT error (403)
+      type: string
+    KeyAccessError:
+      title: Key access error (403)
+      type: string
+    KeyNotFoundError:
+      title: Key not found error (403)
+      type: string
+    PluginFailedError:
+      title: Plugin failed error (403)
+      type: string
+    PluginIsBadError:
+      title: Plugin is bad error (403)
+      type: string
+    PolicyError:
+      title: Policy error (403)
+      type: string
+    PrivateKeyInvalidError:
+      title: Private key invalid error (403)
+      type: string
+    RequestError:
+      title: Invalid binding error (403)
+      type: string
+    ValidationError1:
+      title: Validation error (400)
+      type: string
+    UnknownAttributePolicyError:
+      title: Unknown attribute policy error (403)
+      type: string
+    RequestTimeoutError:
+      title: Request timeout error (503)
+      type: string
+    PolicyNotFoundError:
+      title: Policy not found error (404)
+      type: string
+    ContractNotFoundError:
+      title: Contract not found error (404)
+      type: string
+    PolicyCreateError:
+      title: Policy create error (403)
+      type: string
+  securitySchemes:
+    OAuth2AuthorizationCodeBearer:
+      type: oauth2
+      flows:
+        authorizationCode:
+          scopes: {}
+          authorizationUrl: ''
+          tokenUrl: ''
+  responses:
+    BadRequest:
+      description: 400 Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              detail:
+                type: string
+              status:
+                type: number
+                default: 400
+              title:
+                type: string
+                default: Bad request
+              type:
+                type: string
+                default: 'about:blank'
+    NotFound:
+      description: 404 Not found
+      content:
+        application/json:
+          schema:
+            type: string
+    ServerError:
+      description: Server error
+    PublicKey:
+      description: Public key response
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PublicKey'
+    Version:
+      description: Respond with current version
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              version:
+                type: string
+                example: 0.0.0
+  requestBodies:
+    Rewrap:
+      description: Rewrap request body
+      required: true
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: object
+                required:
+                  - authToken
+                  - entity
+                  - keyAccess
+                maxProperties: 5
+                properties:
+                  authToken:
+                    $ref: '#/components/schemas/AuthToken'
+                  entity:
+                    $ref: '#/components/schemas/Entity'
+                  keyAccess:
+                    $ref: '#/components/schemas/KeyAccess'
+                  policy:
+                    $ref: '#/components/schemas/Policy'
+                  algorithm:
+                    $ref: '#/components/schemas/TDF_Algorithm'
+              - type: object
+                required:
+                  - signedRequestToken
+                maxProperties: 1
+                properties:
+                  signedRequestToken:
+                    $ref: '#/components/schemas/JWT'
+    RewrapV2:
+      description: RewrapV2 request body
+      required: true
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: object
+                required:
+                  - signedRequestToken
+                maxProperties: 1
+                properties:
+                  signedRequestToken:
+                    $ref: '#/components/schemas/JWT'
+    Upsert:
+      description: Upsert request body
+      required: true
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: object
+                required:
+                  - authToken
+                  - entity
+                  - keyAccess
+                  - policy
+                maxProperties: 4
+                properties:
+                  authToken:
+                    $ref: '#/components/schemas/AuthToken'
+                  entity:
+                    $ref: '#/components/schemas/Entity'
+                  keyAccess:
+                    $ref: '#/components/schemas/KeyAccess'
+                  policy:
+                    $ref: '#/components/schemas/Policy'
+              - type: object
+                required:
+                  - signedRequestToken
+    UpsertV2:
+      description: Upsert request body
+      required: true
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: object
+                required:
+                  - signedRequestToken
+                maxProperties: 1
+                properties:
+                  signedRequestToken:
+                    $ref: '#/components/schemas/JWT'

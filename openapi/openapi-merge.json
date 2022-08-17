@@ -1,0 +1,23 @@
+{
+    "inputs": [
+      {
+        "inputFile": "../../backend/containers/attributes/openapi.yaml",
+        "pathModification": {
+            "prepend": "/api/attributes"
+        }
+      },
+      {
+        "inputFile": "../../backend/containers/entitlements/openapi.yaml",
+        "pathModification": {
+            "prepend": "/api/entitlements"
+        }
+      },
+      {
+        "inputFile": "../../backend/containers/kas/kas_core/tdf3_kas_core/api/openapi.yaml",
+        "pathModification": {
+            "prepend": "/api/kas"
+        }
+      }
+    ], 
+    "output": "./openapi-aggregate.yaml"
+  }
