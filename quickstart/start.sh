@@ -133,7 +133,7 @@ if [[ $LOAD_SECRETS ]]; then
   for service in "${services[@]}"; do
     case "$service" in
       attributes)
-        monolog TRACE "Creating 'opentdf-attributes-secrets'..."
+        monolog TRACE "Creating 'attributes-secrets'..."
         kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
         ;;
       claims)
@@ -141,17 +141,17 @@ if [[ $LOAD_SECRETS ]]; then
         kubectl create secret generic claims-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create claims secrets failed"
         ;;
       entitlement-store)
-        monolog TRACE "Creating 'opentdf-entitlement-store-secrets'..."
-        kubectl create secret generic opentdf-entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ent-store secrets failed"
+        monolog TRACE "Creating 'entitlement-store-secrets'..."
+        kubectl create secret generic entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ent-store secrets failed"
         ;;
       entitlement-pdp)
-        monolog TRACE "Creating 'opentdf-entitlement-pdp-secret'..."
+        monolog TRACE "Creating 'entitlement-pdp-secret'..."
         # If CR_PAT is undefined and the entitlement-pdp chart is configured to use the policy bundle baked in at container build time, this isn't used and can be empty
-        kubectl create secret generic opentdf-entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}" || e "create ent-pdp secrets failed"
+        kubectl create secret generic entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}" || e "create ent-pdp secrets failed"
         ;;
       entitlements)
-        monolog TRACE "Creating 'opentdf-entitlements-secrets'..."
-        kubectl create secret generic opentdf-entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
+        monolog TRACE "Creating 'entitlements-secrets'..."
+        kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
         ;;
       kas)
         monolog TRACE "Creating 'kas-secrets'..."

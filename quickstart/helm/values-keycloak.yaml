@@ -8,7 +8,7 @@ postgresql:
   postgresqlPassword: mydbapassword
   postgresqlDatabase: keycloak_database
 externalDatabase:
-  host: opentdf-postgresql
+  host: postgresql
   user: postgres
   password: mydbapassword
   database: keycloak_database

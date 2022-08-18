@@ -286,5 +286,5 @@ hard-coded value in keycloak-bootstrap?
 Database connection issue
 
 ```angular2html
-pg_isready --dbname=tdf_database --host=opentdf-postgresql --port=5432 --username=postgres
+pg_isready --dbname=tdf_database --host=postgresql --port=5432 --username=postgres
 ```

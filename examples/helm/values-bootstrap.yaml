@@ -239,7 +239,7 @@ keycloak:
       - view-users
 
 attributes:
-  hostname: http://opentdf-attributes:4020
+  hostname: http://attributes:4020
   realm: tdf
   clientId: bootstrap-client
   username: ted
@@ -265,7 +265,7 @@ attributes:
     - All
 
 entitlements:
-  hostname: http://opentdf-entitlements:4030
+  hostname: http://entitlements:4030
   realms:
   - name: tdf
     clientId: bootstrap-client
