@@ -79,7 +79,7 @@ suffix="${today}-${digest}"
 : "${FRONTEND_CHART_TAG:="0.0.0-sha-93bb332"}"
 
 # TODO(PLAT-1417) add 'storage' once published to ghcr.io
-services=(abacus attributes claims entitlements kas keycloak-bootstrap keycloak-bootstrap)
+services=(abacus attributes claims entitlements kas keycloak keycloak-bootstrap)
 chart_tags=("${FRONTEND_CHART_TAG}" "${BACKEND_CHART_TAG}"{,,,,,})
 image_tags=("${FRONTEND_IMAGE_TAG}" "${BACKEND_IMAGE_TAG}"{,,,,,})
 
