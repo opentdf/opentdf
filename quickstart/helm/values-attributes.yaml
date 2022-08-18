@@ -1,8 +1,6 @@
 logLevel: DEBUG
-serverRootPath: /api/attributes
-openapiUrl: /openapi
+serverRootPath: /attributes
 serverPublicName: "Attribute Authority"
-serverCorsOrigins: "*"
 oidc:
   clientId: tdf-attributes
   externalHost: http://offline.demo.internal/auth
@@ -26,4 +24,4 @@ postgres:
   database: tdf_database
   schema: tdf_attribute
 secretRef:
-  name: opentdf-attributes-secrets
+  name: attributes-secrets

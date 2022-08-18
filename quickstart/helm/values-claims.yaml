@@ -1,5 +1,5 @@
 secretRef:
-  name: opentdf-entitlement-store-secrets
+  name: claims-secrets
 service:
   port: 5000
 postgres:

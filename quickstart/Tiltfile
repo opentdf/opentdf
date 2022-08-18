@@ -16,14 +16,14 @@ min_ctlptl_version("0.7.4")
 EXTERNAL_URL = "http://localhost:65432"
 
 # Versions of things backend to pull (attributes, kas, etc)
-BACKEND_IMAGE_TAG = "main"
-BACKEND_CHART_TAG = "0.0.0-sha-fdb06cc"
-FRONTEND_IMAGE_TAG = "main"
+# These should be updated (as well as any values files and new services added)
+# upon releases to opentdf/backend or opentdf/frontend.
+BACKEND_IMAGE_TAG = "sha-5fe60f0"
+BACKEND_CHART_TAG = "1.0.0"
+FRONTEND_IMAGE_TAG = "sha-93bb332"
 FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
-HELM_VALUES_PATH = "helm/"
-# Where helm values for quickstart
-if "HELM_VALUES_PATH" in os.environ:
-    HELM_VALUES_PATH = os.getenv("HELM_VALUES_PATH")
+
+HELM_VALUES_PATH = os.getenv("HELM_VALUES_PATH", "helm")
 
 k8s_yaml(
     helm(
@@ -72,7 +72,7 @@ helm_resource(
 )
 
 helm_resource(
-    "opentdf-attributes",
+    "attributes",
     "oci://ghcr.io/opentdf/charts/attributes",
     flags=[
         "--version",
@@ -89,13 +89,13 @@ helm_resource(
 )
 
 helm_resource(
-    "opentdf-entitlement-store",
-    "oci://ghcr.io/opentdf/charts/entitlement-store",
+    "claims",
+    "oci://ghcr.io/opentdf/charts/claims",
     flags=[
         "--version",
         BACKEND_CHART_TAG,
         "-f",
-        "helm/values-entitlement-store.yaml",
+        "helm/values-claims.yaml",
         "--set",
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
@@ -104,22 +104,7 @@ helm_resource(
 )
 
 helm_resource(
-    "opentdf-entitlement-pdp",
-    "oci://ghcr.io/opentdf/charts/entitlement-pdp",
-    flags=[
-        "--version",
-        BACKEND_CHART_TAG,
-        "-f",
-        "helm/values-entitlement-pdp.yaml",
-        "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
-    ],
-    labels="backend",
-    resource_deps=["opentdf-entitlement-store"],
-)
-
-helm_resource(
-    "opentdf-entitlements",
+    "entitlements",
     "oci://ghcr.io/opentdf/charts/entitlements",
     flags=[
         "--version",
@@ -141,20 +126,13 @@ helm_resource(
 helm_resource(
     "keycloak",
     "codecentric/keycloak",
-    flags=[
-        "--version",
-        "17.0.1",
-        "-f",
-        "helm/values-keycloak.yaml",
-        "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
-    ],
+    flags=["--version", "17.0.1", "-f", "helm/values-keycloak.yaml"],
     labels="third-party",
-    resource_deps=["opentdf-entitlement-pdp", "codecentric"],
+    resource_deps=["claims", "codecentric"],
 )
 
 helm_resource(
-    "opentdf-kas",
+    "kas",
     "oci://ghcr.io/opentdf/charts/kas",
     flags=[
         "--version",
@@ -162,10 +140,10 @@ helm_resource(
         "-f",
         "helm/values-kas.yaml",
         "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
+        "image.tag=sha-f5bd4ef",
     ],
     labels="backend",
-    resource_deps=["opentdf-attributes", "keycloak"],
+    resource_deps=["attributes", "keycloak"],
 )
 
 # ability to disable the quickstart defaults
@@ -184,18 +162,18 @@ if not os.environ.get("QUICKSTART_BOOTSTRAP_DISABLED"):
             "image.tag=%s" % BACKEND_IMAGE_TAG,
         ],
         labels="utility",
-        resource_deps=["opentdf-attributes", "opentdf-entitlements", "keycloak"],
+        resource_deps=["attributes", "entitlements", "keycloak"],
     )
 
 
 helm_resource(
-    "opentdf-abacus",
+    "abacus",
     "oci://ghcr.io/opentdf/charts/abacus",
     flags=[
         "--version",
         FRONTEND_CHART_TAG,
         "-f",
-        "%svalues-abacus.yaml" % HELM_VALUES_PATH,
+        "%s/values-abacus.yaml" % HELM_VALUES_PATH,
         "--set",
         "attributes.serverUrl=%s/api/attributes" % EXTERNAL_URL,
         "--set",
@@ -216,5 +194,5 @@ if "TEST_SCRIPT" in os.environ and os.environ.get("CI"):
         "passed-in-test-script",
         os.environ.get("TEST_SCRIPT"),
         labels="tests",
-        resource_deps=["ingress-nginx", "opentdf-kas", "keycloak-bootstrap"],
+        resource_deps=["ingress-nginx", "kas", "keycloak-bootstrap"],
     )
