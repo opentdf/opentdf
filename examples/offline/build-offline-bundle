@@ -79,9 +79,9 @@ suffix="${today}-${digest}"
 : "${FRONTEND_CHART_TAG:="0.0.0-sha-93bb332"}"
 
 # TODO(PLAT-1417) add 'storage' once published to ghcr.io
-services=(abacus attributes claims entitlements kas)
-chart_tags=("${FRONTEND_CHART_TAG}" "${BACKEND_CHART_TAG}"{,,,})
-image_tags=("${FRONTEND_IMAGE_TAG}" "${BACKEND_IMAGE_TAG}"{,,,})
+services=(abacus attributes claims entitlements kas keycloak-bootstrap keycloak-bootstrap)
+chart_tags=("${FRONTEND_CHART_TAG}" "${BACKEND_CHART_TAG}"{,,,,,})
+image_tags=("${FRONTEND_IMAGE_TAG}" "${BACKEND_IMAGE_TAG}"{,,,,,})
 
 OUT_DIR="${OUTPUT_DIRECTORY}/bundle"
 
@@ -192,7 +192,9 @@ for index in "${!services[@]}"; do
   x="${services[$index]}"
   i="oci://ghcr.io/opentdf/charts/${x}"
   tag="${chart_tags[$index]}"
-  if ! helm pull "${i}" --version "${tag}" --destination "${OUT_DIR}/charts"; then
+  if [[ keycloak == "$x" ]]; then
+    : # third party chart; skipping...
+  elif ! helm pull "${i}" --version "${tag}" --destination "${OUT_DIR}/charts"; then
     monolog ERROR "Failed to [helm pull ${i} --version $tag]"
     exit 1
   fi
