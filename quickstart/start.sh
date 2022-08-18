@@ -132,21 +132,14 @@ if [[ $LOAD_SECRETS ]]; then
 
   for service in "${services[@]}"; do
     case "$service" in
-      kas)
-        monolog TRACE "Creating 'kas-secrets'..."
-        kubectl create secret generic kas-secrets \
-          "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
-          "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
-          "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
-          "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
-          "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt" || e "create kas-secrets failed"
-        ;;
       attributes)
         monolog TRACE "Creating 'opentdf-attributes-secrets'..."
         kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
         ;;
-      claims) ;;
-
+      claims)
+        monolog TRACE "Creating 'claims-secrets'..."
+        kubectl create secret generic claims-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create claims secrets failed"
+        ;;
       entitlement-store)
         monolog TRACE "Creating 'opentdf-entitlement-store-secrets'..."
         kubectl create secret generic opentdf-entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ent-store secrets failed"
@@ -160,6 +153,15 @@ if [[ $LOAD_SECRETS ]]; then
         monolog TRACE "Creating 'opentdf-entitlements-secrets'..."
         kubectl create secret generic opentdf-entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
         ;;
+      kas)
+        monolog TRACE "Creating 'kas-secrets'..."
+        kubectl create secret generic kas-secrets \
+          "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
+          "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
+          "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
+          "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
+          "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt" || e "create kas-secrets failed"
+        ;;
       keycloak)
         monolog TRACE "Creating 'keycloak-secrets'..."
         kubectl create secret generic keycloak-secrets \
@@ -168,8 +170,11 @@ if [[ $LOAD_SECRETS ]]; then
           --from-literal=KEYCLOAK_USER=keycloakadmin \
           --from-literal=KEYCLOAK_PASSWORD=mykeycloakpassword
         ;;
+      abacus | keycloak-bootstrap)
+        # Service without its own secrets
+        ;;
       *)
-        exit 1
+        e "Failed due to unknown service [$service]"
         ;;
     esac
   done
