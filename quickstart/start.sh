@@ -32,7 +32,7 @@ REWRITE_HOSTNAME=1
 
 # NOTE: 1.0.0 default values. When releasing a new version, move these below to
 # the api-version selector and update the default.
-services=(abacus attributes claims entitlements kas)
+services=(abacus attributes claims entitlements kas keycloak)
 chart_tags=(0.0.0-sha-fe676f4 0.0.0-sha-0b804dd{,,,})
 
 while [[ $# -gt 0 ]]; do
@@ -81,12 +81,22 @@ while [[ $# -gt 0 ]]; do
       RUN_OFFLINE=1
       ;;
     *)
-      e "Unrecognized options: $*"
+      e "Unrecognized option: [$key]"
       ;;
   esac
 done
 
 : "${INGRESS_HOSTNAME:=$([[ $REWRITE_HOSTNAME ]] && hostname | tr '[:upper:]' '[:lower:]')}"
+
+wait_for_pod() {
+  pod="$1"
+
+  monolog INFO "Waiting until $1 is ready"
+  while [[ $(kubectl get pods "${pod}" -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+    echo "waiting for ${pod}..."
+    sleep 5
+  done
+}
 
 if [[ ! $RUN_OFFLINE ]]; then
   INGRESS_HOSTNAME=
@@ -121,7 +131,11 @@ if [[ $LOAD_IMAGES ]]; then
   # Cache locally-built `latest` images, bypassing registry.
   # If this fails, try running 'docker-compose build' in the repo root
   for s in "${services[@]}"; do
-    maybe_load "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}"
+    if [[ "$s" == keycloak && ! $USE_KEYCLOAK ]]; then
+      : # Skip loading keycloak in this case
+    else
+      maybe_load "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}"
+    fi
   done
 else
   monolog DEBUG "Skipping loading of locally built service images"
@@ -201,34 +215,19 @@ if [[ $INIT_POSTGRES ]]; then
   else
     helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" || e "Unable to helm upgrade postgresql"
   fi
-  monolog INFO "Waiting until postgresql is ready"
-
-  while [[ $(kubectl get pods postgresql-postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
-    echo "waiting for postgres..."
-    sleep 5
-  done
+  wait_for_pod postgresql-postgresql-0
 fi
 
 # Only do this if we were told to disable Keycloak
 # This should be removed eventually, as Keycloak isn't going away
 if [[ $USE_KEYCLOAK ]]; then
-  if [[ $LOAD_IMAGES ]]; then
-    monolog INFO "Caching locally-built development opentdf Keycloak in dev cluster"
-    maybe_load ghcr.io/opentdf/keycloak:${SERVICE_IMAGE_TAG}
-  fi
-
   monolog INFO --- "Installing Virtru-ified Keycloak"
   if [[ $RUN_OFFLINE ]]; then
     helm upgrade --install keycloak "${CHART_ROOT}"/keycloak-17.0.1.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade keycloak"
   else
     helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloak -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade keycloak"
   fi
-  monolog INFO "Waiting until Keycloak server is ready"
-
-  while [[ $(kubectl get pods keycloak-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
-    echo "waiting for keycloak..."
-    sleep 5
-  done
+  wait_for_pod keycloak-0
 fi
 
 if [[ $INIT_NGINX_CONTROLLER ]]; then
@@ -266,7 +265,11 @@ load-chart() {
 if [[ $INIT_OPENTDF ]]; then
   monolog INFO --- "OpenTDF charts"
   for index in "${!services[@]}"; do
-    load-chart "${services[$index]}" "${services[$index]}" "${chart_tags[$index]}"
+    if [[ "$s" == keycloak ]]; then
+      : # Keycloak already loaded above in the use_keycloak block
+    else
+      load-chart "${services[$index]}" "${services[$index]}" "${chart_tags[$index]}"
+    fi
   done
 fi
 

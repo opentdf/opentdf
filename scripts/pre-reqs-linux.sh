@@ -29,7 +29,7 @@ if [[ $# -gt 0 ]]; then
         stuff+=("$item")
         ;;
       *)
-        e "Unrecognized options: [$*]"
+        e "Unrecognized options: [$item $*]"
         ;;
     esac
   done
@@ -208,7 +208,7 @@ for item in "${stuff[@]}"; do
       i_jq
       ;;
     *)
-      e "Unrecognized options: [$*]"
+      e "Unrecognized option: [$item]"
       ;;
   esac
 done
