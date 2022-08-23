@@ -87,10 +87,11 @@ jobs:
         run: |-
           kubectl version
           kubectl get pods -A
+      - name: Update helm chart dependencies
+        run: helm dependency build ./charts
       - env:
-          TEST_SCRIPT: tests/wait-and-test.sh
+          TEST_SCRIPT: quickstart/tests/wait-and-test.sh
         run: tilt ci
-        working-directory: quickstart
 
   offline-start-test:
     runs-on: ubuntu-latest

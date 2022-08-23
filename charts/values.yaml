@@ -1,0 +1,179 @@
+attributes:
+  serverRootPath: /attributes
+  serverPublicName: "Attribute Authority"
+  oidc:
+    clientId: tdf-attributes
+    externalHost: http://offline.demo.internal/auth
+    internalHost: http://keycloak-http/auth
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    className: nginx
+    hosts:
+      localhost: &paths
+        "/api/attributes(/|$)(.*)":
+          pathType: Prefix
+      host.docker.internal: *paths
+      offline.demo.internal: *paths
+      opentdf.local: *paths
+  postgres:
+    host: postgresql
+    port: 5432
+    user: tdf_attribute_manager
+    database: tdf_database
+    schema: tdf_attribute
+  secretRef:
+    name: opentdf-attributes-secrets
+
+abacus:
+  attributes:
+    serverUrl: http://offline.demo.internal/api/attributes
+  basePath: ""
+  entitlements:
+    serverUrl: http://offline.demo.internal/api/entitlements
+  oidc:
+    serverUrl: http://offline.demo.internal/auth/
+    clientId: dcr-test
+    queryRealms: tdf
+  ingress:
+    enabled: true
+    class: nginx
+    hosts:
+      - host: localhost
+        paths: &paths
+          - path: /
+            pathType: Prefix
+      - host: host.docker.internal
+        paths: *paths
+      - host: offline.demo.internal
+        paths: *paths
+      - host: opentdf.local
+        paths: *paths
+
+keycloak-bootstrap:
+  keycloak:
+    hostname: http://keycloak-http
+    username: keycloakadmin
+    password: mykeycloakpassword
+    clientId: tdf-client
+    clientSecret: 123-456
+    realm: tdf
+
+  attributes:
+    hostname: http://opentdf-attributes:4020
+    realm: tdf
+    clientId: dcr-test
+    username: user1
+    password: testuser123
+    preloadedAuthorities: null
+    preloadedAttributes: null
+
+  entitlements:
+    hostname: http://opentdf-entitlements:4030
+    realms:
+    - name: tdf
+      clientId: dcr-test
+      username: user1
+      password: testuser123
+      preloadedClaims:
+        alice_1234:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRD
+        bob_1234:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRC
+        browsertest:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRA
+        client_x509:
+          - https://example.com/attr/Classification/value/S
+          - https://example.com/attr/COI/value/PRX
+        dcr-test:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRF
+        service-account-tdf-client:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRB
+        tdf-client:
+          - https://example.com/attr/Classification/value/S
+          - https://example.com/attr/COI/value/PRX
+          - https://example.com/attr/Env/value/CleanRoom
+        tdf-user:
+          - https://example.com/attr/Classification/value/C
+          - https://example.com/attr/COI/value/PRX
+        user1:
+          - https://example.com/attr/Classification/value/S
+          - https://example.com/attr/COI/value/PRX
+
+  externalUrl: http://localhost:65432
+
+  job:
+    backoffLimit: 3
+
+entitlement-store:
+  secretRef:
+    name: opentdf-entitlement-store-secrets
+  service:
+    port: 5000
+  postgres:
+    host: postgresql
+    port: 5432
+    user: tdf_entitlement_reader
+    password: bXlQb3N0Z3Jlc1Bhc3N3b3Jk
+    database: tdf_database
+    schema: tdf_entitlement
+
+entitlements:
+  rootPath: /entitlements
+  publicName: "Entitlement"
+  logLevel: DEBUG
+  postgres:
+    host: postgresql
+    port: 5432
+    user: tdf_entitlement_manager
+    password: bXlQb3N0Z3Jlc1Bhc3N3b3Jk
+    database: tdf_database
+    schema: tdf_entitlement
+  oidc:
+    clientId: tdf-entitlement
+    clientSecret: myclientsecret
+    realm: tdf
+    #    trailing / is required
+    serverUrl: http://keycloak-http/auth/
+    configurationUrl: http://keycloak-http/auth/realms/tdf/.well-known/openid-configuration
+    authorizationUrl: http://offline.demo.internal/auth/realms/tdf/protocol/openid-connect/auth
+    tokenUrl: http://offline.demo.internal/auth/realms/tdf/protocol/openid-connect/token
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    className: nginx
+    hosts:
+      localhost: &paths
+        "/api/entitlements(/|$)(.*)":
+          pathType: Prefix
+      host.docker.internal: *paths
+      offline.demo.internal: *paths
+      opentdf.local: *paths
+  secretRef:
+    name: opentdf-entitlements-secrets
+
+kas:
+  endpoints:
+    attrHost: http://opentdf-attributes:4020
+    oidcPubkeyEndpoint: http://keycloak-http
+  ingress:
+    enabled: true
+    annotations:
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    className: nginx
+    hosts:
+      localhost: &paths
+        "/api/kas(/|$)(.*)":
+          pathType: Prefix
+      host.docker.internal: *paths
+      offline.demo.internal: *paths
+      opentdf.local: *paths
+  secretRef:
+    name: opentdf-kas-secrets
