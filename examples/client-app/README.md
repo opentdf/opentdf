@@ -48,9 +48,9 @@ Nano TDF Encrypt/Decrypt is successful!!
 
 ## Configuring a new Client
 
-However, you probably will want to secure your client manually. Do create a new set of client credentials, go to your running keycloak by clicking on the link in the tilt dashboard, found in the row labelled `opentdf-keycloak`.
+However, you probably will want to secure your client manually. Do create a new set of client credentials, go to your running keycloak by clicking on the link in the tilt dashboard, found in the row labelled `keycloak`.
 
-![Screenshot of the link for opentdf-keycloak](static/tilt-up-start.png)
+![Screenshot of the link for keycloak](static/tilt-up-start.png)
 
 From there, log in to the `Administration Console`.
 

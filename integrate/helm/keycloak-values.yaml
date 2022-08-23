@@ -4,7 +4,7 @@ image:
   tag: 0.0.0-sha-eb68a90
 extraEnv: |
   - name: CLAIMS_URL
-    value: http://opentdf-entitlement-pdp:3355/entitlements
+    value: http://entitlement-pdp:3355/entitlements
   - name: JAVA_OPTS_APPEND
     value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
 extraEnvFrom: |

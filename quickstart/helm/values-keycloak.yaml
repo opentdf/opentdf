@@ -1,29 +1,30 @@
 image:
-  # Keycloak is a non-OpenTDF chart, but with an OpenTDF image
   repository: ghcr.io/opentdf/keycloak
+  # Keycloak is a non-OpenTDF chart, but with an OpenTDF image
+  tag: sha-0b804dd
 postgresql:
-  # This next option (enabled) determines whehter or not Keycloak should 
-  # create a Postgres (uniquely) for Keycloak (true) or not (false).
-  # 
-  # Since it's set to fallse, we'll use the Postgres provided by OpenTDF
   enabled: false
+  postgresqlUsername: postgres
+  postgresqlPassword: mydbapassword
+  postgresqlDatabase: keycloak_database
+externalDatabase:
+  host: postgresql
+  user: postgres
+  password: mydbapassword
+  database: keycloak_database
 extraEnv: |
   - name: CLAIMS_URL
-    value: http://opentdf-entitlement-pdp:3355/entitlements
+    value: http://claims:5000/claims
   - name: JAVA_OPTS_APPEND
     value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
-  - name: DB_ADDR
-    value: postgresql
-  - name: DB_DATABASE
-    value: keycloak_database
-  - name: DB_PORT
-    value: "5432"
-  - name: DB_VENDOR
-    value: postgres
-  - name: DB_USER
-    value: postgres
-  - name: DB_PASSWORD
-    value: myPostgresPassword
+# - name: DB_VENDOR
+#   value: postgres
+# - name: DB_ADDR
+#   value: postgresql
+# - name: DB_DATABASE
+#   value: keycloak_database
+# - name: DB_PORT
+#   value: "5432"
 # - name: KEYCLOAK_PROXY_ADDRESS_FORWARDING
 #   value: "true"
 # - name: KEYCLOAK_FRONTEND_URL

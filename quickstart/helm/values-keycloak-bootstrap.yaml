@@ -1,83 +1,52 @@
 name: keycloak-bootstrap
 image:
   pullPolicy: IfNotPresent
-
 externalUrl: http://offline.demo.internal/
-
-keycloak:
-  hostname: http://keycloak-http/auth
-  username: keycloakadmin
-  password: mykeycloakpassword
-  clientId: tdf-client
-  clientSecret: 123-456
-  realm: tdf
-
 attributes:
-  hostname: http://opentdf-attributes:4020
-  realm: tdf
+  hostname: http://attributes:4020
+entitlements:
+  hostname: http://entitlements:4030
   clientId: dcr-test
   username: user1
   password: testuser123
-  preloadedAuthorities:
-  - https://example.com
-  preloadedAttributes:
-  - authority: https://example.com
-    name: Classification
-    rule: hierarchy
-    state: published
-    order: 
-    - TS
-    - S
-    - C
-    - U
-  - authority: https://example.com
-    name: COI
-    rule: allOf
-    state: published
-    order: 
-    - PRX
-    - PRA
-    - PRB
-    - PRC
-    - PRD
-    - PRF
+  preloadedClaims:
+    alice_1234:
+      - https://example.com/attr/Classification/value/C
+      - https://example.com/attr/COI/value/PRD
+    bob_1234:
+      - https://example.com/attr/Classification/value/C
+      - https://example.com/attr/COI/value/PRC
+    browsertest:
+      - https://example.com/attr/Classification/value/C
+      - https://example.com/attr/COI/value/PRA
+    client_x509:
+      - https://example.com/attr/Classification/value/S
+      - https://example.com/attr/COI/value/PRX
+    dcr-test:
+      - https://example.com/attr/Classification/value/C
+      - https://example.com/attr/COI/value/PRF
+    service-account-tdf-client:
+      - https://example.com/attr/Classification/value/C
+      - https://example.com/attr/COI/value/PRB
+    tdf-client:
+      - https://example.com/attr/Classification/value/S
+      - https://example.com/attr/COI/value/PRX
+      - https://example.com/attr/Env/value/CleanRoom
+    tdf-user:
+      - https://example.com/attr/Classification/value/C
+      - https://example.com/attr/COI/value/PRX
+    user1:
+      - https://example.com/attr/Classification/value/S
+      - https://example.com/attr/COI/value/PRX
+keycloak:
+  hostname: http://keycloak-http
+  clientId: tdf-client
+  clientSecret: 123-456
+  username: keycloakadmin
+  password: mykeycloakpassword
+  realm: tdf
 
-entitlements:
-  hostname: http://opentdf-entitlements:4030
-  realms:
-  - name: tdf
-    clientId: dcr-test
-    username: user1
-    password: testuser123
-    preloadedClaims:
-      alice_1234:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRD
-      bob_1234:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRC
-      browsertest:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRA
-      client_x509:
-        - https://example.com/attr/Classification/value/S
-        - https://example.com/attr/COI/value/PRX
-      dcr-test:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRF
-      service-account-tdf-client:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRB
-      tdf-client:
-        - https://example.com/attr/Classification/value/S
-        - https://example.com/attr/COI/value/PRX
-        - https://example.com/attr/Env/value/CleanRoom
-      tdf-user:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRX
-      user1:
-        - https://example.com/attr/Classification/value/S
-        - https://example.com/attr/COI/value/PRX
+externalUrl: http://localhost:65432
 
 job:
   backoffLimit: 3

@@ -22,6 +22,7 @@ monolog TRACE "Running [$0${1+ }$*]"
 
 clean_first=
 build_total_image=
+no_clients=
 no_first_party=
 no_third_party=
 no_zip=
@@ -38,6 +39,10 @@ while [[ $# -gt 0 ]]; do
     --oci)
       monolog TRACE "--oci"
       build_total_image=1
+      ;;
+    --no-clients)
+      monolog TRACE "--no-clients"
+      no_clients=1
       ;;
     --no-first-party)
       monolog TRACE "--no-first-party"
@@ -68,10 +73,15 @@ digest="$(git rev-parse --short HEAD)"
 suffix="${today}-${digest}"
 : "${OUTPUT_DIRECTORY:="${PROJECT_ROOT}/build/export"}"
 
-: "${BACKEND_IMAGE_TAG:="main"}"
-: "${BACKEND_CHART_TAG:="0.0.0-sha-fdb06cc"}"
-: "${FRONTEND_IMAGE_TAG:="main"}"
+: "${BACKEND_IMAGE_TAG:="sha-f5bd4ef"}"
+: "${BACKEND_CHART_TAG:="1.0.0"}"
+: "${FRONTEND_IMAGE_TAG:="sha-93bb332"}"
 : "${FRONTEND_CHART_TAG:="0.0.0-sha-93bb332"}"
+
+# TODO(PLAT-1417) add 'storage' once published to ghcr.io
+services=(abacus attributes claims entitlements kas keycloak keycloak-bootstrap)
+chart_tags=("${FRONTEND_CHART_TAG}" "${BACKEND_CHART_TAG}"{,,,,,})
+image_tags=("${FRONTEND_IMAGE_TAG}" "${BACKEND_IMAGE_TAG}"{,,,,,})
 
 OUT_DIR="${OUTPUT_DIRECTORY}/bundle"
 
@@ -133,14 +143,9 @@ save-image() {
   fi
 }
 
-# TODO(PLAT-1417) add 'storage' once published to ghcr.io
 if [[ ! $no_first_party ]]; then
-  for x in attributes entitlement_store entitlement-pdp entitlements entity-resolution kas keycloak keycloak-bootstrap; do
-    save-image "ghcr.io/opentdf/${x}" "${BACKEND_IMAGE_TAG}" "opentdf-${x}"
-  done
-  # shellcheck disable=SC2043 # Keep this similar to the backend loop
-  for x in abacus; do
-    save-image "ghcr.io/opentdf/${x}" "${FRONTEND_IMAGE_TAG}" "opentdf-${x}"
+  for index in "${!services[@]}"; do
+    save-image "ghcr.io/opentdf/${services[$index]}" "${image_tags[$index]}" "opentdf-${services[$index]}"
   done
 fi
 
@@ -183,18 +188,14 @@ if ! helm pull --repo https://helm.twun.io --version 2.1.0 --destination "${OUT_
 fi
 
 # First party helm charts
-for x in attributes entitlement-store entitlement-pdp entitlements entity-resolution kas keycloak-bootstrap; do
+for index in "${!services[@]}"; do
+  x="${services[$index]}"
   i="oci://ghcr.io/opentdf/charts/${x}"
-  if ! helm pull "${i}" --version "${BACKEND_CHART_TAG}" --destination "${OUT_DIR}/charts"; then
-    monolog ERROR "Failed to [helm pull ${i} --version $BACKEND_CHART_TAG]"
-    exit 1
-  fi
-done
-# shellcheck disable=SC2043 # Keep this similar to the backend loop
-for x in abacus; do
-  i="oci://ghcr.io/opentdf/charts/${x}"
-  if ! helm pull "${i}" --version "${FRONTEND_CHART_TAG}" --destination "${OUT_DIR}/charts"; then
-    monolog ERROR "Failed to [helm pull ${i} --version $FRONTEND_CHART_TAG]"
+  tag="${chart_tags[$index]}"
+  if [[ keycloak == "$x" ]]; then
+    : # third party chart; skipping...
+  elif ! helm pull "${i}" --version "${tag}" --destination "${OUT_DIR}/charts"; then
+    monolog ERROR "Failed to [helm pull ${i} --version $tag]"
     exit 1
   fi
 done
@@ -239,8 +240,6 @@ npm-latest() {
   curl -s "https://registry.npmjs.org/${project}/-/$NPM_TGZ" --output "${OUT_DIR}/lib/sdk-$NPM_TGZ"
   maybe-exit "Failed to get latest of ${project} (${NPM_LATEST}) from NPM, expected at [${NPM_TGZ}]"
 }
-# # TODO: Release client to npm
-# npm-latest @opentdf/client
 
 pip-latest() {
   local project
@@ -279,7 +278,12 @@ pip-latest() {
   done
 }
 
-pip-latest opentdf
+if [[ ! $no_clients ]]; then
+  # # TODO: Release client to npm
+  # npm-latest @opentdf/client
+
+  pip-latest opentdf
+fi
 
 # BUNDLE THAT STUFF UP
 if [[ ! $no_zip ]]; then

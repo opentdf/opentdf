@@ -25,8 +25,6 @@ e() {
 
 : "${SERVICE_IMAGE_TAG:="offline"}"
 
-BACKEND_CHART_TAG="0.0.0-sha-fdb06cc"
-FRONTEND_CHART_TAG="0.0.0-sha-93bb332"
 LOAD_IMAGES=1
 LOAD_SECRETS=1
 START_CLUSTER=1
@@ -37,6 +35,11 @@ INIT_OPENTDF=1
 INIT_SAMPLE_DATA=1
 INIT_NGINX_CONTROLLER=1
 REWRITE_HOSTNAME=1
+
+# NOTE: 1.0.0 default values. When releasing a new version, move these below to
+# the api-version selector and update the default.
+services=(abacus attributes claims entitlements kas keycloak)
+chart_tags=(0.0.0-sha-fe676f4 0.0.0-sha-0b804dd{,,,})
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -84,12 +87,22 @@ while [[ $# -gt 0 ]]; do
       RUN_OFFLINE=1
       ;;
     *)
-      e "Unrecognized options: $*"
+      e "Unrecognized option: [$key]"
       ;;
   esac
 done
 
 : "${INGRESS_HOSTNAME:=$([[ $REWRITE_HOSTNAME ]] && hostname | tr '[:upper:]' '[:lower:]')}"
+
+wait_for_pod() {
+  pod="$1"
+
+  monolog INFO "Waiting until $1 is ready"
+  while [[ $(kubectl get pods "${pod}" -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+    echo "waiting for ${pod}..."
+    sleep 5
+  done
+}
 
 if [[ ! $RUN_OFFLINE ]]; then
   INGRESS_HOSTNAME=
@@ -123,8 +136,12 @@ if [[ $LOAD_IMAGES ]]; then
   monolog INFO "Caching locally-built development opentdf/backend images in dev cluster"
   # Cache locally-built `latest` images, bypassing registry.
   # If this fails, try running 'docker-compose build' in the repo root
-  for s in abacus attributes entitlement_store entitlement-pdp entitlements entity-resolution kas; do
-    maybe_load ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}
+  for s in "${services[@]}"; do
+    if [[ "$s" == keycloak && ! $USE_KEYCLOAK ]]; then
+      : # Skip loading keycloak in this case
+    else
+      maybe_load "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}"
+    fi
   done
 else
   monolog DEBUG "Skipping loading of locally built service images"
@@ -133,29 +150,54 @@ fi
 if [[ $LOAD_SECRETS ]]; then
   "$TOOLS_ROOT"/genkeys-if-needed || e "Unable to generate keys"
 
-  monolog TRACE "Creating 'kas-secrets'..."
-  kubectl create secret generic opentdf-kas-secrets \
-    "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
-    "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
-    "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
-    "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
-    "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt" || e "create kas-secrets failed"
-
-  monolog TRACE "Creating 'opentdf-attributes-secrets'..."
-  kubectl create secret generic opentdf-attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
-  monolog TRACE "Creating 'opentdf-entitlement-store-secrets'..."
-  kubectl create secret generic opentdf-entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ent-store secrets failed"
-  monolog TRACE "Creating 'opentdf-entitlement-pdp-secret'..."
-  # If CR_PAT is undefined and the entitlement-pdp chart is configured to use the policy bundle baked in at container build time, this isn't used and can be empty
-  kubectl create secret generic opentdf-entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}" || e "create ent-pdp secrets failed"
-  monolog TRACE "Creating 'opentdf-entitlements-secrets'..."
-  kubectl create secret generic opentdf-entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
-  monolog TRACE "Creating 'keycloak-secrets'..."
-  kubectl create secret generic keycloak-secrets \
-    --from-literal=DB_USER=postgres \
-    --from-literal=DB_PASSWORD=myPostgresPassword \
-    --from-literal=KEYCLOAK_USER=keycloakadmin \
-    --from-literal=KEYCLOAK_PASSWORD=mykeycloakpassword
+  for service in "${services[@]}"; do
+    case "$service" in
+      attributes)
+        monolog TRACE "Creating 'attributes-secrets'..."
+        kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
+        ;;
+      claims)
+        monolog TRACE "Creating 'claims-secrets'..."
+        kubectl create secret generic claims-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create claims secrets failed"
+        ;;
+      entitlement-store)
+        monolog TRACE "Creating 'entitlement-store-secrets'..."
+        kubectl create secret generic entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ent-store secrets failed"
+        ;;
+      entitlement-pdp)
+        monolog TRACE "Creating 'entitlement-pdp-secret'..."
+        # If CR_PAT is undefined and the entitlement-pdp chart is configured to use the policy bundle baked in at container build time, this isn't used and can be empty
+        kubectl create secret generic entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}" || e "create ent-pdp secrets failed"
+        ;;
+      entitlements)
+        monolog TRACE "Creating 'entitlements-secrets'..."
+        kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
+        ;;
+      kas)
+        monolog TRACE "Creating 'kas-secrets'..."
+        kubectl create secret generic kas-secrets \
+          "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
+          "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
+          "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
+          "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
+          "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt" || e "create kas-secrets failed"
+        ;;
+      keycloak)
+        monolog TRACE "Creating 'keycloak-secrets'..."
+        kubectl create secret generic keycloak-secrets \
+          --from-literal=DB_USER=postgres \
+          --from-literal=DB_PASSWORD=myPostgresPassword \
+          --from-literal=KEYCLOAK_USER=keycloakadmin \
+          --from-literal=KEYCLOAK_PASSWORD=mykeycloakpassword
+        ;;
+      abacus | keycloak-bootstrap)
+        # Service without its own secrets
+        ;;
+      *)
+        e "Failed due to unknown service [$service]"
+        ;;
+    esac
+  done
 fi
 
 if [[ $INGRESS_HOSTNAME ]]; then
@@ -168,7 +210,6 @@ if [[ $INGRESS_HOSTNAME ]]; then
   done
 fi
 
-
 if [[ $INIT_POSTGRES ]]; then
   monolog INFO --- "Installing Postgresql for opentdf backend"
   if [[ $LOAD_IMAGES ]]; then
@@ -180,34 +221,19 @@ if [[ $INIT_POSTGRES ]]; then
   else
     helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" || e "Unable to helm upgrade postgresql"
   fi
-  monolog INFO "Waiting until postgresql is ready"
-
-  while [[ $(kubectl get pods postgresql-postgresql-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
-    echo "waiting for postgres..."
-    sleep 5
-  done
+  wait_for_pod postgresql-postgresql-0
 fi
 
 # Only do this if we were told to disable Keycloak
 # This should be removed eventually, as Keycloak isn't going away
 if [[ $USE_KEYCLOAK ]]; then
-  if [[ $LOAD_IMAGES ]]; then
-    monolog INFO "Caching locally-built development opentdf Keycloak in dev cluster"
-    maybe_load ghcr.io/opentdf/keycloak:${SERVICE_IMAGE_TAG}
-  fi
-
   monolog INFO --- "Installing Virtru-ified Keycloak"
   if [[ $RUN_OFFLINE ]]; then
     helm upgrade --install keycloak "${CHART_ROOT}"/keycloak-17.0.1.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade keycloak"
   else
     helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloak -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade keycloak"
   fi
-  monolog INFO "Waiting until Keycloak server is ready"
-
-  while [[ $(kubectl get pods keycloak-0 -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
-    echo "waiting for keycloak..."
-    sleep 5
-  done
+  wait_for_pod keycloak-0
 fi
 
 if [[ $INIT_NGINX_CONTROLLER ]]; then
@@ -244,10 +270,13 @@ load-chart() {
 
 if [[ $INIT_OPENTDF ]]; then
   monolog INFO --- "OpenTDF charts"
-  for s in attributes entitlement-store entitlement-pdp entitlements entity-resolution kas; do
-    load-chart "opentdf-${s}" "${s}" ${BACKEND_CHART_TAG}
+  for index in "${!services[@]}"; do
+    if [[ "$s" == keycloak ]]; then
+      : # Keycloak already loaded above in the use_keycloak block
+    else
+      load-chart "${services[$index]}" "${services[$index]}" "${chart_tags[$index]}"
+    fi
   done
-  load-chart opentdf-abacus abacus ${FRONTEND_CHART_TAG}
 fi
 
 if [[ $INIT_SAMPLE_DATA ]]; then
@@ -255,5 +284,5 @@ if [[ $INIT_SAMPLE_DATA ]]; then
     monolog INFO "Caching bootstrap image in cluster"
     maybe_load ghcr.io/opentdf/keycloak-bootstrap:${SERVICE_IMAGE_TAG}
   fi
-  load-chart keycloak-bootstrap keycloak-bootstrap ${BACKEND_CHART_TAG}
+  load-chart keycloak-bootstrap keycloak-bootstrap "${BACKEND_CHART_TAG}"
 fi

@@ -215,27 +215,76 @@ Manage assignment of attributes to entities
 
 <!-- http://localhost:65432/api/entitlements/docs -->
 
-#### entitlement-store
+#### claims
 
-Read-only access to the attributes that have been assigned to an entity in the static database store
-
-#### entitlement-pdp
-
-Generate entitlements on-demand (using OpenPolicyAgent and pluggable Rego policy) for entities.
+Read the attributes that have been assigned to an entity
 
 #### key-access
 
 Access control of the key using ABAC
 Swagger http://localhost:65432/api/kas/ui/ (update `/kas/openapi.json`)
 
-## Examples
+## Solutions
 
-See [Examples](../examples) for examples of OpenTDF in action.
+See [Solutions](../solutions) page on how to integrate opentdf.
 
-## Integrate
+## Troubleshoot
 
-See [Integrate](../integrate) for instructions on how to integrate opentdf.
+If you need to restart, delete cluster and try again
 
-## Troubleshooting
+```shell
+kind delete cluster --name opentdf
+kind create cluster --name opentdf
+```
+---
 
-See `opentdf/troubleshooting/README.md` for troubleshooting information on Quickstart
+After `tilt up` and hitting (space), and have trouble opening tilt UI with http://localhost:10350/ in Chrome
+
+- Go to chrome://net-internals/#hsts
+- Type `localhost` in Delete domain security policies section and hit DELETE button
+
+---
+
+```text
+Error: writing tilt api configs: open /path/to/.tilt-dev/config.lock: file exists
+```
+
+```shell
+rm -f /path/to/.tilt-dev/config.lock
+```
+
+---
+
+A stuck Status of "Runtime Pending" on a postgresql:statefulset.  
+Trigger a restart manually, once or twice.
+
+---
+
+```text
+python3 tests/oidc-auth.py
+Unexpected error: <class 'RuntimeError'>
+Traceback (most recent call last):
+  File "/Users/paul/Projects/opentdf-aux/documentation/quickstart/tests/oidc-auth.py", line 26, in <module>
+    client.encrypt_file("sample.txt", "sample.txt.tdf")
+RuntimeError: Error code 1.  [oidc_service.cpp:168] Get OIDC token failed status: 404{"error":"Realm does not exist"}
+```
+
+Wait. All services aren't up, namely keycloak.
+
+---
+
+Port conflicts  
+check that ports used in `Tiltfile` are not used on the host
+
+---
+
+attribute-provider: Name or service not known  
+hard-coded value in keycloak-bootstrap?
+
+---
+
+Database connection issue
+
+```angular2html
+pg_isready --dbname=tdf_database --host=postgresql --port=5432 --username=postgres
+```

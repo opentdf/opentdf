@@ -1,7 +1,5 @@
-serverRootPath: /api/entitlements
+rootPath: /entitlements
 publicName: "Entitlement"
-serverCorsOrigins: "*"
-openapiUrl: /openapi
 logLevel: DEBUG
 postgres:
   host: postgresql
@@ -32,4 +30,4 @@ ingress:
     offline.demo.internal: *paths
     opentdf.local: *paths
 secretRef:
-  name: opentdf-entitlements-secrets
+  name: entitlements-secrets

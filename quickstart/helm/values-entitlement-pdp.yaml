@@ -1,9 +1,0 @@
-opaConfig:
-  policy:
-    # `Tilt` tries make docker image caching automagic, but it isn't particularly
-    # smart about non-Docker OCI caches, so tell the PDP chart to use the default on-disk policy bundle
-    # we create and pack into the image to work around this
-    useStaticPolicy: true
-
-config:
-  disableTracing: true

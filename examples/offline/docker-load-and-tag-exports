@@ -47,10 +47,12 @@ docker-load-from() {
   fi
 }
 
-for first in abacus attributes entitlement_store entitlement-pdp entitlements entity-resolution kas keycloak-bootstrap keycloak; do
-  docker-load-from "${CONTAINERS_DIR}/opentdf-${first}-${suffix}"
+for first in abacus attributes claims entitlement_store entitlement-pdp entitlements entity-resolution kas keycloak-bootstrap keycloak; do
+  if [ -f "${CONTAINERS_DIR}/opentdf-${first}-${suffix}.tar" ]; then
+    docker-load-from "${CONTAINERS_DIR}/opentdf-${first}-${suffix}"
+  fi
 done
 
-for third in kind postgresql ingress-nginx docker-registry; do
+for third in docker-registry ingress-nginx kind postgresql; do
   docker-load-from "${CONTAINERS_DIR}/third-party-image-${third}-${suffix}"
 done

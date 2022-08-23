@@ -43,7 +43,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         * ) 
-            echo "Unrecognized parameter. See --help for usage."
+            echo "Unrecognized parameter [${key}]. See --help for usage."
             break ;;
     esac
 done

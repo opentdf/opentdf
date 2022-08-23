@@ -38,5 +38,5 @@ helm_resource(
         "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
     labels="examples",
-    resource_deps=["opentdf-attributes", "opentdf-entitlements", "keycloak"],
+    resource_deps=["attributes", "entitlements", "keycloak"],
 )
