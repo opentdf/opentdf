@@ -32,6 +32,6 @@ docker_build(
     ".",
     live_update = [
         sync(".", "/app"),
-        run("cd /app && pip install -r requirements.txt", trigger = "./requirements.txt"),
+        run("cd /app && pip ihelm nstall -r requirements.txt", trigger = "./requirements.txt"),
     ],
 )

@@ -13,5 +13,5 @@ ingress:
     host.docker.internal: *paths
     offline.demo.internal: *paths
     opentdf.local: *paths
-secretRef:
+secretRef: |
   name: kas-secrets

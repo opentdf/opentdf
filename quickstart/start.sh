@@ -30,10 +30,10 @@ INIT_SAMPLE_DATA=1
 INIT_NGINX_CONTROLLER=1
 REWRITE_HOSTNAME=1
 
-# NOTE: 1.0.0 default values. When releasing a new version, move these below to
+# NOTE: 1.1.0 default values. When releasing a new version, move these below to
 # the api-version selector and update the default.
-services=(abacus attributes claims entitlements kas keycloak)
-chart_tags=(0.0.0-sha-fe676f4 0.0.0-sha-0b804dd{,,,})
+services=(abacus attributes entitlement-pdp entitlement_store entitlements entity-resolution kas keycloak keycloak-bootstrap)
+chart_tags=(0.0.0-sha-3e6ac9e 1.1.0-rc.7{,,,,,,})
 
 while [[ $# -gt 0 ]]; do
   key="$1"
@@ -149,10 +149,6 @@ if [[ $LOAD_SECRETS ]]; then
       attributes)
         monolog TRACE "Creating 'attributes-secrets'..."
         kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
-        ;;
-      claims)
-        monolog TRACE "Creating 'claims-secrets'..."
-        kubectl create secret generic claims-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create claims secrets failed"
         ;;
       entitlement-store)
         monolog TRACE "Creating 'entitlement-store-secrets'..."
