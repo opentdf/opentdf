@@ -1,51 +1,54 @@
+fullnameOverride: keycloak
 image:
-  repository: ghcr.io/opentdf/keycloak
   # Keycloak is a non-OpenTDF chart, but with an OpenTDF image
-  tag: sha-0b804dd
+  repository: ghcr.io/opentdf/keycloak
+  tag: 18.0.2
 postgresql:
+  # This next option (enabled) determines whehter or not Keycloak should 
+  # create a Postgres (uniquely) for Keycloak (true) or not (false).
+  # 
+  # Since it's set to fallse, we'll use the Postgres provided by OpenTDF
   enabled: false
-  postgresqlUsername: postgres
-  postgresqlPassword: mydbapassword
-  postgresqlDatabase: keycloak_database
+command:
+  - "/opt/keycloak/bin/kc.sh"
+  - "--verbose"
+  - "start-dev"
 externalDatabase:
-  host: postgresql
-  user: postgres
-  password: mydbapassword
   database: keycloak_database
-extraEnv: |
+extraEnv: |-
+  - name: KC_LOG_LEVEL
+    value: INFO
   - name: CLAIMS_URL
-    value: http://claims:5000/claims
+    value: http://entitlement-pdp:3355/entitlements
+  - name: KC_DB
+    value: postgres
+  - name: KC_DB_URL_PORT
+    value: "5432"
+  - name: KC_HTTP_RELATIVE_PATH
+    value: "/auth"
+  - name: KC_HOSTNAME_STRICT_HTTPS
+    value: "false"
+  - name: KC_HOSTNAME_STRICT
+    value: "false"
+  - name: KC_HTTP_ENABLED
+    value: "true"
+  - name: KC_PROXY
+    value: "edge"
   - name: JAVA_OPTS_APPEND
-    value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
-# - name: DB_VENDOR
-#   value: postgres
-# - name: DB_ADDR
-#   value: postgresql
-# - name: DB_DATABASE
-#   value: keycloak_database
-# - name: DB_PORT
-#   value: "5432"
-# - name: KEYCLOAK_PROXY_ADDRESS_FORWARDING
-#   value: "true"
-# - name: KEYCLOAK_FRONTEND_URL
-#   value: "http://offline.demo.internal/auth"
-# - name: KEYCLOAK_LOG_LEVEL
-#   value: DEBUG
-extraEnvFrom: |
+    value: -Djgroups.dns.query=keycloak-headless
+extraEnvFrom: |-
   - secretRef:
-      name: 'keycloak-secrets'
+      name: "keycloak-secrets"
 ingress:
   enabled: true
   ingressClassName: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /auth/$2
   rules:
     - host: localhost
       paths: &paths
         - path: /auth(/|$)(.*)
           pathType: Prefix
-    - host: host.docker.internal
-      paths: *paths
-    - host: offline.demo.internal
-      paths: *paths
     - host: opentdf.local
       paths: *paths
-  tls: null
+  tls: []
