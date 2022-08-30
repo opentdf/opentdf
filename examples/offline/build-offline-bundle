@@ -194,7 +194,7 @@ for index in "${!services[@]}"; do
   service="${services[$index]}"
   url="oci://ghcr.io/opentdf/charts/${service}"
   tag="${chart_tags[$index]}"
-  if [[ keycloak == "$x" ]]; then
+  if [[ keycloak == "$service" ]]; then
     : # third party chart; skipping...
   elif ! helm pull "${service}" --version "${tag}" --destination "${OUT_DIR}/charts"; then
     monolog ERROR "Failed to [helm pull ${service} --version $tag]"
