@@ -130,10 +130,10 @@ helm_resource(
 
 helm_resource(
     "keycloak",
-    "codecentric/keycloak",
+    "codecentric/keycloakx",
     flags=[
         "--version",
-        "17.0.1",
+        "1.4.2",
         "-f",
         "helm/values-keycloak.yaml",
     ],
