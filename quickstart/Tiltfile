@@ -179,7 +179,7 @@ helm_resource(
         "--version",
         FRONTEND_CHART_TAG,
         "-f",
-        "%svalues-abacus.yaml" % HELM_VALUES_PATH,
+        "%s/values-abacus.yaml" % HELM_VALUES_PATH,
         "--set",
         "attributes.serverUrl=%s/api/attributes" % EXTERNAL_URL,
         "--set",
