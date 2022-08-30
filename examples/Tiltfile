@@ -7,11 +7,6 @@ version_settings(constraint='>=0.30.0')
 # Where the redirect URI should go to, for example
 EXTERNAL_URL = "http://localhost:65432"
 
-# Versions of things backend to pull (attributes, kas, etc)
-BACKEND_IMAGE_TAG = "main"
-BACKEND_CHART_TAG = "0.0.0-sha-fdb06cc"
-FRONTEND_IMAGE_TAG = "main"
-FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
 
 # disable Quickstart bootstrap
 os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')
@@ -21,7 +16,8 @@ os.putenv('HELM_VALUES_PATH', '../examples/helm/')
 
 # start Quickstart
 # https://docs.tilt.dev/api.html#api.include
-include('../quickstart/Tiltfile')
+# Versions of things backend to pull (attributes, kas, etc)
+load('../quickstart/Tiltfile', "BACKEND_CHART_TAG")
 
 # execute Examples bootstrap
 helm_resource(
@@ -34,8 +30,6 @@ helm_resource(
         "helm/values-bootstrap.yaml",
         "--set",
         "externalUrl=%s" % EXTERNAL_URL,
-        "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
     ],
     labels="examples",
     resource_deps=["attributes", "entitlements", "keycloak"],
