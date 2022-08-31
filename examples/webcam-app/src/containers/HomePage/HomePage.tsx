@@ -42,6 +42,10 @@ export function HomePage() {
     const [dataAttributes, setDataAttributes] = useState<string[]>([]);
     const [streamStarted, setStartStream] = useState<boolean>(false);
     const [streamReset, setStartReset] = useState<boolean>(false);
+    const errorMap = useRef({
+        bob: false,
+        eve: false,
+    });
 
     const resetStream = useCallback(() => {
         if (streamStarted) {
@@ -118,7 +122,12 @@ export function HomePage() {
             const canvas = canvas1.current;
             // @ts-ignore
             let ctx = canvas.getContext('2d');
-            (async function loop() {
+            async function loop() {
+                errorMap.current = {
+                    bob: false,
+                    eve: false,
+                };
+
                 // source frame
                 // @ts-ignore
                 ctx?.drawImage(webcamDevice, 0, 0, width, height);
@@ -127,9 +136,12 @@ export function HomePage() {
                 // FIXME buffer is all 0
                 // @ts-ignore
                 const cipherImageData = await clientWebcam?.encrypt(imageData.data.buffer);
-                const updateCanvas = async (canvasContext: CanvasRenderingContext2D | null, client: NanoTDFDatasetClient | undefined, imageDataEncrypted: ArrayBuffer) => {
+                const updateCanvas = async (canvasContext: CanvasRenderingContext2D | null, client: NanoTDFDatasetClient | undefined, imageDataEncrypted: ArrayBuffer, userName?: string) => {
                     try {
-                        const incomingBuffer = await client?.decrypt(imageDataEncrypted);
+                        const incomingBuffer = await client?.decrypt(imageDataEncrypted).catch(() => {
+                            // @ts-ignore
+                            errorMap.current[userName] = true;
+                        });
                         const imageDataBob = canvasContext?.createImageData(width, height);
                         // @ts-ignore
                         imageDataBob?.data.set(incomingBuffer);
@@ -140,14 +152,25 @@ export function HomePage() {
                     }
                 };
                 if (cipherImageData) {
+                    // @ts-ignore
                     updateCanvas(contextAlice, clientAlice, cipherImageData);
-                    updateCanvas(contextBob, clientBob, cipherImageData);
-                    updateCanvas(contextEve, clientEve, cipherImageData);
+
+                    // @ts-ignore
+                    if (!isRestricted) {
+                        updateCanvas(contextBob, clientBob, cipherImageData, 'bob');
+                    }
+
+                    // @ts-ignore
+                    if (!isRestricted && !isPremium) {
+                        updateCanvas(contextEve, clientEve, cipherImageData, 'eve');
+                    }
                 }
                 if (isRenderLoop) {
-                    setTimeout(loop, 1000 / 30); // drawing at 30fps
+                    // @ts-ignore
+                    setTimeout(() => loop(), 1000 / 30); // drawing at 30fps
                 }
-            })();
+            }
+            loop();
         }
 
         function handleError(error: { message: any; name: any; }) {
