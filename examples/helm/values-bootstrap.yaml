@@ -1,7 +1,10 @@
 keycloak:
-  hostname: http://keycloak-http
-  adminUsername: keycloakadmin
-  adminPassword: mykeycloakpassword
+  hostname: http://keycloak-http/auth
+  clientId: tdf-client
+  clientSecret: 123-456
+  username: keycloakadmin
+  password: mykeycloakpassword
+  realm: tdf
   customConfig:
   - name: tdf
     payload:
