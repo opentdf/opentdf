@@ -9,6 +9,8 @@ oidc:
   queryRealms: tdf
 ingress:
   enabled: true
+  annotations:
+    kubernetes.io/ingress.class:
   className: nginx
   hosts:
     - host: localhost
