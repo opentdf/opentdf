@@ -1,7 +1,6 @@
-import { AuthProviders, NanoTDFDatasetClient } from "@opentdf/client";
+import { AuthProviders, NanoTDFDatasetClient } from "@opentdf/client/nano";
 import jwt_decode from "jwt-decode";
-import { useState } from "react";
-import { KAS_URL, OIDC_CLIENT_ID, OIDC_ENDPOINT, OIDC_REALM } from "../config";
+import { KAS_URL, OIDC_CLIENT_ID, OIDC_ENDPOINT } from "../config";
 
 export interface HttpResponse<T> extends Response {
     parsedBody?: T;
@@ -28,7 +27,6 @@ export const loginUser = async (username: string, password: string, attrs?: stri
         exchange: 'refresh',
         oidcRefreshToken: responseJson.refresh_token,
         oidcOrigin: OIDC_ENDPOINT,
-        organizationName: OIDC_REALM
     });
     const tmpClient = new NanoTDFDatasetClient(authProviderEve, KAS_URL);
     if (attrs) {

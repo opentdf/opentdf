@@ -1,4 +1,4 @@
-import { NanoTDFDatasetClient } from "@opentdf/client";
+import { NanoTDFDatasetClient } from "@opentdf/client/nano";
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../../components/Button";
 import { Slider } from "../../components/Slider";
