@@ -16,8 +16,8 @@ min_ctlptl_version("0.7.4")
 EXTERNAL_URL = "http://localhost:65432"
 
 # Versions of things backend to pull (attributes, kas, etc)
-BACKEND_CHART_TAG = "0.0.0-sha-8550b01"
-FRONTEND_CHART_TAG = "0.0.0-sha-3e6ac9e"
+BACKEND_CHART_TAG = "0.0.0-sha-23cf3f4"
+FRONTEND_CHART_TAG = "0.0.0-sha-9acd5b1"
 HELM_VALUES_PATH = "helm/"
 # Where helm values for quickstart
 if "HELM_VALUES_PATH" in os.environ:

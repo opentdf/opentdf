@@ -11,12 +11,11 @@ ingress:
   enabled: true
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
-    kubernetes.io/ingress.class:
   className: nginx
   hosts:
     - host: localhost
       paths: &paths
-        - path: /
+        - path: /(.*)
           pathType: Prefix
     - host: host.docker.internal
       paths: *paths
