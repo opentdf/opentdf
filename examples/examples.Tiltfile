@@ -1,6 +1,20 @@
 # Tiltfile for development
 # https://docs.tilt.dev/api.html
 #
+load("ext://helm_resource", "helm_resource", "helm_repo")
+
+# version_settings() enforces a minimum Tilt version
+# https://docs.tilt.dev/api.html#api.version_settings
+version_settings(constraint='>=0.30.0')
+
+# Where the redirect URI should go to, for example
+EXTERNAL_URL = "http://localhost:65432"
+
+# Versions of things backend to pull (attributes, kas, etc)
+BACKEND_IMAGE_TAG = "main"
+BACKEND_CHART_TAG = "0.0.0-sha-fdb06cc"
+FRONTEND_IMAGE_TAG = "main"
+FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
 
 include('../quickstart/Tiltfile')
 
@@ -49,7 +63,7 @@ local_resource(
     "opentdf-abacship-backend-tests",
     cmd = "./abacship-app/backend_server/setup_venv.sh && \
     cd abacship-app/backend_server/app && \
-    source ./venv/bin/activate && \
+    . /venv/bin/activate && \
     cd tests && pytest",
     labels="abacship",
     resource_deps = ["abacship-backend"],
