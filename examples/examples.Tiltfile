@@ -3,10 +3,6 @@
 #
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
-# version_settings() enforces a minimum Tilt version
-# https://docs.tilt.dev/api.html#api.version_settings
-version_settings(constraint='>=0.30.0')
-
 # Where the redirect URI should go to, for example
 EXTERNAL_URL = "http://localhost:65432"
 
