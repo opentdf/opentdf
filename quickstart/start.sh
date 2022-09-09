@@ -33,7 +33,7 @@ REWRITE_HOSTNAME=1
 # NOTE: 1.1.0 default values. When releasing a new version, move these below to
 # the api-version selector and update the default.
 services=(abacus attributes entitlement-pdp entitlement_store entitlements entity-resolution kas keycloak keycloak-bootstrap)
-chart_tags=(0.0.0-sha-3e6ac9e 1.1.0-rc.7{,,,,,,})
+chart_tags=(1.1.0{,,,,,,,})
 
 while [[ $# -gt 0 ]]; do
   key="$1"
