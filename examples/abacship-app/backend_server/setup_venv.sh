@@ -1,6 +1,8 @@
 #!/bin/bash
 
-cd backend_server/app
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+
+cd $SCRIPTPATH/app
 
 if [ ! -d "./venv" ] 
 then

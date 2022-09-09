@@ -45,7 +45,16 @@ k8s_resource(
 )
 
 # some local resource to run integration tests?
-
+local_resource(
+    "opentdf-abacship-backend-tests",
+    cmd = "./abacship-app/backend_server/setup_venv.sh && \
+    cd abacship-app/backend_server/app && \
+    source ./venv/bin/activate && \
+    cd tests && pytest",
+    labels="abacship",
+    resource_deps = ["abacship-backend"],
+    allow_parallel=True
+)
 
 # secure remote storage
 k8s_yaml("./secure-remote-storage/kubernetes.yaml")
@@ -64,7 +73,7 @@ docker_build(
 k8s_yaml("web-app/kubernetes.yaml")
 k8s_resource(
     "web-app",
-    port_forwards = 8000,
+    port_forwards = '4070:4070',
     resource_deps = ["keycloak-bootstrap"],
     labels="web-app"
 )

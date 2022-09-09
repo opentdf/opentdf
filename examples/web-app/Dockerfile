@@ -7,4 +7,4 @@ RUN pip install -r requirements.txt
 
 ADD . .
 
-ENTRYPOINT ["uvicorn", "main:app", "--reload"]
+ENTRYPOINT ["uvicorn", "main:app", "--reload", "--port", "4070"]

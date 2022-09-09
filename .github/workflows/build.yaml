@@ -240,3 +240,5 @@ jobs:
         if: ${{ needs.nanotdf-client-app-test.result == 'failure' }}
       - run: exit 1
         if: ${{ needs.scripts-test.result == 'failure' }}
+      - run: exit 1
+        if: ${{ needs.examples-build-test.result == 'failure' }}

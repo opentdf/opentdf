@@ -22,4 +22,24 @@ spec:
             value: "http://keycloak-http"
           image: opentdf/example-web-app-image
           ports:
-            - containerPort: 8000
+            - containerPort: 4070
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+  name: web-app
+spec:
+  rules:
+    - host: localhost
+      http:
+        paths:
+          - backend:
+              service:
+                name: web-app
+                port:
+                  number: 4070
+            path: /web-app(/|$)(.*)
+            pathType: Prefix
