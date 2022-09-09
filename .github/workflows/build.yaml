@@ -227,6 +227,7 @@ jobs:
       - offline-start-test
       - nanotdf-client-app-test
       - scripts-test
+      - examples-build-test
     if: always()
     runs-on: ubuntu-latest
     steps:
