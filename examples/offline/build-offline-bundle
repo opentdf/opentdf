@@ -22,7 +22,9 @@ monolog TRACE "Running [$0${1+ }$*]"
 
 clean_first=
 build_total_image=
+no_charts=
 no_clients=
+no_images=
 no_first_party=
 no_third_party=
 no_zip=
@@ -40,9 +42,17 @@ while [[ $# -gt 0 ]]; do
       monolog TRACE "--oci"
       build_total_image=1
       ;;
+    --no-charts)
+      monolog TRACE "--no-charts"
+      no_charts=1
+      ;;
     --no-clients)
       monolog TRACE "--no-clients"
       no_clients=1
+      ;;
+    --no-images)
+      monolog TRACE "--no-images"
+      no_images=1
       ;;
     --no-first-party)
       monolog TRACE "--no-first-party"
@@ -73,15 +83,20 @@ digest="$(git rev-parse --short HEAD)"
 suffix="${today}-${digest}"
 : "${OUTPUT_DIRECTORY:="${PROJECT_ROOT}/build/export"}"
 
-: "${BACKEND_IMAGE_TAG:="sha-f5bd4ef"}"
-: "${BACKEND_CHART_TAG:="1.0.0"}"
-: "${FRONTEND_IMAGE_TAG:="sha-93bb332"}"
-: "${FRONTEND_CHART_TAG:="0.0.0-sha-93bb332"}"
+# TODO Default to image tags in chart values files
+: "${BACKEND_IMAGE_TAG:="1.1.0"}"
+# FIXME Update with release version
+: "${BACKEND_CHART_TAG:="1.1.0"}"
+: "${FRONTEND_IMAGE_TAG:="1.1.0"}"
+: "${FRONTEND_CHART_TAG:="1.1.0"}"
 
 # TODO(PLAT-1417) add 'storage' once published to ghcr.io
-services=(abacus attributes claims entitlements kas keycloak keycloak-bootstrap)
-chart_tags=("${FRONTEND_CHART_TAG}" "${BACKEND_CHART_TAG}"{,,,,,})
-image_tags=("${FRONTEND_IMAGE_TAG}" "${BACKEND_IMAGE_TAG}"{,,,,,})
+services=(abacus attributes entitlement_store entitlement-pdp entitlements entity-resolution kas keycloak-bootstrap)
+charts=("${services[@]}")
+charts[2]=entitlement-store
+
+chart_tags=("${FRONTEND_CHART_TAG}" "${BACKEND_CHART_TAG}"{,,,,,,})
+image_tags=("${FRONTEND_IMAGE_TAG}" "${BACKEND_IMAGE_TAG}"{,,,,,,})
 
 OUT_DIR="${OUTPUT_DIRECTORY}/bundle"
 
@@ -143,7 +158,8 @@ save-image() {
   fi
 }
 
-if [[ ! $no_first_party ]]; then
+if [[ ! $no_first_party && ! $no_images ]]; then
+  monolog DEBUG "Saving first party images..."
   for index in "${!services[@]}"; do
     save-image "ghcr.io/opentdf/${services[$index]}" "${image_tags[$index]}" "opentdf-${services[$index]}"
   done
@@ -152,7 +168,8 @@ fi
 # NOTE: Configure third party bundles to use the latest version manually.
 # To do this, search for the version you want of each of the following packages
 # on Docker Hub
-if [[ ! $no_third_party ]]; then
+if [[ ! $no_third_party && ! $no_images ]]; then
+  monolog DEBUG "Saving third party images..."
   # KIND: https://kind.sigs.k8s.io/docs/user/working-offline/
   # Update URI: https://hub.docker.com/r/kindest/node/tags
   save-image kindest/node v1.23.5 third-party-image-kind
@@ -160,7 +177,9 @@ if [[ ! $no_third_party ]]; then
   # postgresql
   # Update URI: https://hub.docker.com/r/bitnami/postgresql/tags
   save-image bitnami/postgresql 12.8.0 third-party-image-postgresql
-  # Keycloak: Since we are building a custom image, we don't include that in thirdparty but in primary bundle
+
+  # Keycloak: We are using a custom image
+  save-image "ghcr.io/opentdf/keycloak" 18.0.2 "opentdf-keycloak"
 
   # nginx ingress
   save-image k8s.gcr.io/ingress-nginx/controller v1.1.1 third-party-image-ingress-nginx
@@ -169,36 +188,38 @@ if [[ ! $no_third_party ]]; then
   save-image registry 2.8.1 third-party-image-docker-registry
 fi
 
-# Third party helm charts
-if ! helm pull --repo https://kubernetes.github.io/ingress-nginx --version 4.0.16 --destination "${OUT_DIR}/charts" ingress-nginx; then
-  monolog ERROR "Unable to helm pull ingress-nginx"
-  exit 1
-fi
-if ! helm pull --repo https://codecentric.github.io/helm-charts --version 17.0.1 --destination "${OUT_DIR}/charts" keycloak; then
-  monolog ERROR "Unable to helm pull keycloak"
-  exit 1
-fi
-if ! helm pull --repo https://charts.bitnami.com/bitnami --version 10.16.2 --destination "${OUT_DIR}/charts" postgresql; then
-  monolog ERROR "Unable to helm pull postgresql"
-  exit 1
-fi
-if ! helm pull --repo https://helm.twun.io --version 2.1.0 --destination "${OUT_DIR}/charts" docker-registry; then
-  monolog ERROR "Unable to helm pull twuni/docker-registry"
-  exit 1
-fi
-
-# First party helm charts
-for index in "${!services[@]}"; do
-  x="${services[$index]}"
-  i="oci://ghcr.io/opentdf/charts/${x}"
-  tag="${chart_tags[$index]}"
-  if [[ keycloak == "$x" ]]; then
-    : # third party chart; skipping...
-  elif ! helm pull "${i}" --version "${tag}" --destination "${OUT_DIR}/charts"; then
-    monolog ERROR "Failed to [helm pull ${i} --version $tag]"
+if [[ ! $no_third_party && ! $no_charts ]]; then
+  monolog DEBUG "Saving third party charts..."
+  if ! helm pull --repo https://kubernetes.github.io/ingress-nginx --version 4.0.16 --destination "${OUT_DIR}/charts" ingress-nginx; then
+    monolog ERROR "Unable to helm pull ingress-nginx"
     exit 1
   fi
-done
+  if ! helm pull --repo https://codecentric.github.io/helm-charts --version 1.4.2 --destination "${OUT_DIR}/charts" keycloakx; then
+    monolog ERROR "Unable to helm pull keycloak"
+    exit 1
+  fi
+  if ! helm pull --repo https://charts.bitnami.com/bitnami --version 10.16.2 --destination "${OUT_DIR}/charts" postgresql; then
+    monolog ERROR "Unable to helm pull postgresql"
+    exit 1
+  fi
+  if ! helm pull --repo https://helm.twun.io --version 2.1.0 --destination "${OUT_DIR}/charts" docker-registry; then
+    monolog ERROR "Unable to helm pull twuni/docker-registry"
+    exit 1
+  fi
+fi
+
+if [[ ! $no_first_party && ! $no_charts ]]; then
+  monolog DEBUG "Saving first party charts..."
+  for index in "${!charts[@]}"; do
+    chart="${charts[$index]}"
+    url="oci://ghcr.io/opentdf/charts/${chart}"
+    tag="${chart_tags[$index]}"
+    if ! helm pull "${url}" --version "${tag}" --destination "${OUT_DIR}/charts"; then
+      monolog ERROR "Failed to [helm pull ${url} --version $tag]"
+      exit 1
+    fi
+  done
+fi
 
 # Include an example deployment
 if ! rsync -lmr --safe-links --executability --force quickstart "${OUT_DIR}"; then

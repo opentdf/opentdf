@@ -1,5 +1,7 @@
-rootPath: /entitlements
+serverRootPath: /api/entitlements
 publicName: "Entitlement"
+serverCorsOrigins: "*"
+openapiUrl: /openapi
 logLevel: DEBUG
 postgres:
   host: postgresql
@@ -29,5 +31,5 @@ ingress:
     host.docker.internal: *paths
     offline.demo.internal: *paths
     opentdf.local: *paths
-secretRef:
+secretRef: |
   name: entitlements-secrets
