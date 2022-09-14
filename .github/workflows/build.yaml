@@ -217,7 +217,7 @@ jobs:
           kubectl get pods -A
       - env:
           TEST_SCRIPT: ../quickstart/tests/wait-and-test.sh
-        run: tilt ci --file examples.Tiltfile
+        run: tilt ci
         working-directory: examples
 
   ci:
