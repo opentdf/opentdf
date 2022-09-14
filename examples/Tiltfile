@@ -1,27 +1,25 @@
+# Tiltfile for development
+# https://docs.tilt.dev/api.html
+#
 load("ext://helm_resource", "helm_resource", "helm_repo")
-
-# version_settings() enforces a minimum Tilt version
-# https://docs.tilt.dev/api.html#api.version_settings
-version_settings(constraint='>=0.30.0')
 
 # Where the redirect URI should go to, for example
 EXTERNAL_URL = "http://localhost:65432"
 
+# Versions of things backend to pull (attributes, kas, etc)
+BACKEND_CHART_TAG = "1.1.0"
+FRONTEND_CHART_TAG = "1.1.0"
 
 # disable Quickstart bootstrap
 os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')
 
-# Where helm values for examples
-os.putenv('HELM_VALUES_PATH', '../examples/helm/')
+include('../quickstart/Tiltfile')
 
-# start Quickstart
-# https://docs.tilt.dev/api.html#api.include
-# Versions of things backend to pull (attributes, kas, etc)
-load('../quickstart/Tiltfile', "BACKEND_CHART_TAG")
+#k8s_resource("kas", resource_deps=["opentdf-attributes"], port_forwards="8000:8000")
 
 # execute Examples bootstrap
 helm_resource(
-    "bootstrap",
+    "keycloak-bootstrap",
     "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
     flags=[
         "--version",
@@ -31,6 +29,94 @@ helm_resource(
         "--set",
         "externalUrl=%s" % EXTERNAL_URL,
     ],
-    labels="examples",
+    labels="utility",
     resource_deps=["attributes", "entitlements", "keycloak"],
+)
+
+# abacship frontend
+k8s_yaml("abacship-app/kubernetes.yaml")
+k8s_resource(
+    "opentdf-abacship",
+    resource_deps = ["keycloak-bootstrap"],
+    labels="abacship",
+)
+
+docker_build(
+    "opentdf/abacship",
+    "./abacship-app"
+)
+
+# abacship backend
+docker_build(
+    "opentdf/abacship-backend",
+    "./abacship-app/backend_server"
+)
+
+abacship_backend_set = [
+    "image.name=opentdf/abacship-backend"
+    ]
+
+k8s_yaml(
+    helm(
+        "abacship-app/backend_server/helm",
+        "abacship-backend",
+        set=abacship_backend_set,
+        values=["abacship-app/backend_server/deployment/abacship-backend-values.yaml"],
+    )
+)
+
+k8s_resource(
+   "abacship-backend", 
+    resource_deps=["keycloak-bootstrap"],
+    labels="abacship"
+)
+
+if os.environ.get("CI"):
+    # some local resource to run integration tests
+    local_resource(
+        "opentdf-abacship-backend-tests",
+        cmd = "./abacship-app/backend_server/scripts/run_tests_in_venv.sh",
+        labels="abacship",
+        resource_deps = ["abacship-backend"],
+        allow_parallel=True
+    )
+
+# secure remote storage
+k8s_yaml("./secure-remote-storage/kubernetes.yaml")
+k8s_resource(
+    "opentdf-secure-remote-storage",
+    resource_deps = ["keycloak-bootstrap"],
+    labels="secure-remote-storage",
+)
+
+docker_build(
+    "opentdf/secure-remote-storage",
+    "./secure-remote-storage"
+)
+
+# sample web app
+k8s_yaml("web-app/kubernetes.yaml")
+k8s_resource(
+    "web-app",
+    port_forwards = '4070:4070',
+    resource_deps = ["keycloak-bootstrap"],
+    labels="web-app"
+)
+
+docker_build(
+    "opentdf/web-app",
+    "./web-app",
+)
+
+# webcam app
+k8s_yaml("webcam-app/kubernetes.yaml")
+k8s_resource(
+    "opentdf-webcam-app",
+    resource_deps = ["keycloak-bootstrap"],
+    labels="webcam-app",
+)
+
+docker_build(
+    "opentdf/webcam-app",
+    "./webcam-app"
 )
