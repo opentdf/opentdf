@@ -22,7 +22,7 @@ keycloak_openid = KeycloakOpenID(
     server_url=KEYCLOAK_URL,
     client_id=OIDC_CLIENTID,
     realm_name=REALM,
-) 
+)
 
 
 ########################## Setup ##############################
@@ -43,7 +43,7 @@ def setupAttributes():
     teardownAttributes()
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
     createAbacshipAuthority(authToken)
-    createAbacshipAttributes(authToken) 
+    createAbacshipAttributes(authToken)
 
 def setupEntitlements():
     logger.debug("Setting up entitlements")
@@ -218,7 +218,7 @@ def createClient(keycloak_admin, keycloak_auth_url, client_id, client_secret):
             "publicClient": "false",
             "redirectUris": [keycloak_auth_url + "admin/" + client_id + "/console"],
             "attributes": {
-                "user.info.response.signature.alg": "RS256"
+                "user.info.response.signature.alg": "RS256", "pkce.code.challenge.method": "S256"
             },  # Needed to make UserInfo return signed JWT
         },
         skip_exists=True,
@@ -288,7 +288,7 @@ def createAuthority(authority, authToken):
     if authority in response.json():
         logger.info(f"Authority {authority} already exists")
         return
-    
+
     logger.debug("Using auth JWT: [%s]", authToken)
 
     response = requests.post(
@@ -396,7 +396,7 @@ def createAbacshipAttributes(authToken):
 def deleteAbacshipAttrDefinitions(authToken):
     deleteAttributeDefinition(player1_definition, authToken)
     deleteAttributeDefinition(player2_definition, authToken)
-    
+
 
 ######################################################################
 
@@ -537,11 +537,11 @@ def addBackendClientAttrs(authToken, keycloak_admin):
 
 def addGameUserAttrs(username, player_name, authToken, keycloak_admin):
     # user_attr_map = {
-    #     username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/board"] + 
+    #     username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/board"] +
     #     [f"{AUTH_NAMESPACE}/attr/{player_name}/value/{i}" for i in digits],
     # }
 
-    # temporarily stop assinging player1 all of player1 attributes 
+    # temporarily stop assinging player1 all of player1 attributes
     user_attr_map = {
         username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/board"],
     }
@@ -560,7 +560,7 @@ def deleteBackendClientAttrs(authToken, keycloak_admin):
 def deleteGameUserAttrs(username, authToken, keycloak_admin):
     user_attr_map = {
         username: [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
-         [f"{AUTH_NAMESPACE}/attr/player1/value/board"] + 
+         [f"{AUTH_NAMESPACE}/attr/player1/value/board"] +
          [f"{AUTH_NAMESPACE}/attr/player2/value/{i}" for i in digits] +
          [f"{AUTH_NAMESPACE}/attr/player2/value/board"]
     }
