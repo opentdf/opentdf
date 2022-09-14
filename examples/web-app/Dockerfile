@@ -7,4 +7,6 @@ RUN pip install -r requirements.txt
 
 ADD . .
 
+EXPOSE 4070
+
 ENTRYPOINT ["uvicorn", "main:app", "--reload", "--port", "4070"]
