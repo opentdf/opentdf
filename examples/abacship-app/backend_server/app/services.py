@@ -312,7 +312,9 @@ def createAttributeDefinition(definition, authToken):
     loc = f"{ATTRIBUTES_URL}/definitions/attributes"
     logger.debug(f"Adding attribute definition {definition}")
     response = requests.get(loc, headers={"Authorization": f"Bearer {authToken}"})
-    if definition in response.json():
+    check_definition = dict(definition)
+    check_definition['group_by'] = None
+    if check_definition in response.json():
         logger.info(f"Attribute definition {definition} already exists")
         return
 
