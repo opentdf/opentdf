@@ -6,7 +6,7 @@ KEYCLOAK_URL = os.getenv("KEYCLOAK_URL", "http://localhost:65432/auth/")
 KC_ADMIN_USER = os.getenv("KC_ADMIN_USER", "keycloakadmin")
 KC_ADMIN_PASSWORD = os.getenv("KC_ADMIN_PASSWORD", "mykeycloakpassword")
 REALM = os.getenv("REALM", "tdf")
-OIDC_CLIENTID = os.getenv("OIDC_CLIENTID", "dcr-test")
+OIDC_CLIENTID = os.getenv("OIDC_CLIENTID", "abachsip-backend-client")
 
 ENTITLEMENTS_URL = os.getenv("ENTITLEMENTS_URL", "http://localhost:65432/api/entitlements")
 ATTRIBUTES_URL = os.getenv("ATTRIBUTES_URL","http://localhost:65432/api/attributes")
@@ -17,7 +17,7 @@ EXTERNAL_KAS_URL = os.getenv("EXTERNAL_KAS_URL", "http://localhost:65432/api/kas
 KAS_PUB_KEY_URL = "/kas_public_key?algorithm=ec:secp256r1"
 
 # to get authToken for posting attributes and entitlements
-SAMPLE_USER = "testuser@virtru.com"
+SAMPLE_USER = "abacship-backend-user"
 SAMPLE_PASSWORD = "testuser123"
 
 AUTH_NAMESPACE = "http://ship.fun"

@@ -143,7 +143,7 @@ def run_tests():
     logger.info(f"************Test attribute and authority setup************")
     keycloak_openid = KeycloakOpenID(
         server_url=KEYCLOAK_URL,
-        client_id="dcr-test",
+        client_id="abachsip-backend-client",
         realm_name="tdf",
     )
     authToken = keycloak_openid.token("user1", "testuser123")

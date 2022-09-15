@@ -9,7 +9,7 @@ import './index.css';
 const keycloak = new Keycloak({
   realm: 'tdf',
   url: 'http://localhost:65432/auth/',
-  clientId: 'browsertest',
+  clientId: 'secure-remote-storage-client',
 });
 
 ReactDom.render(

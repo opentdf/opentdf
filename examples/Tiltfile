@@ -13,6 +13,9 @@ FRONTEND_CHART_TAG = "1.1.0"
 # disable Quickstart bootstrap
 os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')
 
+# Where helm values for examples
+os.putenv('HELM_VALUES_PATH', '../examples/helm')
+
 include('../quickstart/Tiltfile')
 
 #k8s_resource("kas", resource_deps=["opentdf-attributes"], port_forwards="8000:8000")

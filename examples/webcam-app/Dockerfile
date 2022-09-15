@@ -9,8 +9,6 @@ RUN npm uninstall @opentdf/client
 RUN npm install opentdf-client-0.2.2.tgz
 RUN npm install
 RUN echo $(printenv)
-ENV REACT_APP_OIDC_CLIENTID "browsertest"
-# ENV REACT_APP_OIDC_CLIENTID "examples-webcam-app"
 
 
 # builder - create-react-app build

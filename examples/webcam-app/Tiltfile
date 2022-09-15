@@ -15,7 +15,7 @@ FRONTEND_CHART_TAG = "1.1.0"
 os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')
 
 # Where helm values for examples
-os.putenv('HELM_VALUES_PATH', '../examples/webcam-app/helm')
+os.putenv('HELM_VALUES_PATH', '../examples/helm')
 
 # start Quickstart
 # https://docs.tilt.dev/api.html#api.include
@@ -29,7 +29,7 @@ helm_resource(
         "--version",
         BACKEND_CHART_TAG,
         "-f",
-        "helm/values-bootstrap.yaml",
+        "../helm/values-bootstrap.yaml",
         "--set",
         "externalUrl=%s" % EXTERNAL_URL,
     ],
