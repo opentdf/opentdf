@@ -42,10 +42,6 @@ export function HomePage() {
     const [dataAttributes, setDataAttributes] = useState<string[]>([]);
     const [streamStarted, setStartStream] = useState<boolean>(false);
     const [streamReset, setStartReset] = useState<boolean>(false);
-    const errorMap = useRef({
-        bob: false,
-        eve: false,
-    });
 
     const resetStream = useCallback(() => {
         if (streamStarted) {
@@ -123,11 +119,6 @@ export function HomePage() {
             // @ts-ignore
             let ctx = canvas.getContext('2d');
             async function loop() {
-                errorMap.current = {
-                    bob: false,
-                    eve: false,
-                };
-
                 // source frame
                 // @ts-ignore
                 ctx?.drawImage(webcamDevice, 0, 0, width, height);
@@ -138,10 +129,7 @@ export function HomePage() {
                 const cipherImageData = await clientWebcam?.encrypt(imageData.data.buffer);
                 const updateCanvas = async (canvasContext: CanvasRenderingContext2D | null, client: NanoTDFDatasetClient | undefined, imageDataEncrypted: ArrayBuffer, userName?: string) => {
                     try {
-                        const incomingBuffer = await client?.decrypt(imageDataEncrypted).catch(() => {
-                            // @ts-ignore
-                            errorMap.current[userName] = true;
-                        });
+                        const incomingBuffer = await client?.decrypt(imageDataEncrypted);
                         const imageDataBob = canvasContext?.createImageData(width, height);
                         // @ts-ignore
                         imageDataBob?.data.set(incomingBuffer);
