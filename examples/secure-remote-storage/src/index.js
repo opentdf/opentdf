@@ -18,8 +18,10 @@ ReactDom.render(
     initOptions={{
       checkLoginIframe: false,
       responseType: "code id_token token",
+      pkceMethod: "S256"
     }}
     onEvent={(event, error) => {
+        console.log("onKeycloakEvent", event, error);
     }}
     onTokens={(tokens) => {
       sessionStorage.setItem('keycloak', tokens.token || '');

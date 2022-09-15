@@ -21,7 +21,9 @@ ReactDOM.render(
   <ReactKeycloakProvider
     authClient={keycloak}
     initOptions={{
-      onLoad: 'login-required'
+      onLoad: 'login-required',
+      responseType: "code id_token token",
+      pkceMethod: "S256"
     }}
     onEvent={(event, error) => {
       console.log("onKeycloakEvent", event, error);
