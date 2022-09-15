@@ -2,6 +2,8 @@
 # https://docs.tilt.dev/api.html
 #
 
+load("ext://helm_resource", "helm_resource", "helm_repo")
+
 # Where the redirect URI should go to, for example
 EXTERNAL_URL = "http://localhost:65432"
 
