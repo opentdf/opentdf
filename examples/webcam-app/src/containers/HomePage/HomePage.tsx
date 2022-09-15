@@ -140,21 +140,17 @@ export function HomePage() {
                     }
                 };
                 if (cipherImageData) {
-                    // @ts-ignore
                     updateCanvas(contextAlice, clientAlice, cipherImageData);
 
-                    // @ts-ignore
                     if (!isRestricted) {
                         updateCanvas(contextBob, clientBob, cipherImageData, 'bob');
                     }
 
-                    // @ts-ignore
                     if (!isRestricted && !isPremium) {
                         updateCanvas(contextEve, clientEve, cipherImageData, 'eve');
                     }
                 }
                 if (isRenderLoop) {
-                    // @ts-ignore
                     setTimeout(() => loop(), 1000 / 30); // drawing at 30fps
                 }
             }
