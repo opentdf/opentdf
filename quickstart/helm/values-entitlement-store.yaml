@@ -1,5 +1,5 @@
-secretRef:
-  name: claims-secrets
+secretRef: |
+  name: entitlement-store-secrets
 service:
   port: 5000
 postgres:
