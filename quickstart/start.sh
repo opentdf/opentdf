@@ -13,7 +13,7 @@ export PATH="$TOOLS_ROOT:$PATH"
 
 e() {
   local rval=$?
-  if [[ $rval ]]; then
+  if [[ $rval != 0 ]]; then
     monolog ERROR "${@}"
     exit $rval
   fi
@@ -194,12 +194,27 @@ if [[ $LOAD_SECRETS ]]; then
       keycloak)
         monolog TRACE "Creating 'keycloak-secrets'..."
         kubectl create secret generic keycloak-secrets \
-          --from-literal=DB_USER=postgres \
-          --from-literal=DB_PASSWORD=myPostgresPassword \
-          --from-literal=KEYCLOAK_USER=keycloakadmin \
-          --from-literal=KEYCLOAK_PASSWORD=mykeycloakpassword
+          --from-literal=KEYCLOAK_ADMIN=keycloakadmin \
+          --from-literal=KEYCLOAK_ADMIN_PASSWORD=mykeycloakpassword \
+          --from-literal=KC_HOSTNAME=localhost:65432 \
+          --from-literal=KC_HOSTNAME_ADMIN=localhost:65432 \
+          --from-literal=KC_DB_USERNAME=postgres \
+          --from-literal=KC_DB_PASSWORD=myPostgresPassword \
+          --from-literal=KC_DB_URL_HOST=postgresql \
+          --from-literal=KC_DB_URL_DATABASE=keycloak_database
+        e "create keycloak-secrets failed"
         ;;
-      abacus | entity-resolution | keycloak-bootstrap)
+      keycloak-bootstrap)
+        monolog TRACE "Creating 'keycloak-bootstrap-secret'..."
+        kubectl create secret generic keycloak-bootstrap-secret \
+          --from-literal=CLIENT_SECRET=123-456 \
+          --from-literal=keycloak_admin_username=keycloakadmin \
+          --from-literal=keycloak_admin_password=mykeycloakpassword \
+          --from-literal=ATTRIBUTES_USERNAME=user1 \
+          --from-literal=ATTRIBUTES_PASSWORD=testuser123
+        e "create keycloak-bootstrap-secret failed"
+        ;;
+      abacus | entity-resolution)
         # Service without its own secrets
         ;;
       *)
