@@ -57,6 +57,7 @@ def setupEntitlements():
     )
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
     addBackendClientAttrs(authToken, keycloak_admin)
+    addFrontendClientAttrs(authToken, keycloak_admin)
 
 def setupUserEntitlements(username, player_name):
     logger.debug(f"Setting up user entitlements for {username}")
@@ -96,6 +97,7 @@ def teardownClientEntitlements():
     )
     authToken = keycloak_openid.token(SAMPLE_USER, SAMPLE_PASSWORD)["access_token"]
     deleteBackendClientAttrs(authToken, keycloak_admin)
+    deleteFrontendClientAttrs(authToken, keycloak_admin)
 
 
 def teardownAttributes():
@@ -537,6 +539,16 @@ def addBackendClientAttrs(authToken, keycloak_admin):
     }
     insertAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
 
+def addFrontendClientAttrs(authToken, keycloak_admin):
+    attr_map = {
+        FRONTEND_OIDC_CLIENTID: [
+            f"{AUTH_NAMESPACE}/attr/player1/value/board",
+            f"{AUTH_NAMESPACE}/attr/player2/value/board"]
+        # + [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
+        # [f"{AUTH_NAMESPACE}/attr/player2/value/{i}" for i in digits]
+    }
+    insertAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
+
 def addGameUserAttrs(username, player_name, authToken, keycloak_admin):
     # user_attr_map = {
     #     username: [f"{AUTH_NAMESPACE}/attr/{player_name}/value/board"] +
@@ -552,6 +564,16 @@ def addGameUserAttrs(username, player_name, authToken, keycloak_admin):
 def deleteBackendClientAttrs(authToken, keycloak_admin):
     attr_map = {
         BACKEND_CLIENTID: [
+            f"{AUTH_NAMESPACE}/attr/player1/value/board",
+            f"{AUTH_NAMESPACE}/attr/player2/value/board"
+        ] + [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +
+        [f"{AUTH_NAMESPACE}/attr/player2/value/{i}" for i in digits]
+    }
+    deleteAttrsForClients(keycloak_admin, ENTITLEMENTS_URL, attr_map, authToken)
+
+def deleteFrontendClientAttrs(authToken, keycloak_admin):
+    attr_map = {
+        FRONTEND_OIDC_CLIENTID: [
             f"{AUTH_NAMESPACE}/attr/player1/value/board",
             f"{AUTH_NAMESPACE}/attr/player2/value/board"
         ] + [f"{AUTH_NAMESPACE}/attr/player1/value/{i}" for i in digits] +

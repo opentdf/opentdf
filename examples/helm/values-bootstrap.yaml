@@ -288,8 +288,6 @@ keycloak:
         - "{{ externalUrl }}/*"
         webOrigins:
         - "+"
-        attributes:
-          user.info.response.signature.alg: RS256
       mappers:
       - protocol: openid-connect
         config:

@@ -7,6 +7,7 @@ KC_ADMIN_USER = os.getenv("KC_ADMIN_USER", "keycloakadmin")
 KC_ADMIN_PASSWORD = os.getenv("KC_ADMIN_PASSWORD", "mykeycloakpassword")
 REALM = os.getenv("REALM", "tdf")
 OIDC_CLIENTID = os.getenv("OIDC_CLIENTID", "abachsip-backend-client")
+FRONTEND_OIDC_CLIENTID = os.getenv("FRONTEND_OIDC_CLIENTID", "abacship-frontend")
 
 ENTITLEMENTS_URL = os.getenv("ENTITLEMENTS_URL", "http://localhost:65432/api/entitlements")
 ATTRIBUTES_URL = os.getenv("ATTRIBUTES_URL","http://localhost:65432/api/attributes")
