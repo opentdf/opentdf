@@ -6,8 +6,10 @@ export PATH="$TOOLS_DIR:$PATH"
 
 e() {
   local rval=$?
-  monolog ERROR "${@}"
-  exit $rval
+  if [[ $rval != 0 ]]; then
+    monolog ERROR "${@}"
+    exit $rval
+  fi
 }
 
 case ${LOCAL_TOOL} in
@@ -20,6 +22,7 @@ case ${LOCAL_TOOL} in
     . "$TOOLS_DIR/lib-minikube.sh"
     ;;
   *)
-    e "Unrecognized local tool [${LOCAL_TOOL}]"
+    monolog ERROR "Unrecognized local tool [${LOCAL_TOOL}]"
+    exit 1
     ;;
 esac
