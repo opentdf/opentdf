@@ -109,31 +109,25 @@ fi
 . "${TOOLS_ROOT}/lib-local.sh"
 
 # Make sure required utilities are installed.
-local_info
-e "Local cluster manager [${LOCAL_TOOL}] is not available"
+local_info || e "Local cluster manager [${LOCAL_TOOL}] is not available"
 
-kubectl version --client | monolog DEBUG
-e "kubectl is not available"
+kubectl version --client | monolog DEBUG || e "kubectl is not available"
 
-helm version | monolog DEBUG
-e "helm is not available"
+helm version | monolog DEBUG || e "helm is not available"
 
 if [[ $LOAD_IMAGES && $RUN_OFFLINE ]]; then
   # Copy images from local tar files into local docker registry
-  docker-load-and-tag-exports
-  e "Unable to load images"
+  docker-load-and-tag-exports || e "Unable to load images"
 fi
 
 if [[ $START_CLUSTER ]]; then
-  local_start
-  e "Failed to start local k8s tool [${LOCAL_TOOL}]"
+  local_start || e "Failed to start local k8s tool [${LOCAL_TOOL}]"
 fi
 
 # Copy images from local registry into k8s registry
 maybe_load() {
   if [[ $LOAD_IMAGES ]]; then
-    local_load "$1"
-    e "Unable to load service image [${1}]"
+    local_load "$1" || e "Unable to load service image [${1}]"
   fi
 }
 
@@ -163,23 +157,19 @@ if [[ $LOAD_SECRETS ]]; then
       attributes)
         monolog TRACE "Creating 'attributes-secrets'..."
         kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
-        e "create aa secrets failed"
         ;;
       entitlement-store)
         monolog TRACE "Creating 'entitlement-store-secrets'..."
         kubectl create secret generic entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
-        e "create ent-store secrets failed"
         ;;
       entitlement-pdp)
         monolog TRACE "Creating 'entitlement-pdp-secret'..."
         # If CR_PAT is undefined and the entitlement-pdp chart is configured to use the policy bundle baked in at container build time, this isn't used and can be empty
         kubectl create secret generic entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}"
-        e "create ent-pdp secrets failed"
         ;;
       entitlements)
         monolog TRACE "Creating 'entitlements-secrets'..."
         kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
-        e "create ea secrets failed"
         ;;
       kas)
         monolog TRACE "Creating 'kas-secrets'..."
@@ -189,7 +179,6 @@ if [[ $LOAD_SECRETS ]]; then
           "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
           "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
           "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt"
-        e "create kas-secrets failed"
         ;;
       keycloak)
         monolog TRACE "Creating 'keycloak-secrets'..."
@@ -202,7 +191,6 @@ if [[ $LOAD_SECRETS ]]; then
           --from-literal=KC_DB_PASSWORD=myPostgresPassword \
           --from-literal=KC_DB_URL_HOST=postgresql \
           --from-literal=KC_DB_URL_DATABASE=keycloak_database
-        e "create keycloak-secrets failed"
         ;;
       keycloak-bootstrap)
         monolog TRACE "Creating 'keycloak-bootstrap-secret'..."
@@ -212,7 +200,6 @@ if [[ $LOAD_SECRETS ]]; then
           --from-literal=keycloak_admin_password=mykeycloakpassword \
           --from-literal=ATTRIBUTES_USERNAME=user1 \
           --from-literal=ATTRIBUTES_PASSWORD=testuser123
-        e "create keycloak-bootstrap-secret failed"
         ;;
       abacus | entity-resolution)
         # Service without its own secrets
@@ -222,6 +209,7 @@ if [[ $LOAD_SECRETS ]]; then
         exit 1
         ;;
     esac
+    e "create secrets failed for ${service}"
   done
 fi
 
