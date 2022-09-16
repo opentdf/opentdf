@@ -176,16 +176,16 @@ if [[ ! $no_third_party && ! $no_images ]]; then
 
   # postgresql
   # Update URI: https://hub.docker.com/r/bitnami/postgresql/tags
-  save-image bitnami/postgresql 12.8.0 third-party-image-postgresql
+  save-image bitnami/postgresql 11.14.0-debian-10-r28 third-party-image-postgresql
 
-  # Keycloak: We are using a custom image
+  # Keycloak: We are using a custom image with entitlement support
   save-image "ghcr.io/opentdf/keycloak" 18.0.2 "opentdf-keycloak"
 
   # nginx ingress
   save-image k8s.gcr.io/ingress-nginx/controller v1.1.1 third-party-image-ingress-nginx
 
   # docker registry
-  save-image registry 2.8.1 third-party-image-docker-registry
+  save-image registry 2.7.1 third-party-image-docker-registry
 fi
 
 if [[ ! $no_third_party && ! $no_charts ]]; then
