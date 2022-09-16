@@ -32,7 +32,7 @@ REWRITE_HOSTNAME=1
 
 # NOTE: 1.1.0 default values. When releasing a new version, move these below to
 # the api-version selector and update the default.
-services=(abacus attributes entitlement-pdp entitlement_store entitlements entity-resolution kas keycloak keycloak-bootstrap)
+services=(abacus attributes entitlement-pdp entitlement-store entitlements entity-resolution kas keycloak keycloak-bootstrap)
 chart_tags=(1.1.0{,,,,,,,})
 
 while [[ $# -gt 0 ]]; do
@@ -133,6 +133,8 @@ if [[ $LOAD_IMAGES ]]; then
   for s in "${services[@]}"; do
     if [[ "$s" == keycloak && ! $USE_KEYCLOAK ]]; then
       : # Skip loading keycloak in this case
+    elif [[ "$s" == entitlement-store ]]; then
+      maybe_load "ghcr.io/opentdf/entitlement_store:${SERVICE_IMAGE_TAG}"
     else
       maybe_load "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}"
     fi
@@ -180,7 +182,7 @@ if [[ $LOAD_SECRETS ]]; then
           --from-literal=KEYCLOAK_USER=keycloakadmin \
           --from-literal=KEYCLOAK_PASSWORD=mykeycloakpassword
         ;;
-      abacus | keycloak-bootstrap)
+      abacus | entity-resolution | keycloak-bootstrap)
         # Service without its own secrets
         ;;
       *)
@@ -237,10 +239,10 @@ if [[ $INIT_NGINX_CONTROLLER ]]; then
   if [[ $RUN_OFFLINE ]]; then
     # TODO: Figure out how to set controller.image.tag to the correct value
     monolog TRACE "helm upgrade --install ingress-nginx ${CHART_ROOT}/ingress-nginx-4.0.16.tgz --set controller.image.digest= ${nginx_params[*]}"
-    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "--set" "controller.image.digest=" "${nginx_params[@]}" || e "Unable to helm upgrade postgresql"
+    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "--set" "controller.image.digest=" "${nginx_params[@]}" || e "Unable to helm upgrade ingress-nginx"
   else
     monolog TRACE "helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx ${nginx_params[*]}"
-    helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}" || e "Unable to helm upgrade postgresql"
+    helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}" || e "Unable to helm upgrade ingress-nginx"
   fi
 fi
 
