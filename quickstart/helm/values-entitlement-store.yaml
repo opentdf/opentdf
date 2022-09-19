@@ -1,5 +1,5 @@
 secretRef: |
-  name: entitlement-store-secrets
+  name: entitlement-store-secret
 service:
   port: 5000
 postgres:

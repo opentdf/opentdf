@@ -14,4 +14,4 @@ ingress:
     offline.demo.internal: *paths
     opentdf.local: *paths
 externalEnvSecretName: true
-externalSecretName: kas-secrets
+externalSecretName: kas-secret

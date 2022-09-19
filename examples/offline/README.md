@@ -166,13 +166,13 @@ For this example, we will use self signed certificates and secrets:
 
 ```sh
 export/scripts/genkeys-if-needed
-kubectl create secret generic kas-secrets \
+kubectl create secret generic kas-secret \
     "--from-file=EAS_CERTIFICATE=export/certs/eas-public.pem" \
     "--from-file=KAS_EC_SECP256R1_CERTIFICATE=export/certs/kas-ec-secp256r1-public.pem" \
     "--from-file=KAS_CERTIFICATE=export/certs/kas-public.pem" \
     "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=export/certs/kas-ec-secp256r1-private.pem" \
     "--from-file=KAS_PRIVATE_KEY=export/certs/kas-private.pem" \
-    "--from-file=ca-cert.pem=export/certs/ca.crt" || e "create kas-secrets failed"
+    "--from-file=ca-cert.pem=export/certs/ca.crt"
 ```
 
 We will also need to generate and use a custom postgres password.
@@ -180,8 +180,8 @@ We will also need to generate and use a custom postgres password.
 ```sh
 POSTGRES_PW=$(openssl rand -base64 40)
 sed -i '' "s/myPostgresPassword/${POSTGRES_PW}/" export/quickstart/helm/values-postgresql.yaml
-kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD="${POSTGRES_PW}"
-kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD="${POSTGRES_PW}"
+kubectl create secret generic attributes-secret --from-literal=POSTGRES_PASSWORD="${POSTGRES_PW}"
+kubectl create secret generic entitlements-secret --from-literal=POSTGRES_PASSWORD="${POSTGRES_PW}"
 ```
 
 > TODO: Move keycloak creds into secrets.

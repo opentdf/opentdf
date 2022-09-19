@@ -155,12 +155,12 @@ if [[ $LOAD_SECRETS ]]; then
   for service in "${services[@]}"; do
     case "$service" in
       attributes)
-        monolog TRACE "Creating 'attributes-secrets'..."
-        kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        monolog TRACE "Creating 'attributes-secret'..."
+        kubectl create secret generic attributes-secret --from-literal=POSTGRES_PASSWORD=myPostgresPassword
         ;;
       entitlement-store)
-        monolog TRACE "Creating 'entitlement-store-secrets'..."
-        kubectl create secret generic entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        monolog TRACE "Creating 'entitlement-store-secret'..."
+        kubectl create secret generic entitlement-store-secret --from-literal=POSTGRES_PASSWORD=myPostgresPassword
         ;;
       entitlement-pdp)
         monolog TRACE "Creating 'entitlement-pdp-secret'..."
@@ -168,12 +168,12 @@ if [[ $LOAD_SECRETS ]]; then
         kubectl create secret generic entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}"
         ;;
       entitlements)
-        monolog TRACE "Creating 'entitlements-secrets'..."
-        kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        monolog TRACE "Creating 'entitlements-secret'..."
+        kubectl create secret generic entitlements-secret --from-literal=POSTGRES_PASSWORD=myPostgresPassword
         ;;
       kas)
-        monolog TRACE "Creating 'kas-secrets'..."
-        kubectl create secret generic kas-secrets \
+        monolog TRACE "Creating 'kas-secret'..."
+        kubectl create secret generic kas-secret \
           "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
           "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
           "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
@@ -181,8 +181,8 @@ if [[ $LOAD_SECRETS ]]; then
           "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt"
         ;;
       keycloak)
-        monolog TRACE "Creating 'keycloak-secrets'..."
-        kubectl create secret generic keycloak-secrets \
+        monolog TRACE "Creating 'keycloak-secret'..."
+        kubectl create secret generic keycloak-secret \
           --from-literal=KEYCLOAK_ADMIN=keycloakadmin \
           --from-literal=KEYCLOAK_ADMIN_PASSWORD=mykeycloakpassword \
           --from-literal=KC_HOSTNAME=localhost:65432 \

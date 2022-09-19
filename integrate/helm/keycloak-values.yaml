@@ -9,7 +9,7 @@ extraEnv: |
     value: -Dkeycloak.profile=preview -Dkeycloak.profile.feature.token_exchange=enabled
 extraEnvFrom: |
   - secretRef:
-      name: 'keycloak-secrets'
+      name: 'keycloak-secret'
 ingress:
   enabled: true
   ingressClassName: nginx

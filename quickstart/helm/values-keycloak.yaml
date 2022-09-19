@@ -38,7 +38,7 @@ extraEnv: |-
     value: -Djgroups.dns.query=keycloak-headless
 extraEnvFrom: |-
   - secretRef:
-      name: "keycloak-secrets"
+      name: "keycloak-secret"
 ingress:
   enabled: true
   ingressClassName: nginx
