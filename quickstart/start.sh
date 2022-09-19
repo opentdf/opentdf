@@ -13,8 +13,10 @@ export PATH="$TOOLS_ROOT:$PATH"
 
 e() {
   local rval=$?
-  monolog ERROR "${@}"
-  exit $rval
+  if [[ $rval != 0 ]]; then
+    monolog ERROR "${@}"
+    exit $rval
+  fi
 }
 
 : "${SERVICE_IMAGE_TAG:="offline"}"
@@ -32,7 +34,7 @@ REWRITE_HOSTNAME=1
 
 # NOTE: 1.1.0 default values. When releasing a new version, move these below to
 # the api-version selector and update the default.
-services=(abacus attributes entitlement-pdp entitlement_store entitlements entity-resolution kas keycloak keycloak-bootstrap)
+services=(abacus attributes entitlement-pdp entitlement-store entitlements entity-resolution kas keycloak keycloak-bootstrap)
 chart_tags=(1.1.0{,,,,,,,})
 
 while [[ $# -gt 0 ]]; do
@@ -81,7 +83,8 @@ while [[ $# -gt 0 ]]; do
       RUN_OFFLINE=1
       ;;
     *)
-      e "Unrecognized option: [$key]"
+      monolog ERROR "Unrecognized option: [$key]"
+      exit 1
       ;;
   esac
 done
@@ -107,7 +110,9 @@ fi
 
 # Make sure required utilities are installed.
 local_info || e "Local cluster manager [${LOCAL_TOOL}] is not available"
+
 kubectl version --client | monolog DEBUG || e "kubectl is not available"
+
 helm version | monolog DEBUG || e "helm is not available"
 
 if [[ $LOAD_IMAGES && $RUN_OFFLINE ]]; then
@@ -133,6 +138,8 @@ if [[ $LOAD_IMAGES ]]; then
   for s in "${services[@]}"; do
     if [[ "$s" == keycloak && ! $USE_KEYCLOAK ]]; then
       : # Skip loading keycloak in this case
+    elif [[ "$s" == entitlement-store ]]; then
+      maybe_load "ghcr.io/opentdf/entitlement_store:${SERVICE_IMAGE_TAG}"
     else
       maybe_load "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}"
     fi
@@ -142,26 +149,27 @@ else
 fi
 
 if [[ $LOAD_SECRETS ]]; then
-  "$TOOLS_ROOT"/genkeys-if-needed || e "Unable to generate keys"
+  "$TOOLS_ROOT"/genkeys-if-needed
+  e "Unable to generate keys"
 
   for service in "${services[@]}"; do
     case "$service" in
       attributes)
         monolog TRACE "Creating 'attributes-secrets'..."
-        kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create aa secrets failed"
+        kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
         ;;
       entitlement-store)
         monolog TRACE "Creating 'entitlement-store-secrets'..."
-        kubectl create secret generic entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ent-store secrets failed"
+        kubectl create secret generic entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
         ;;
       entitlement-pdp)
         monolog TRACE "Creating 'entitlement-pdp-secret'..."
         # If CR_PAT is undefined and the entitlement-pdp chart is configured to use the policy bundle baked in at container build time, this isn't used and can be empty
-        kubectl create secret generic entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}" || e "create ent-pdp secrets failed"
+        kubectl create secret generic entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}"
         ;;
       entitlements)
         monolog TRACE "Creating 'entitlements-secrets'..."
-        kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword || e "create ea secrets failed"
+        kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
         ;;
       kas)
         monolog TRACE "Creating 'kas-secrets'..."
@@ -170,23 +178,38 @@ if [[ $LOAD_SECRETS ]]; then
           "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
           "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
           "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
-          "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt" || e "create kas-secrets failed"
+          "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt"
         ;;
       keycloak)
         monolog TRACE "Creating 'keycloak-secrets'..."
         kubectl create secret generic keycloak-secrets \
-          --from-literal=DB_USER=postgres \
-          --from-literal=DB_PASSWORD=myPostgresPassword \
-          --from-literal=KEYCLOAK_USER=keycloakadmin \
-          --from-literal=KEYCLOAK_PASSWORD=mykeycloakpassword
+          --from-literal=KEYCLOAK_ADMIN=keycloakadmin \
+          --from-literal=KEYCLOAK_ADMIN_PASSWORD=mykeycloakpassword \
+          --from-literal=KC_HOSTNAME=localhost:65432 \
+          --from-literal=KC_HOSTNAME_ADMIN=localhost:65432 \
+          --from-literal=KC_DB_USERNAME=postgres \
+          --from-literal=KC_DB_PASSWORD=myPostgresPassword \
+          --from-literal=KC_DB_URL_HOST=postgresql \
+          --from-literal=KC_DB_URL_DATABASE=keycloak_database
         ;;
-      abacus | keycloak-bootstrap)
+      keycloak-bootstrap)
+        monolog TRACE "Creating 'keycloak-bootstrap-secret'..."
+        kubectl create secret generic keycloak-bootstrap-secret \
+          --from-literal=CLIENT_SECRET=123-456 \
+          --from-literal=keycloak_admin_username=keycloakadmin \
+          --from-literal=keycloak_admin_password=mykeycloakpassword \
+          --from-literal=ATTRIBUTES_USERNAME=user1 \
+          --from-literal=ATTRIBUTES_PASSWORD=testuser123
+        ;;
+      abacus | entity-resolution)
         # Service without its own secrets
         ;;
       *)
-        e "Failed due to unknown service [$service]"
+        monolog ERROR "Unrecognized option: [$service]"
+        exit 1
         ;;
     esac
+    e "create secrets failed for ${service}"
   done
 fi
 
@@ -207,10 +230,11 @@ if [[ $INIT_POSTGRES ]]; then
     maybe_load bitnami/postgresql:${SERVICE_IMAGE_TAG}
   fi
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade postgresql"
+    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
   else
-    helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" || e "Unable to helm upgrade postgresql"
+    helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml"
   fi
+  e "Unable to helm upgrade postgresql"
   wait_for_pod postgresql-postgresql-0
 fi
 
@@ -219,10 +243,11 @@ fi
 if [[ $USE_KEYCLOAK ]]; then
   monolog INFO --- "Installing Virtru-ified Keycloak"
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install keycloak "${CHART_ROOT}"/keycloakx-1.4.2.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade keycloak"
+    helm upgrade --install keycloak "${CHART_ROOT}"/keycloakx-1.4.2.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
   else
-    helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloakx -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to helm upgrade keycloak"
+    helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloakx -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
   fi
+  e "Unable to helm upgrade keycloak"
   wait_for_pod keycloak-0
 fi
 
@@ -237,11 +262,12 @@ if [[ $INIT_NGINX_CONTROLLER ]]; then
   if [[ $RUN_OFFLINE ]]; then
     # TODO: Figure out how to set controller.image.tag to the correct value
     monolog TRACE "helm upgrade --install ingress-nginx ${CHART_ROOT}/ingress-nginx-4.0.16.tgz --set controller.image.digest= ${nginx_params[*]}"
-    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "--set" "controller.image.digest=" "${nginx_params[@]}" || e "Unable to helm upgrade postgresql"
+    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "--set" "controller.image.digest=" "${nginx_params[@]}"
   else
     monolog TRACE "helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx ${nginx_params[*]}"
-    helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}" || e "Unable to helm upgrade postgresql"
+    helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}"
   fi
+  e "Unable to helm upgrade ingress-nginx"
 fi
 
 load-chart() {
@@ -251,11 +277,12 @@ load-chart() {
   val_file="${DEPLOYMENT_DIR}/values-${repo}.yaml"
   if [[ $RUN_OFFLINE ]]; then
     monolog TRACE "helm upgrade --install ${svc} ${CHART_ROOT}/${repo}-*.tgz -f ${val_file} --set image.tag=${SERVICE_IMAGE_TAG}"
-    helm upgrade --install "${svc}" "${CHART_ROOT}"/"${repo}"-*.tgz -f "${val_file}" --set image.tag=${SERVICE_IMAGE_TAG} || e "Unable to install chart for ${svc}"
+    helm upgrade --install "${svc}" "${CHART_ROOT}"/"${repo}"-*.tgz -f "${val_file}" --set image.tag="${SERVICE_IMAGE_TAG}"
   else
     monolog TRACE "helm upgrade --version ${version} --install ${svc} oci://ghcr.io/opentdf/charts/${repo} -f ${val_file}"
-    helm upgrade --version "${version}" --install "${svc}" "oci://ghcr.io/opentdf/charts/${repo}" -f "${val_file}" || e "Unable to install $svc chart"
+    helm upgrade --version "${version}" --install "${svc}" "oci://ghcr.io/opentdf/charts/${repo}" -f "${val_file}"
   fi
+  e "Unable to install chart for ${svc}"
 }
 
 if [[ $INIT_OPENTDF ]]; then
