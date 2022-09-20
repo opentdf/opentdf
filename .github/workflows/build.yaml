@@ -15,6 +15,7 @@ jobs:
       offline: ${{ steps.changes.outputs.offline }}
       quickstart: ${{ steps.changes.outputs.quickstart }}
       scripts: ${{ steps.changes.outputs.scripts }}
+      examples: ${{ steps.changes.outputs.examples }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
@@ -33,6 +34,11 @@ jobs:
               - 'scripts/**'
             clientapp:
               - 'examples/nanotdf-client-app/**'
+            examples:
+              - 'examples/abacship-app/**'
+              - 'examples/web-app/**'
+              - 'examples/webcam-app/**'
+              - 'examples/secure-remote-storage/**'
 
   scripts-test:
     runs-on: ubuntu-latest
@@ -165,9 +171,54 @@ jobs:
           registry-url: "https://npm.pkg.github.com"
       - run: npm ci
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm test
       - run: npm audit --audit-level critical && npm audit --production
+
+  examples-build-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: read
+    needs: deltas
+    if: ${{ needs.deltas.outputs.examples == 'true' || github.event.schedule }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+          cache: "pip"
+      - run: pip install opentdf
+      - uses: yokawasa/action-setup-kube-tools@v0.7.1
+        with:
+          setup-tools: |
+            kubectl
+            helm
+            tilt
+          # This should be in sync with the minikube-deployed kube version below
+          kubectl: "1.23.3"
+          helm: "3.8.1"
+          helmv3: "3.8.1"
+          tilt: "0.26.3"
+      - run: |
+          kustomize version
+          tilt version
+      - name: Start Minikube
+        id: minikube
+        uses: medyagh/setup-minikube@latest
+        with:
+          minikube-version: 1.25.2
+          # This should be in sync with the setup-tools version above
+          kubernetes-version: 1.23.3
+      - name: Get cluster versions
+        run: |-
+          kubectl version
+          kubectl get pods -A
+      - env:
+          TEST_SCRIPT: ../quickstart/tests/wait-and-test.sh
+        run: tilt ci
+        working-directory: examples
 
   ci:
     needs:
@@ -176,6 +227,7 @@ jobs:
       - offline-start-test
       - nanotdf-client-app-test
       - scripts-test
+      - examples-build-test
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -189,3 +241,5 @@ jobs:
         if: ${{ needs.nanotdf-client-app-test.result == 'failure' }}
       - run: exit 1
         if: ${{ needs.scripts-test.result == 'failure' }}
+      - run: exit 1
+        if: ${{ needs.examples-build-test.result == 'failure' }}

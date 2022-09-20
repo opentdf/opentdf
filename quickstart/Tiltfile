@@ -16,14 +16,12 @@ min_ctlptl_version("0.7.4")
 EXTERNAL_URL = "http://localhost:65432"
 
 # Versions of things backend to pull (attributes, kas, etc)
-# These should be updated (as well as any values files and new services added)
-# upon releases to opentdf/backend or opentdf/frontend.
-BACKEND_IMAGE_TAG = "sha-5fe60f0"
-BACKEND_CHART_TAG = "1.0.0"
-FRONTEND_IMAGE_TAG = "sha-93bb332"
-FRONTEND_CHART_TAG = "0.0.0-sha-93bb332"
-
-HELM_VALUES_PATH = os.getenv("HELM_VALUES_PATH", "helm")
+BACKEND_CHART_TAG = "1.1.0"
+FRONTEND_CHART_TAG = "1.1.0"
+HELM_VALUES_PATH = "helm/"
+# Where helm values for quickstart
+if "HELM_VALUES_PATH" in os.environ:
+    HELM_VALUES_PATH = os.getenv("HELM_VALUES_PATH")
 
 k8s_yaml(
     helm(
@@ -80,8 +78,6 @@ helm_resource(
         "-f",
         "helm/values-attributes.yaml",
         "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
-        "--set",
         "oidc.externalHost=%s/auth" % EXTERNAL_URL,
     ],
     labels="backend",
@@ -89,18 +85,29 @@ helm_resource(
 )
 
 helm_resource(
-    "claims",
-    "oci://ghcr.io/opentdf/charts/claims",
+    "entitlement-store",
+    "oci://ghcr.io/opentdf/charts/entitlement-store",
     flags=[
         "--version",
         BACKEND_CHART_TAG,
         "-f",
-        "helm/values-claims.yaml",
-        "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
+        "helm/values-entitlement-store.yaml",
     ],
     labels="backend",
     resource_deps=["postgresql"],
+)
+
+helm_resource(
+    "entitlement-pdp",
+    "oci://ghcr.io/opentdf/charts/entitlement-pdp",
+    flags=[
+        "--version",
+        BACKEND_CHART_TAG,
+        "-f",
+        "helm/values-entitlement-pdp.yaml",
+    ],
+    labels="backend",
+    resource_deps=["entitlement-store"],
 )
 
 helm_resource(
@@ -111,8 +118,6 @@ helm_resource(
         BACKEND_CHART_TAG,
         "-f",
         "helm/values-entitlements.yaml",
-        "--set",
-        "image.tag=%s" % BACKEND_IMAGE_TAG,
         "--set",
         "oidc.authorizationUrl=%s/auth/realms/tdf/protocol/openid-connect/auth"
         % EXTERNAL_URL,
@@ -125,10 +130,15 @@ helm_resource(
 
 helm_resource(
     "keycloak",
-    "codecentric/keycloak",
-    flags=["--version", "17.0.1", "-f", "helm/values-keycloak.yaml"],
+    "codecentric/keycloakx",
+    flags=[
+        "--version",
+        "1.4.2",
+        "-f",
+        "helm/values-keycloak.yaml",
+    ],
     labels="third-party",
-    resource_deps=["claims", "codecentric"],
+    resource_deps=["entitlement-pdp", "codecentric"],
 )
 
 helm_resource(
@@ -139,8 +149,6 @@ helm_resource(
         BACKEND_CHART_TAG,
         "-f",
         "helm/values-kas.yaml",
-        "--set",
-        "image.tag=sha-f5bd4ef",
     ],
     labels="backend",
     resource_deps=["attributes", "keycloak"],
@@ -158,8 +166,6 @@ if not os.environ.get("QUICKSTART_BOOTSTRAP_DISABLED"):
             "helm/values-keycloak-bootstrap.yaml",
             "--set",
             "externalUrl=%s" % EXTERNAL_URL,
-            "--set",
-            "image.tag=%s" % BACKEND_IMAGE_TAG,
         ],
         labels="utility",
         resource_deps=["attributes", "entitlements", "keycloak"],
@@ -178,8 +184,6 @@ helm_resource(
         "attributes.serverUrl=%s/api/attributes" % EXTERNAL_URL,
         "--set",
         "entitlements.serverUrl=%s/api/entitlements" % EXTERNAL_URL,
-        "--set",
-        "image.tag=%s" % FRONTEND_IMAGE_TAG,
         "--set",
         "oidc.serverUrl=%s/auth/" % EXTERNAL_URL,
     ],

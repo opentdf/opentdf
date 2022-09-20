@@ -2,7 +2,38 @@
 # https://docs.tilt.dev/api.html
 #
 
+load("ext://helm_resource", "helm_resource", "helm_repo")
+
+# Where the redirect URI should go to, for example
+EXTERNAL_URL = "http://localhost:65432"
+
+# Versions of things backend to pull (attributes, kas, etc)
+BACKEND_CHART_TAG = "1.1.0"
+FRONTEND_CHART_TAG = "1.1.0"
+
+# disable Quickstart bootstrap
+os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')
+
+# Where helm values for examples
+os.putenv('HELM_VALUES_PATH', '../examples/helm')
+
 include('../../quickstart/Tiltfile')
+
+# execute Examples bootstrap
+helm_resource(
+    "keycloak-bootstrap",
+    "oci://ghcr.io/opentdf/charts/keycloak-bootstrap",
+    flags=[
+        "--version",
+        BACKEND_CHART_TAG,
+        "-f",
+        "../helm/values-bootstrap.yaml",
+        "--set",
+        "externalUrl=%s" % EXTERNAL_URL,
+    ],
+    labels="utility",
+    resource_deps=["attributes", "entitlements", "keycloak"],
+)
 
 #k8s_resource("kas", resource_deps=["opentdf-attributes"], port_forwards="8000:8000")
 
@@ -47,7 +78,7 @@ k8s_resource(
 
 # local_resource(
 #     "opentdf-abacship-backend",
-#     cmd = "./backend_server/setup_venv.sh",
+#     cmd = "./backend_server/scripts/setup_venv.sh",
 #     serve_cmd = "cd backend_server/src && \
 #     source ./venv/bin/activate && \
 #     python3 -m uvicorn main:app --reload --port 4060",

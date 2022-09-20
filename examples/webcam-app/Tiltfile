@@ -1,8 +1,8 @@
-# Tiltfile for development
-# https://docs.tilt.dev/api.html
-#
-
 load("ext://helm_resource", "helm_resource", "helm_repo")
+
+# version_settings() enforces a minimum Tilt version
+# https://docs.tilt.dev/api.html#api.version_settings
+version_settings(constraint='>=0.30.0')
 
 # Where the redirect URI should go to, for example
 EXTERNAL_URL = "http://localhost:65432"
@@ -17,6 +17,8 @@ os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')
 # Where helm values for examples
 os.putenv('HELM_VALUES_PATH', '../examples/helm')
 
+# start Quickstart
+# https://docs.tilt.dev/api.html#api.include
 include('../../quickstart/Tiltfile')
 
 # execute Examples bootstrap
@@ -38,17 +40,12 @@ helm_resource(
 # frontend
 k8s_yaml("kubernetes.yaml")
 k8s_resource(
-    "web-app",
+    "opentdf-webcam-app",
     resource_deps = ["keycloak-bootstrap"],
-    labels="web-app",
-    port_forwards = '4070:4070'
+    labels="webcam-app",
 )
 
 docker_build(
-    "opentdf/web-app",
-    ".",
-    live_update = [
-        sync(".", "/app"),
-        run("cd /app && pip install -r requirements.txt", trigger = "./requirements.txt"),
-    ],
+    "opentdf/webcam-app",
+    "."
 )

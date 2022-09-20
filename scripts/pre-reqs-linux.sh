@@ -14,8 +14,10 @@ export PATH="$BUILD_BIN:$PATH"
 
 e() {
   local rval=$?
-  monolog ERROR "${@}"
-  exit $rval
+  if [[ $rval != 0 ]]; then
+    monolog ERROR "${@}"
+    exit $rval
+  fi
 }
 
 stuff=()
@@ -29,7 +31,8 @@ if [[ $# -gt 0 ]]; then
         stuff+=("$item")
         ;;
       *)
-        e "Unrecognized options: [$item $*]"
+        monolog ERROR "Unrecognized options: [$item $*]"
+        exit 1
         ;;
     esac
   done
@@ -208,7 +211,8 @@ for item in "${stuff[@]}"; do
       i_jq
       ;;
     *)
-      e "Unrecognized option: [$item]"
+      monolog ERROR "Unrecognized options: [$item $*]"
+      exit 1
       ;;
   esac
 done

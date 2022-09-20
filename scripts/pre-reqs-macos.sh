@@ -7,8 +7,10 @@ monolog TRACE "pre-reqs-macos: [$0 $*]"
 
 e() {
   local rval=$?
-  monolog ERROR "${@}"
-  exit $rval
+  if [[ $rval != 0 ]]; then
+    monolog ERROR "${@}"
+    exit $rval
+  fi
 }
 
 stuff=()
