@@ -23,13 +23,15 @@ jobs:
     - name: GitHub traffic 
       uses: sangonzal/repository-traffic-action@v.0.1.6
       env:
-        TRAFFIC_ACTION_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        TRAFFIC_ACTION_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
      
     # Commits files to repository
     - name: Commit changes
       uses: EndBug/add-and-commit@v4
+      env:
+        TRAFFIC_ACTION_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
       with:
-        author_name: Santiago Gonzalez
+        author_name: Cassandra Bailey
         message: "GitHub traffic"
         add: "./traffic/*"
         ref: "traffic"  # commits to branch "traffic" 

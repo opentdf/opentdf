@@ -1,0 +1,34 @@
+on:
+  schedule:
+    # once a week Sunday night UTC
+    - cron: "55 23 * * 0"
+  # for testing
+  pull_request:
+    types: [labeled]
+
+jobs:
+  updateEngementMetrics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: "traffic"
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+      - uses: gr2m/write-csv-file-action@v1.x
+        with:
+          path: data/opentdf.csv
+          columns: visits,unique visits,clones,unique clones, 
+          "open issues": "${{ fromJson(steps.stats.outputs.data).openIssues }}"
+          "closed issues": "${{ fromJson(steps.stats.outputs.data).closedIssues }}"
+          "open pull requests": "${{ fromJson(steps.stats.outputs.data).openPullRequests }}"
+          "closed pull requests": "${{ fromJson(steps.stats.outputs.data).closedPullRequests }}"
+          "merged pull requests": "${{ fromJson(steps.stats.outputs.data).mergedPullRequests }}"
+      # push updated file back to main branch
+      - run: git config --local user.email "action@github.com"
+      - run: git config --local user.name "GitHub Action"
+      - run: git add data
+      - run: git commit -m "data/opentdf.csv updated"
+      - run: "git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD"
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
