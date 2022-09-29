@@ -1,10 +1,11 @@
 on:
-  schedule: 
-    # runs once a week on sunday
-    - cron: "55 23 * * 0"
+  push:
+    branches:
+      - 'feature/PLAT-2046'
+  # schedule: 
+  #   # runs once a week on sunday
+  #   - cron: "55 23 * * 0"
       # for testing
-  pull_request:
-    types: [labeled]
     
 jobs:
   # This workflow contains a single job called "traffic"
