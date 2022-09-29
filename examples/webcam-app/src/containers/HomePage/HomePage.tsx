@@ -127,7 +127,9 @@ export function HomePage() {
             throw new Error('Failed getting ImageData');
         }
         const cipherImageData = await clientWebcam?.encrypt(imageData.data.buffer);
-        //@ts-ignore
+        if (!cipherImageData) {
+            throw new Error('Failed on encrypt image data');
+        }
         const incomingBuffer = await client?.decrypt(cipherImageData);
         const imageDataBob = context.createImageData(width, height);
         //@ts-ignore
