@@ -51,19 +51,22 @@ def check_attributes_setup(authToken):
     loc = f"{ATTRIBUTES_URL}/definitions/attributes"
     response = requests.get(loc, headers={"Authorization": f"Bearer {authToken}"})
     digits = ["%.2d" % i for i in range(100)]
+    # add group_by to match response from attribtues service
     player1_definition = {
         "authority": AUTH_NAMESPACE,
         "name": "player1",
         "rule": "anyOf",
         "state": "published",
-        "order": digits + ["board"]
+        "order": digits + ["board"],
+        "group_by": None
     }
     player2_definition = {
         "authority": AUTH_NAMESPACE,
         "name": "player2",
         "rule": "anyOf",
         "state": "published",
-        "order": digits + ["board"]
+        "order": digits + ["board"],
+        "group_by": None
     }
     assert player1_definition in response.json() and player2_definition in response.json()
 
@@ -140,7 +143,7 @@ def run_tests():
     logger.info(f"************Test attribute and authority setup************")
     keycloak_openid = KeycloakOpenID(
         server_url=KEYCLOAK_URL,
-        client_id="dcr-test",
+        client_id="abachsip-backend-client",
         realm_name="tdf",
     )
     authToken = keycloak_openid.token("user1", "testuser123")

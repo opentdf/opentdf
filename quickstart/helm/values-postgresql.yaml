@@ -1,14 +1,23 @@
 #  configuration https://github.com/bitnami/charts/tree/master/bitnami/postgresql/#parameters
 image:
   debug: true
+# The auth block here configures Postgres to use a fixed value
+# rather than an auto-generated one.  More information
+# is available: https://github.com/bitnami/containers/tree/main/bitnami/postgresql 
+auth:
+  postgresPassword: myPostgresPassword
 initdbUser: postgres
-initdbPassword: mydbapassword
+initdbPassword: myPostgresPassword
+extraEnv: |
+  - name: POSTGRESQL_PASSWORD
+    value: myPostgresPassword
 initdbScripts:
   init.sql: |
-    -- keycloak_database
-    CREATE DATABASE keycloak_database;
+    -- Keycloak DB
+    CREATE ROLE keycloak_manager WITH LOGIN PASSWORD '{{ .Values.initdbPassword }}';
+    CREATE DATABASE keycloak_database WITH OWNER keycloak_manager;
 
-    -- tdf_database
+    -- Attributes and entitlements used in the Trusted Data Format
     CREATE DATABASE tdf_database;
     \connect tdf_database;
 
@@ -32,9 +41,13 @@ initdbScripts:
         namespace_id INTEGER NOT NULL REFERENCES tdf_attribute.attribute_namespace,
         state        VARCHAR NOT NULL,
         rule         VARCHAR NOT NULL,
-        name         VARCHAR NOT NULL UNIQUE, -- ??? COLLATE NOCASE
+        name         VARCHAR NOT NULL, -- ??? COLLATE NOCASE
         description  VARCHAR,
-        values_array TEXT[]
+        values_array TEXT[],
+        group_by_attr INTEGER REFERENCES tdf_attribute.attribute(id),
+        group_by_attrval VARCHAR,
+        CONSTRAINT no_attrval_without_attrid CHECK(group_by_attrval is not null or group_by_attr is null),
+        CONSTRAINT namespase_id_name_unique UNIQUE (namespace_id, name)
     );
 
     CREATE SCHEMA IF NOT EXISTS tdf_entitlement;
@@ -46,21 +59,30 @@ initdbScripts:
         name      VARCHAR NOT NULL,
         value     VARCHAR NOT NULL
     );
+    CREATE INDEX entity_id_index ON tdf_entitlement.entity_attribute (entity_id);
 
     -- tdf_attribute
-    CREATE ROLE tdf_attribute_manager WITH LOGIN PASSWORD 'myPostgresPassword';
+    CREATE ROLE tdf_attribute_manager WITH LOGIN PASSWORD '{{ .Values.initdbPassword }}';
     GRANT USAGE ON SCHEMA tdf_attribute TO tdf_attribute_manager;
     GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_attribute TO tdf_attribute_manager;
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_attribute TO tdf_attribute_manager;
 
     -- tdf_entitlement
-    CREATE ROLE tdf_entitlement_manager WITH LOGIN PASSWORD 'myPostgresPassword';
+    CREATE ROLE tdf_entitlement_manager WITH LOGIN PASSWORD '{{ .Values.initdbPassword }}';
     GRANT USAGE ON SCHEMA tdf_entitlement TO tdf_entitlement_manager;
     GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entitlement TO tdf_entitlement_manager;
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_entitlement TO tdf_entitlement_manager;
 
-    -- claims
-    CREATE ROLE tdf_entitlement_reader WITH LOGIN PASSWORD 'myPostgresPassword';
+    -- entitlement-store
+    CREATE ROLE tdf_entitlement_reader WITH LOGIN PASSWORD '{{ .Values.initdbPassword }}';
     GRANT USAGE ON SCHEMA tdf_entitlement TO tdf_entitlement_reader;
     GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entitlement TO tdf_entitlement_reader;
     GRANT SELECT ON tdf_entitlement.entity_attribute TO tdf_entitlement_reader;
+
+  upgrade-1.0.0.sql: |
+    \connect tdf_database;
+    -- Add groupby
+    ALTER TABLE tdf_attribute.attribute ADD COLUMN IF NOT EXISTS group_by_attr INTEGER REFERENCES tdf_attribute.attribute(id);
+    ALTER TABLE tdf_attribute.attribute ADD COLUMN IF NOT EXISTS group_by_attrval VARCHAR;
+    ALTER TABLE tdf_attribute.attribute DROP CONSTRAINT IF EXISTS no_attrval_without_attrid;
+    ALTER TABLE tdf_attribute.attribute ADD CONSTRAINT no_attrval_without_attrid CHECK(group_by_attrval is not null or group_by_attr is null)

@@ -9,11 +9,14 @@ oidc:
   queryRealms: tdf
 ingress:
   enabled: true
+  annotations:
+    kubernetes.io/ingress.class:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
   className: nginx
   hosts:
     - host: localhost
       paths: &paths
-        - path: /
+        - path: /(.*)
           pathType: Prefix
     - host: host.docker.internal
       paths: *paths

@@ -44,5 +44,6 @@
   },
   "devDependencies": {
     "sass": "^1.54.4"
-  }
+  },
+  "homepage": "/webcam-app"
 }
