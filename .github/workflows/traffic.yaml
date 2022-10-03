@@ -18,10 +18,9 @@ jobs:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: GitHub traffic  
       uses: actions/github-script@v6
-      env:
-          TRAFFIC_ACTION_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
       id: get-traffic
       with:
+        github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
         retries: 3
         script: |
         console.log(context)
