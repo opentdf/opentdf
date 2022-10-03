@@ -16,23 +16,19 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
-      with:
-        ref: "traffic"
-    
-    # Calculates traffic and clones and stores in CSV file
-    - name: GitHub traffic 
-      uses: sangonzal/repository-traffic-action@v.0.1.6
+    - name: GitHub traffic  
+      uses: actions/github-script@v6
       env:
-        TRAFFIC_ACTION_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
-     
-    # Commits files to repository
-    - name: Commit changes
-      uses: EndBug/add-and-commit@v4
-      env:
-        TRAFFIC_ACTION_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
+          TRAFFIC_ACTION_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
+      id: get-traffic
       with:
-        author_name: Cassandra Bailey
-        message: "GitHub traffic"
-        add: "./traffic/*"
-        ref: "traffic"  # commits to branch "traffic" 
+        retries: 3
+        script: |
+        console.log(context)
+        console.log(${{ github.rest }})
+        return github.rest.traffic.get({
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        })
+    - name: Get result
+      run: echo "${{steps.get-traffic.outputs.result}}"
