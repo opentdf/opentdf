@@ -30,7 +30,8 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }} 
         retries: 3
         script: |
-          const script = require('./js/metrics.js')
+          const script = require('./scripts/metrics.js')
           console.log(script({github, context}))
+      run: ls -a
     - name: Get result
       run: echo "${{steps.get-traffic.outputs.result}}"
