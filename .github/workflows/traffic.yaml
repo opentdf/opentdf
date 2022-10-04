@@ -27,10 +27,14 @@ jobs:
         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
         retries: 3
         script: |
-          console.log(${{ github.rest }})
-          return github.rest.traffic.get({
+          const views = github.rest.views.get({
           owner: context.repo.owner,
           repo: context.repo.repo,
           })
+          const clones = github.rest.clones.get({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          })
+          return {views: views, clones: clones}
     - name: Get result
       run: echo "${{steps.get-traffic.outputs.result}}"
