@@ -16,6 +16,10 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: View context attributes
+        uses: actions/github-script@v6
+        with:
+          script: console.log(context)
     - name: GitHub traffic  
       uses: actions/github-script@v6
       id: get-traffic
@@ -23,11 +27,10 @@ jobs:
         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
         retries: 3
         script: |
-        console.log(context)
-        console.log(${{ github.rest }})
-        return github.rest.traffic.get({
-        owner: context.repo.owner,
-        repo: context.repo.repo,
-        })
+          console.log(${{ github.rest }})
+          return github.rest.traffic.get({
+          owner: context.repo.owner,
+          repo: context.repo.repo,
+          })
     - name: Get result
       run: echo "${{steps.get-traffic.outputs.result}}"
