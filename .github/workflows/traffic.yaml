@@ -24,14 +24,14 @@ jobs:
       uses: actions/github-script@v6
       id: get-traffic
       with:
-        github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
+        github-token: ${{ secrets.GITHUB_TOKEN }} 
         retries: 3
         script: |
           const views = github.rest.repos.getViews({
           owner: context.repo.owner,
           repo: context.repo.repo,
           })
-          const clones = github.repos.getClones({
+          const clones = github.rest.repos.getClones({
           owner: context.repo.owner,
           repo: context.repo.repo,
           })
