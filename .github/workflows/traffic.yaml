@@ -32,6 +32,5 @@ jobs:
         script: |
           const script = require('./scripts/metrics.js')
           console.log(script({github, context}))
-      run: ls -a
     - name: Get result
       run: echo "${{steps.get-traffic.outputs.result}}"
