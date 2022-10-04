@@ -27,11 +27,11 @@ jobs:
         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
         retries: 3
         script: |
-          const views = github.rest.views.get({
+          const views = github.rest.repos.getViews({
           owner: context.repo.owner,
           repo: context.repo.repo,
           })
-          const clones = github.rest.clones.get({
+          const clones = github.repos.getClones({
           owner: context.repo.owner,
           repo: context.repo.repo,
           })
