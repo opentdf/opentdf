@@ -12,7 +12,7 @@ jobs:
   traffic:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
+    permissions: read-all|write-all 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -27,14 +27,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }} 
         retries: 3
         script: |
-          const views = github.rest.repos.getViews({
-          owner: context.repo.owner,
-          repo: context.repo.repo,
-          })
-          const clones = github.rest.repos.getClones({
-          owner: context.repo.owner,
-          repo: context.repo.repo,
-          })
-          return {views: views, clones: clones}
+          const script = require('./js/metrics.js')
+          console.log(script({github, context}))
     - name: Get result
       run: echo "${{steps.get-traffic.outputs.result}}"
