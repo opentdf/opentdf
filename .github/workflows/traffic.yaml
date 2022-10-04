@@ -17,9 +17,9 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: View context attributes
-        uses: actions/github-script@v6
-        with:
-          script: console.log(context)
+      uses: actions/github-script@v6
+      with:
+        script: console.log(context)
     - name: GitHub traffic  
       uses: actions/github-script@v6
       id: get-traffic
