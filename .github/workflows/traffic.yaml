@@ -26,7 +26,7 @@ jobs:
       uses: actions/github-script@v6
       id: get-traffic
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }} 
+        github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
         retries: 3
         script: |
           const script = require('./scripts/metrics.js')
