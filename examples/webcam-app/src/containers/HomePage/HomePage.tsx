@@ -1,4 +1,4 @@
-import { NanoTDFDatasetClient } from "@opentdf/client";
+import { NanoTDFDatasetClient } from "@opentdf/client/nano";
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "../../components/Button";
 import { Slider } from "../../components/Slider";
@@ -27,21 +27,53 @@ const CameraImage: React.FC<ICameraImage> = ({ title = "", restricted = false, f
         </div>
     );
 }
-let isRenderLoop = true;
+
+const REFRESH_RATE_CANVAS = 1000 / 24;
+const DELAY_FAILURE = 30 * 1000;
+
+const useInterval = (callback: Function, delay?: number | null) => {
+    const savedCallback = useRef<Function>(() => {});
+
+    useEffect(() => {
+        savedCallback.current = callback;
+    });
+
+    useEffect(() => {
+        if (delay !== null) {
+            const interval = setInterval(() => savedCallback.current(), delay || 0);
+            return () => clearInterval(interval);
+        }
+
+        return undefined;
+    }, [delay]);
+};
+
+const useRefreshCanvas = (callBack: any, isActive: boolean) => {
+    useInterval(async () => {
+        await callBack();
+    }, isActive ? REFRESH_RATE_CANVAS : null);
+};
+
+const height = 237, width = 221;
+
 export function HomePage() {
     const [isPremium, setPremium] = useState(false);
     const [isRestricted, setRestricted] = useState(false);
     const [authorized, setAuthorized] = useState(false);
-    // const [entitlementsAlice, setEntitlementsAlice] = useState([]);
-    // const [entitlementsBob, setEntitlementsBob] = useState([]);
-    // const [entitlementsEve, setEntitlementsEve] = useState([]);
+
     const [clientAlice, setClientAlice] = useState<NanoTDFDatasetClient>();
     const [clientBob, setClientBob] = useState<NanoTDFDatasetClient>();
     const [clientEve, setClientEve] = useState<NanoTDFDatasetClient>();
+
     const [clientWebcam, setClientWebcam] = useState<NanoTDFDatasetClient>();
     const [dataAttributes, setDataAttributes] = useState<string[]>([]);
+
     const [streamStarted, setStartStream] = useState<boolean>(false);
     const [streamReset, setStartReset] = useState<boolean>(false);
+
+    const [streamActiveEve, setStreamActiveEve] = useState<boolean>(false);
+    const [streamActiveAlice, setStreamActiveAlice] = useState<boolean>(false);
+    const [streamActiveBob, setStreamActiveBob] = useState<boolean>(false);
 
     const resetStream = useCallback(() => {
         if (streamStarted) {
@@ -61,6 +93,7 @@ export function HomePage() {
         toggleByAttribute(premium, dataAttributes, setDataAttributes);
         resetStream();
     }, [dataAttributes, resetStream]);
+
     const canvas1 = useRef<HTMLCanvasElement>(null);
     const refList = useRef<HTMLCanvasElement[]>([]);
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -70,15 +103,12 @@ export function HomePage() {
         const userAlice = await loginUser("alice", password, dataAttributes);
         setClientWebcam(userAlice.client);
         const userMain = await loginUser("alice", password, dataAttributes);
-        // setEntitlementsAlice(userAlice.entitlements);
         setClientAlice(userAlice.client);
 
         const userBob = await loginUser("bob", password);
-        // setEntitlementsBob(userBob.entitlements);
         setClientBob(userBob.client);
 
         const userEve = await loginUser("eve", password);
-        // setEntitlementsEve(userEve.entitlements);
         setClientEve(userEve.client);
 
         setAuthorized(true);
@@ -90,76 +120,83 @@ export function HomePage() {
         };
     }, [dataAttributes]);
 
+    const canvasRender = useCallback(async (context: CanvasRenderingContext2D, client: NanoTDFDatasetClient) => {
+        const ctx = canvas1.current?.getContext('2d');
+        const imageData = ctx?.getImageData(0, 0, width, height);
+        if (!imageData) {
+            throw new Error('Failed getting ImageData');
+        }
+        const cipherImageData = await clientWebcam?.encrypt(imageData.data.buffer);
+        if (!cipherImageData) {
+            throw new Error('Failed on encrypt image data');
+        }
+        const incomingBuffer = await client?.decrypt(cipherImageData);
+        const imageDataBob = context.createImageData(width, height);
+        //@ts-ignore
+        imageDataBob.data.set(incomingBuffer);
+        context.putImageData(imageData, 0, 0);
+    }, [clientWebcam]);
+
+    useRefreshCanvas(() => {
+        const ctx = canvas1.current?.getContext('2d');
+        const webcamDevice = videoRef.current;
+        // @ts-ignore
+        ctx?.drawImage(webcamDevice, 0, 0, width, height);
+    }, streamStarted);
+    useRefreshCanvas(async () => {
+        const contextEve: CanvasRenderingContext2D = refList.current?.[2].getContext('2d')!;
+        try {
+            //@ts-ignore
+            await canvasRender(contextEve, clientEve)
+        } catch (err) {
+            setStreamActiveEve(false);
+            setTimeout(() => {
+                setStreamActiveEve( true);
+            }, DELAY_FAILURE);
+            throw new Error('Failed update canvas');
+        }
+    }, streamActiveEve);
+    useRefreshCanvas(async () => {
+        const contextAlice = refList.current?.[0].getContext('2d');
+        try {
+            //@ts-ignore
+            await canvasRender(contextAlice, clientAlice);
+        } catch (err) {
+            setStreamActiveAlice(false);
+            setTimeout(() => setStreamActiveAlice(true), DELAY_FAILURE);
+            throw new Error('Failed update canvas');
+        }
+    }, streamActiveAlice);
+    useRefreshCanvas(async () => {
+        const contextBob = refList.current?.[1].getContext('2d');
+        try {
+            //@ts-ignore
+            await canvasRender(contextBob, clientBob);
+        } catch (err) {
+            setStreamActiveBob(false);
+            setTimeout(() => setStreamActiveBob(true), DELAY_FAILURE);
+            throw new Error('Failed update canvas');
+        }
+    }, streamActiveBob);
+
     const start = useCallback(async () => {
         if (refList === null || !streamStarted) return;
-        const { clientAlice, clientBob, clientEve, clientWebcam } = await login();
-        const height = 237,
-            width = 221;
+        await login();
 
-        isRenderLoop = true;
-        const webcamDevice = videoRef.current;
-
-        const canvasElementAlice = refList.current?.[0];
-        const canvasElementBob = refList.current?.[1];
-        const canvasElementEve = refList.current?.[2];
-        // @ts-ignore
-        const contextAlice = canvasElementAlice.getContext('2d');
-        // @ts-ignore
-        let contextBob = canvasElementBob.getContext('2d');
-        // @ts-ignore
-        let contextEve = canvasElementEve.getContext('2d');
         // OpenTDF
-        function handleSuccess(stream: any) {
-            // @ts-ignore
-            window.stream = stream; // make stream available to browser console
-            // @ts-ignore
-            webcamDevice.srcObject = stream;
-            // source canvas
-            const canvas = canvas1.current;
-            // @ts-ignore
-            let ctx = canvas.getContext('2d');
-            (async function loop() {
-                // source frame
-                // @ts-ignore
-                ctx?.drawImage(webcamDevice, 0, 0, width, height);
-                const imageData = ctx?.getImageData(0, 0, width, height);
-                // encrypt frame
-                // FIXME buffer is all 0
-                // @ts-ignore
-                const cipherImageData = await clientWebcam?.encrypt(imageData.data.buffer);
-                const updateCanvas = async (canvasContext: CanvasRenderingContext2D | null, client: NanoTDFDatasetClient | undefined, imageDataEncrypted: ArrayBuffer) => {
-                    try {
-                        const incomingBuffer = await client?.decrypt(imageDataEncrypted);
-                        const imageDataBob = canvasContext?.createImageData(width, height);
-                        // @ts-ignore
-                        imageDataBob?.data.set(incomingBuffer);
-                        // @ts-ignore
-                        canvasContext?.putImageData(imageData, 0, 0);
-                    } catch (e) {
-                        // console.error(e);
-                    }
-                };
-                if (cipherImageData) {
-                    updateCanvas(contextAlice, clientAlice, cipherImageData);
-                    updateCanvas(contextBob, clientBob, cipherImageData);
-                    updateCanvas(contextEve, clientEve, cipherImageData);
-                }
-                if (isRenderLoop) {
-                    setTimeout(loop, 1000 / 30); // drawing at 30fps
-                }
-            })();
-        }
-
-        function handleError(error: { message: any; name: any; }) {
-            console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
-        }
-
-        const mediaConstraints = {
-            audio: false,
-            video: { width, height }
-        };
-        navigator.mediaDevices.getUserMedia(mediaConstraints).then(handleSuccess).catch(handleError);
+        navigator.mediaDevices.getUserMedia({ audio: false, video: { width, height }})
+            .then((stream: MediaStream) => {
+                setStreamActiveAlice(true);
+                setStreamActiveBob(true);
+                setStreamActiveEve(true); // @ts-ignore
+                window.stream = stream; // @ts-ignore make stream available to browser console
+                videoRef.current.srcObject = stream;
+            })
+            .catch((error: { message: any; name: any; }) => {
+                console.log('navigator.MediaDevices.getUserMedia error: ', error.message, error.name);
+            });
     }, [login, streamStarted]);
+
     const startStream = useCallback(() => {
         setStartStream(true);
     }, []);
@@ -171,15 +208,13 @@ export function HomePage() {
                 track.stop();
             }
         });
-        isRenderLoop = false;
     }, []);
 
     useEffect(() => {
         if (streamStarted) {
             start();
         }
-    }, [streamStarted]);
-
+    }, [streamStarted, start]);
     useEffect(() => {
         if (streamReset) {
             stopStream();

@@ -32,8 +32,6 @@ jobs:
               - 'quickstart/**'
             scripts:
               - 'scripts/**'
-            clientapp:
-              - 'examples/nanotdf-client-app/**'
             examples:
               - 'examples/abacship-app/**'
               - 'examples/web-app/**'
@@ -149,32 +147,6 @@ jobs:
           kubectl get pods -A
       - run: ./examples/offline/test-offline-bundle
 
-  nanotdf-client-app-test:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./examples/nanotdf-client-app
-    timeout-minutes: 30
-    needs: deltas
-    if: >-
-      ${{ needs.deltas.outputs.clientapp == 'true' || github.event.schedule == '0 7 * * 2,4' }}
-    permissions:
-      contents: read
-      packages: read
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "16"
-          cache: "npm"
-          cache-dependency-path: "./examples/nanotdf-client-app/package-lock.json"
-          registry-url: "https://npm.pkg.github.com"
-      - run: npm ci
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: npm test
-      - run: npm audit --audit-level critical && npm audit --production
-
   examples-build-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -225,7 +197,6 @@ jobs:
       - deltas
       - quickstart-test
       - offline-start-test
-      - nanotdf-client-app-test
       - scripts-test
       - examples-build-test
     if: always()
@@ -237,8 +208,6 @@ jobs:
         if: ${{ needs.quickstart-test.result == 'failure' }}
       - run: exit 1
         if: ${{ needs.offline-start-test.result == 'failure' }}
-      - run: exit 1
-        if: ${{ needs.nanotdf-client-app-test.result == 'failure' }}
       - run: exit 1
         if: ${{ needs.scripts-test.result == 'failure' }}
       - run: exit 1
