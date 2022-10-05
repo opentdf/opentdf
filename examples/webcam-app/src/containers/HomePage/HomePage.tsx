@@ -9,6 +9,7 @@ import { Main } from "../Main";
 import styles from "./HomePage.module.scss";
 import { toggleByAttribute } from "./utils";
 import { ABACUS_URL } from "../../config";
+
 interface ICameraImage {
     title?: string;
     restricted?: boolean;
