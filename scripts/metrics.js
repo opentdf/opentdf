@@ -1,5 +1,4 @@
-module.exports = ({github, context}) => {
-    
+async function getMetrics(github, context) {   
     //Research
     const views = await github.rest.repos.getViews({
         owner: context.repo.owner,
@@ -18,4 +17,6 @@ module.exports = ({github, context}) => {
 
     // Retained Usage: Opening Issues, opening PRs, writing comments, posting/commenting on Discussions
     return {views: views, clones: clones, forks: forks}
-}
+} 
+
+module.exports = ({github, context}) => getMetrics(github, context)
