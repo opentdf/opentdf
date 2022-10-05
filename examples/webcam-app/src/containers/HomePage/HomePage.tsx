@@ -8,6 +8,7 @@ import { defaultUsers, LoginPage } from "../LoginPage/LoginPage";
 import { Main } from "../Main";
 import styles from "./HomePage.module.scss";
 import { toggleByAttribute } from "./utils";
+import { ABACUS_URL } from "../../config";
 interface ICameraImage {
     title?: string;
     restricted?: boolean;
@@ -230,7 +231,7 @@ export function HomePage() {
     return (
         <Main>
             <div className={styles.container}>
-                <header><p className={styles.link}><span>Go to ABACUS</span></p></header>
+                <header><a href={ABACUS_URL}><p className={styles.link}><span>Go to ABACUS</span></p></a></header>
                 <div className={styles.settingsPreview}>
                     <div className={styles.cameraContainer}>
                         <p>Camera</p>
