@@ -110,4 +110,6 @@ async def oidc_test():
     plain_text = 'Hello world!!'
     tdf_data = client.encrypt_string(plain_text)
     logger.warning("Encrypt completed; file size [%s]", len(tdf_data))
-    return plain_text
+    decrypted_plain_text = client.decrypt_string(tdf_data)
+    logger.warning("Decrypt completed; file size [%s]", len(decrypted_plain_text))
+    return decrypted_plain_text

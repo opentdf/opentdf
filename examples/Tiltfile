@@ -111,6 +111,17 @@ docker_build(
     "./web-app",
 )
 
+# test web app
+if os.environ.get("CI"):
+    # some local resource to run integration tests
+    local_resource(
+        "opentdf-web-app-test",
+        cmd = "curl -v -f http://localhost:4070/test/",
+        labels="web-app",
+        resource_deps = ["web-app"],
+        allow_parallel=True
+    )
+
 # webcam app
 k8s_yaml("webcam-app/kubernetes.yaml")
 k8s_resource(
