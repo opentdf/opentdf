@@ -16,6 +16,7 @@ async function getMetrics(github, context) {
     })
     const data = {
         timestamp: new Date(),
+        event_type: "opentdf-github",
         views: views.data.count, 
         clones: clones.data.count, 
         forks: forks.data.length
