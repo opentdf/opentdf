@@ -33,7 +33,24 @@ jobs:
           const result = await script({github, context})
           console.log(result)
           return result
-    - name: Push to Amplitude
-      run: >-
-        echo "${{steps.get-traffic.outputs.result}}"
-        curl --data '{"api_key": "3e6592f019223965c6f403818496b6e6", "events": [${{steps.get-traffic.outputs.result}}]}' https://api.amplitude.com/2/httpapi
+    - name: Write to CSV
+      uses: gr2m/write-csv-file-action@v1.x
+      with:
+        path: data/traffic.csv
+        columns: timestamp, views, clones, forks
+        "timestamp": ${{ fromJson(steps.get-traffic.outputs.result).timestamp }}
+        "views": ${{ fromJson(steps.get-traffic.outputs.result).views }}
+        "clones": ${{ fromJson(steps.get-traffic.outputs.result).clones }}
+        "forks": ${{ fromJson(steps.get-traffic.outputs.result).forks }}
+      run: git config --local user.email "action@github.com"
+      run: git config --local user.name "GitHub Action"
+      run: git add data
+      run: git commit -m "OpenTDF-Bot; data/traffic.csv updated"
+      run: "git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+   # - name: Push to Amplitude
+   #   run: >-
+   #     echo "${{steps.get-traffic.outputs.result}}"
+   #     curl --data '{"api_key": "xx", "events": [${{steps.get-traffic.outputs.result}}]}' https://api.amplitude.com/2/httpapi
