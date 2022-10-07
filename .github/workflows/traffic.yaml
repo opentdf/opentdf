@@ -32,5 +32,8 @@ jobs:
           const script = require('./scripts/metrics.js')
           const result = await script({github, context})
           console.log(result)
-    - name: Get result
-      run: echo "${{steps.get-traffic.outputs.result}}"
+          return result
+    - name: Push to Amplitude
+      run: >-
+        echo "${{steps.get-traffic.outputs.result}}"
+        curl --data '{"api_key": "3e6592f019223965c6f403818496b6e6", "events": [${{steps.get-traffic.outputs.result}}]}' https://api.amplitude.com/2/httpapi
