@@ -42,6 +42,7 @@ jobs:
         "views": ${{ fromJson(steps.get-traffic.outputs.result).views }}
         "clones": ${{ fromJson(steps.get-traffic.outputs.result).clones }}
         "forks": ${{ fromJson(steps.get-traffic.outputs.result).forks }}
+    - name: Commit CSV 
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
