@@ -42,11 +42,12 @@ jobs:
         "views": ${{ fromJson(steps.get-traffic.outputs.result).views }}
         "clones": ${{ fromJson(steps.get-traffic.outputs.result).clones }}
         "forks": ${{ fromJson(steps.get-traffic.outputs.result).forks }}
-      run: git config --local user.email "action@github.com"
-      run: git config --local user.name "GitHub Action"
-      run: git add data
-      run: git commit -m "OpenTDF-Bot; data/traffic.csv updated"
-      run: "git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD"
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add data
+        git commit -m "OpenTDF-Bot; data/traffic.csv updated"
+        "git push https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
