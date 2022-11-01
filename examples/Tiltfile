@@ -76,11 +76,14 @@ k8s_resource(
 
 if os.environ.get("CI"):
     # some local resource to run integration tests
+    DEPS = ["abacship-backend"] 
+    if os.environ.get("TEST_SCRIPT"):
+        DEPS += ["passed-in-test-script"]
     local_resource(
         "opentdf-abacship-backend-tests",
         cmd = "./abacship-app/backend_server/scripts/run_tests_in_venv.sh",
         labels="abacship",
-        resource_deps = ["abacship-backend"],
+        resource_deps = DEPS,
         allow_parallel=True
     )
 

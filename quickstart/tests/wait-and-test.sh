@@ -7,6 +7,7 @@ _wait-for() {
   echo "[INFO] In retry loop for quickstarted opentdf backend..."
   limit=5
   for i in $(seq 1 $limit); do
+    echo $(pip show opentdf)
     if python3 "${APP}"; then
       return 0
     fi

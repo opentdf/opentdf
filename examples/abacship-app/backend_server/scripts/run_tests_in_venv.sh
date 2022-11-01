@@ -13,6 +13,8 @@ echo "Running unit tests"
 cd tests && pytest
 echo "Unit tests passed"
 
+deactivate
+
 # sleep 30
 
 # cd $SCRIPTPATH/..

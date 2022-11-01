@@ -2,7 +2,7 @@ from fastapi import FastAPI, File, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 from logging import getLogger
-from opentdf import TDFClient, OIDCCredentials, LogLevel
+from opentdf import TDFClient, OIDCCredentials, LogLevel, TDFStorageType
 from os import getenv, remove, stat
 from tempfile import NamedTemporaryFile
 
@@ -48,7 +48,9 @@ async def encrypt_file(file: bytes = File(...)):
         logger.warning("Starting encrypt; input file size [%s]", len(file))
 
         ciphertext_path = plaintext_path + ".tdf"
-        client.encrypt_file(plaintext_path, ciphertext_path)
+        tdfStorage = TDFStorageType()
+        tdfStorage.set_tdf_storage_file_type(plaintext_path)
+        client.encrypt_file(tdfStorage, ciphertext_path)
         logger.warning("Encrypt completed; file size [%s]", stat(ciphertext_path).st_size)
 
 
@@ -87,7 +89,9 @@ async def decrypt_file(file: bytes = File(...)):
         logger.warning("Starting dencrypt; input file size [%s]", len(file))
 
         plaintext_path = ciphertext_path + ".untdf"
-        client.decrypt_file(ciphertext_path, plaintext_path)
+        tdfStorage = TDFStorageType()
+        tdfStorage.set_tdf_storage_file_type(ciphertext_path)
+        client.decrypt_file(tdfStorage, plaintext_path)
         logger.warning("Decrypt completed; file size [%s]", stat(plaintext_path).st_size)
 
         return FileResponse(plaintext_path, filename="untdf.bin")
