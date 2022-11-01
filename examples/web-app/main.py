@@ -112,6 +112,12 @@ async def oidc_test():
                         kas_url=KAS_URL)
     client.enable_console_logging(LogLevel.Trace)
     plain_text = 'Hello world!!'
-    tdf_data = client.encrypt_string(plain_text)
+    sampleStringStorage = TDFStorageType()
+    sampleStringStorage.set_tdf_storage_string_type(plain_text)
+    tdf_data = client.encrypt_data(sampleStringStorage)
     logger.warning("Encrypt completed; file size [%s]", len(tdf_data))
-    return plain_text
+    sampleEncryptedStringStorage = TDFStorageType()
+    sampleEncryptedStringStorage.set_tdf_storage_string_type(tdf_data)
+    decrypted_plain_text = client.decrypt_data(sampleEncryptedStringStorage)
+    logger.warning("Decrypt completed; file size [%s]", len(decrypted_plain_text))
+    return decrypted_plain_text
