@@ -1,7 +1,9 @@
 on:
   schedule: 
-    # runs once a week on sunday
-    - cron: "55 23 * * 0"
+    # # runs once a week on sunday
+    # - cron: "55 23 * * 0"
+    #testing
+    - cron: "*/2 * * * *"
     
 jobs:
   traffic:
