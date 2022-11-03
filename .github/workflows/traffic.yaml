@@ -1,9 +1,7 @@
 on:
   schedule: 
-    # # runs once a week on sunday
-    # - cron: "55 23 * * 0"
-    #testing
-    - cron: "*/2 * * * *"
+    # runs once a week on sunday
+    - cron: "55 23 * * 0"
     
 jobs:
   traffic:
@@ -41,7 +39,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         FILE_TO_COMMIT: data/traffic.csv
-        DESTINATION_BRANCH: ${{ github.ref }} 
+        DESTINATION_BRANCH: analytics
       run: |
         export TODAY=$( date -u '+%Y-%m-%d' )
         export MESSAGE="Weekly Traffic Report Update: regenerate $FILE_TO_COMMIT for $TODAY"
