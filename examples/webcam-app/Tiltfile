@@ -8,8 +8,8 @@ version_settings(constraint='>=0.30.0')
 EXTERNAL_URL = "http://localhost:65432"
 
 # Versions of things backend to pull (attributes, kas, etc)
-BACKEND_CHART_TAG = "1.1.0"
-FRONTEND_CHART_TAG = "1.1.0"
+BACKEND_CHART_TAG = "1.1.1"
+FRONTEND_CHART_TAG = "1.1.1"
 
 # disable Quickstart bootstrap
 os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')
