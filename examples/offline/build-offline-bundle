@@ -84,9 +84,9 @@ suffix="${today}-${digest}"
 : "${OUTPUT_DIRECTORY:="${PROJECT_ROOT}/build/export"}"
 
 # TODO Default to image tags in chart values files
-: "${BACKEND_IMAGE_TAG:="1.1.1"}"
+: "${BACKEND_IMAGE_TAG:="1.1.1-rc.3"}"
 # FIXME Update with release version
-: "${BACKEND_CHART_TAG:="1.1.1"}"
+: "${BACKEND_CHART_TAG:="1.1.1-rc.3"}"
 : "${FRONTEND_IMAGE_TAG:="1.1.1"}"
 : "${FRONTEND_CHART_TAG:="1.1.1"}"
 
