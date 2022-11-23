@@ -179,7 +179,7 @@ if [[ ! $no_third_party && ! $no_images ]]; then
   save-image bitnami/postgresql 11.14.0-debian-10-r28 third-party-image-postgresql
 
   # Keycloak: We are using a custom image with entitlement support
-  save-image "ghcr.io/opentdf/keycloak" 18.0.2 "opentdf-keycloak"
+  save-image "ghcr.io/opentdf/keycloak" 19.0.2 "opentdf-keycloak"
 
   # nginx ingress
   save-image k8s.gcr.io/ingress-nginx/controller v1.1.1 third-party-image-ingress-nginx
