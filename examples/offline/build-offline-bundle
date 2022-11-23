@@ -194,7 +194,7 @@ if [[ ! $no_third_party && ! $no_charts ]]; then
     monolog ERROR "Unable to helm pull ingress-nginx"
     exit 1
   fi
-  if ! helm pull --repo https://codecentric.github.io/helm-charts --version 1.4.2 --destination "${OUT_DIR}/charts" keycloakx; then
+  if ! helm pull --repo https://codecentric.github.io/helm-charts --version 1.6.1 --destination "${OUT_DIR}/charts" keycloakx; then
     monolog ERROR "Unable to helm pull keycloak"
     exit 1
   fi
