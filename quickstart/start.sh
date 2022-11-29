@@ -294,7 +294,7 @@ load-chart() {
 if [[ $INIT_OPENTDF ]]; then
   monolog INFO --- "OpenTDF charts"
   for index in "${!services[@]}"; do
-    if [[ "$s" == keycloak ]]; then
+    if [[ "${services[$index]}" == keycloak ]]; then
       : # Keycloak already loaded above in the use_keycloak block
     else
       load-chart "${services[$index]}" "${services[$index]}" "${chart_tags[$index]}"
