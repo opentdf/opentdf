@@ -1,0 +1,135 @@
+global:
+  opentdf:
+    common:
+      oidcInternalBaseUrl: http://keycloak-http
+      oidcExternalBaseUrl: https://local.opentdf.io
+      ingress:
+        hostname: local.opentdf.io
+        scheme: https
+        attributesPrefix: /api/attributes
+        entitlementsPrefix: /api/entitlements
+        kasPrefix: /api/kas
+        gatewaySelector: ingress
+        httpsRedirect: true
+        tls: true
+      keycloak:
+        user: technoking
+        password: elon-musk-is-a-dork
+      postgres:
+        # postgres server's k8s name or global DNS for external server
+        host: postgresql
+        # postgres server port
+        port: 5432
+        # The database name within the given server
+        database: tdf_database
+
+# ABACUS Chart Configuration
+abacus:
+  basePath: "/abacus"
+  fullnameOverride: abacus
+  ingress:
+    enabled: false
+  attributes:
+    serverUrl: null
+  entitlements:
+    serverUrl: null
+  kas:
+    serverUrl: null
+  oidc:
+    clientId: abacus-web
+    realm: master
+    queryRealms: "tdf,tdf-pki"
+    serverUrl: null
+  securityContext:
+
+
+
+# Backend Chart Configuration
+backend:
+  embedded:
+    # Stand-up postgresql
+    postgresql: true
+  entity-resolution:
+    secret:
+      keycloak:
+        clientSecret: 123-456
+  # Adding custom entrypoint to honor X509_CA_BUNDLE env var :
+  # - https://github.com/keycloak/keycloak-containers/issues/402
+  # - https://gist.github.com/RomainMou/3bcea4d7c01db1d04a0a8bc7b31819d2
+  # Docs: Configuring Truststore: https://www.keycloak.org/server/keycloak-truststore
+  # Docs: Reverse Proxy: https://www.keycloak.org/server/reverseproxy
+  keycloak:
+    command:
+      - "/opt/keycloak/custom_bin/kc_custom_entrypoint.sh"
+      - "--verbose"
+      - "--spi-truststore-file-hostname-verification-policy=ANY"
+      - "start-dev"
+    proxy:
+      enabled: true
+      # Sets KC_PROXY
+      mode: edge
+    http:
+      # Sets KC_HTTP_RELATIVE_PATH
+      relativePath: "/auth"
+    database:
+      # Sets KC_DB_URL_PORT
+      port: 5432
+      # Sets KC_DB
+      vendor: postgres
+    extraEnv: |-
+      - name: KC_LOG_LEVEL
+        value: INFO
+      - name: CLAIMS_URL
+        value: http://entitlement-pdp:3355/entitlements
+      - name: KC_HOSTNAME_STRICT_HTTPS
+        value: "true"
+      - name: KC_HOSTNAME_STRICT
+        value: "false"
+      - name: KC_HTTP_ENABLED
+        value: "true"
+      - name: JAVA_OPTS_APPEND
+        value: -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+      - name: KC_FEATURES
+        value: preview, token-exchange      
+      - name: X509_CA_BUNDLE
+        value: /etc/x509/https/ca.crt /etc/x509/https/ca2.crt
+# TODO , do we want the envoy SPI?
+#      - name: KC_SPI_X509CERT_LOOKUP_PROVIDER
+#        value: envoy
+    extraVolumes: |
+      - name: custom-entrypoint
+        configMap:
+          name: keycloak-custom-entrypoint-cm
+          defaultMode: 511
+      - name: x509
+        secret:
+          secretName : x509-secret
+    extraVolumeMounts: |
+      - name: x509
+        mountPath: /etc/x509/https
+      - name: custom-entrypoint
+        mountPath: /opt/keycloak/custom_bin/kc_custom_entrypoint.sh
+        subPath: kc_custom_entrypoint.sh
+  keycloak-bootstrap:
+    istioTerminationHack: false
+  secrets:
+    opaPolicyPullSecret: replaceme
+    oidcClientSecret: 123-456
+    postgres:
+      dbUser: postgres
+      dbPassword: pgpassword
+  postgresql:
+    volumePermissions:
+      enabled: false
+      securityContext:
+        runAsUser: "auto"
+
+    securityContext:
+      enabled: false
+
+    shmVolume:
+      chmod:
+        enabled: false
+
+    containerSecurityContext:
+      enabled: false

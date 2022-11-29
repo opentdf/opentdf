@@ -1,0 +1,21 @@
+apiVersion: v2
+name: tdf-platform
+description: TDF Platform deployment
+
+type: application
+
+version: 0.1.0
+appVersion: 0.1.0
+kubeVersion: '>= 1.20.0-0'
+
+dependencies:
+
+  - name: backend
+    repository: oci://ghcr.io/opentdf/charts
+    version: '0.0.0-sha-6cefffe'
+
+  - name: abacus
+    repository: oci://ghcr.io/opentdf/charts
+    version: '0.0.0-sha-f7c9fa0'
+
+

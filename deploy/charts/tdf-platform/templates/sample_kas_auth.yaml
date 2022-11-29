@@ -1,0 +1,39 @@
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: kas-jwt-req-auth
+spec:
+  selector:
+    matchLabels:
+      app: kas
+  jwtRules:
+    - issuer: "https://{{ .Values.global.opentdf.common.ingress.hostname }}/auth/realms/tdf"
+      jwksUri: http://keycloak.{{ .Release.Namespace }}.svc.cluster.local/realms/tdf/protocol/openid-connect/certs
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: kas-external-policy
+spec:
+  selector:
+    matchLabels:
+      app: kas
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            requestPrincipals: ["*"]
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: kas-internal-policy
+spec:
+  selector:
+    matchLabels:
+      app: kas
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: [ {{ .Release.Namespace }}]
