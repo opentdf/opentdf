@@ -44,7 +44,7 @@ Install istio via helm [Istio Docs](https://istio.io/latest/docs/setup/install/h
 ## Deploy OpenTDF
  1. Set install namespace: ```export ns=default```
  1. Enable Service Mesh Sidecar injection: ```kubectl label namespace $ns istio-injection=enabled```
- 1. **Local Deploy Only** : Gateway TLS/HTTPS: Generate TLS Certs and create secret
+ 1. :warning: **Local Deploy Only** : Gateway TLS/HTTPS: Generate TLS Certs and create secret
     - Generate Certs:  ./charts/local_gencerts.sh
     - Create tls-opentdf secret for OpenTDF Gateway:
     ```
