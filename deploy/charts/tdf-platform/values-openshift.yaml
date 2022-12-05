@@ -1,9 +1,9 @@
 global:
   opentdf:
     common:
-      oidcExternalBaseUrl: https://platform.apps.openshift-opentdf.develop.virtru.com
+      oidcExternalBaseUrl: https://replaceme.example.com
       ingress:
-        hostname: platform.apps.openshift-opentdf.develop.virtru.com
+        hostname: replaceme.example.com
         gatewaySelector: ingressgateway
 
 backend:
