@@ -59,10 +59,14 @@ Install istio via helm [Istio Docs](https://istio.io/latest/docs/setup/install/h
      helm install odtf -f myvalues.yaml -n $ns ./tdf-platform
       ```
  3. Validate the deployment  
-   - Check to see that the pods are running (Learn more [here]()https://kubebyexample.com/concept/deployments):
+   - Check to see that the pods are running (Learn more [here](https://kubebyexample.com/concept/deployments):
       ```
       kubectl get pod,replicaset,deployment
       ```
    - Run the [Python Test Script](quickstart/tests/oidc-auth.py) to validate that the OpenTDF services can successfully encrypt and decrypt a file.
+
+### Alternative deployment with OpenShift
+Check out [this guide](./README_OpenShift.md) for notes on deploying to the Red Hat OpenShift Service integration on AWS ([ROSA](https://aws.amazon.com/rosa/)). 
+
         
 
