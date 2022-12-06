@@ -1,7 +1,12 @@
 on:
-  schedule: 
-    # runs once a week on sunday
-    - cron: "55 23 * * 0"
+  #testing
+  push:
+    branches:
+      - 'PLAT-2233-traffic-bug'
+
+  # schedule: 
+  #   # runs once a week on sunday
+  #   - cron: "55 23 * * 0"
     
 jobs:
   traffic:
@@ -14,6 +19,8 @@ jobs:
         script: console.log(context)
     - name: checkout repo
       uses: actions/checkout@v3
+      with:
+        ref: analytics
     - name: GitHub traffic  
       uses: actions/github-script@v6
       id: get-traffic
