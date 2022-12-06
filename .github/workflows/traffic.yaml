@@ -1,12 +1,7 @@
 on:
-  #testing
-  push:
-    branches:
-      - 'PLAT-2233-traffic-bug'
-
-  # schedule: 
-  #   # runs once a week on sunday
-  #   - cron: "55 23 * * 0"
+  schedule: 
+    # runs once a week on sunday
+    - cron: "55 23 * * 0"
     
 jobs:
   traffic:
