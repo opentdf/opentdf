@@ -14,6 +14,8 @@ jobs:
         script: console.log(context)
     - name: checkout repo
       uses: actions/checkout@v3
+      with:
+        ref: analytics
     - name: GitHub traffic  
       uses: actions/github-script@v6
       id: get-traffic
