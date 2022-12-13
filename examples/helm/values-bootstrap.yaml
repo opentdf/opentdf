@@ -78,6 +78,8 @@ keycloak:
         - "{{ externalUrl }}/*"
         webOrigins:
         - "+"
+        attributes:
+          post.logout.redirect.uris: "+"
       mappers:
       - protocol: openid-connect
         config:
@@ -106,6 +108,8 @@ keycloak:
         - "http://localhost:65432/*"
         webOrigins:
         - "+"
+        attributes:
+          post.logout.redirect.uris: "+"
       mappers:
       - protocol: openid-connect
         config:
@@ -141,6 +145,8 @@ keycloak:
         - "http://localhost:3000/*"
         webOrigins:
         - "+"
+        attributes:
+          post.logout.redirect.uris: "+"
       mappers:
       - protocol: openid-connect
         config:
@@ -240,6 +246,8 @@ keycloak:
         - "{{ externalUrl }}/*"
         webOrigins:
         - "+"
+        attributes:
+          post.logout.redirect.uris: "+"
       mappers:
       - protocol: openid-connect
         config:
@@ -288,6 +296,8 @@ keycloak:
         - "{{ externalUrl }}/*"
         webOrigins:
         - "+"
+        attributes:
+          post.logout.redirect.uris: "+"
       mappers:
       - protocol: openid-connect
         config:
@@ -323,6 +333,7 @@ keycloak:
         webOrigins:
         - "+"
         attributes:
+          post.logout.redirect.uris: "+"
           user.info.response.signature.alg: RS256
       mappers:
       - protocol: openid-connect
@@ -359,6 +370,7 @@ keycloak:
         - "{{ externalUrl }}/*"
         attributes:
           user.info.response.signature.alg: RS256
+          post.logout.redirect.uris: "+"
       mappers:
       - protocol: openid-connect
         config:
