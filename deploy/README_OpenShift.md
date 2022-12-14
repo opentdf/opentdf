@@ -7,6 +7,7 @@ helm dependency update .
 export CERTS_ROOT=certs
 ```
 #### Create X509 Secret for Keycloak Truststore (Install only)
+- Update deploy/charts/local_gencert.sh with your `DOMAIN_NAME`
 Example using CA Certs in the certs directory:
 ```shell
 kubectl create secret generic x509-secret \
