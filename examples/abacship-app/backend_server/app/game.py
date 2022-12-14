@@ -324,7 +324,7 @@ def genRandomBoard():
     board = [[OCEAN for _ in range(SIZE)] for _ in range(SIZE)]
     for ship in SHIPS:
         board = _placeRandom(board, ship)
-    while not validBoard(board):
+    if not validBoard(board):
         board = genRandomBoard()
     return board
     
