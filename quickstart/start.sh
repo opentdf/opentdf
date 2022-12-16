@@ -137,6 +137,15 @@ maybe_load() {
   fi
 }
 
+load_or_pull() {
+  docker image inspect "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}" &>/dev/null
+  if [ "$?" = "0" ]; then
+    maybe_load "$1"
+  else
+    docker pull "$1"
+  fi
+}
+
 if [[ $LOAD_IMAGES ]]; then
   monolog INFO "Caching locally-built development opentdf/backend images in dev cluster"
   # Cache locally-built `latest` images, bypassing registry.
@@ -145,9 +154,9 @@ if [[ $LOAD_IMAGES ]]; then
     if [[ "$s" == keycloak && ! $USE_KEYCLOAK ]]; then
       : # Skip loading keycloak in this case
     elif [[ "$s" == entitlement-store ]]; then
-      maybe_load "ghcr.io/opentdf/entitlement_store:${SERVICE_IMAGE_TAG}"
+      load_or_pull "ghcr.io/opentdf/entitlement_store:${SERVICE_IMAGE_TAG}"
     else
-      maybe_load "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}"
+      load_or_pull "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}"
     fi
   done
 else
