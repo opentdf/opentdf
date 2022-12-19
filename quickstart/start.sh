@@ -238,7 +238,7 @@ if [[ $INIT_POSTGRES ]]; then
   if [[ $RUN_OFFLINE ]]; then
     helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
   else
-    helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml"
+    helm upgrade --install postgresql --repo https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml"
   fi
   e "Unable to helm upgrade postgresql"
   wait_for_pod postgresql-postgresql-0
