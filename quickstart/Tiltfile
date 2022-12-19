@@ -31,7 +31,7 @@ k8s_yaml(
 
 helm_repo(
     "bitnami",
-    "https://charts.bitnami.com/bitnami",
+    "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami",
     labels="utility",
 )
 helm_repo(
