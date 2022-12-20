@@ -138,7 +138,7 @@ maybe_load() {
 }
 
 load_or_pull() {
-  docker image inspect "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}" &>/dev/null
+  docker image inspect "$1" &>/dev/null
   if [ "$?" = "0" ]; then
     maybe_load "$1"
   else
@@ -242,7 +242,7 @@ if [[ $INIT_POSTGRES ]]; then
   monolog INFO --- "Installing Postgresql for opentdf backend"
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching postgresql image"
-    maybe_load bitnami/postgresql:${SERVICE_IMAGE_TAG}
+    load_or_pull bitnami/postgresql:latest
   fi
   if [[ $RUN_OFFLINE ]]; then
     helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
@@ -250,7 +250,7 @@ if [[ $INIT_POSTGRES ]]; then
     helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml"
   fi
   e "Unable to helm upgrade postgresql"
-  wait_for_pod postgresql-postgresql-0
+  wait_for_pod postgresql-0
 fi
 
 # Only do this if we were told to disable Keycloak
