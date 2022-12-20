@@ -171,50 +171,64 @@ if [[ $LOAD_SECRETS ]]; then
     case "$service" in
       attributes)
         monolog TRACE "Creating 'attributes-secrets'..."
-        kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        if ! kubectl get secret attributes-secrets; then
+          kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        fi
         ;;
       entitlement-store)
         monolog TRACE "Creating 'entitlement-store-secrets'..."
-        kubectl create secret generic entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        if ! kubectl get secret entitlement-store-secrets; then
+          kubectl create secret generic entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        fi
         ;;
       entitlement-pdp)
         monolog TRACE "Creating 'entitlement-pdp-secret'..."
         # If CR_PAT is undefined and the entitlement-pdp chart is configured to use the policy bundle baked in at container build time, this isn't used and can be empty
-        kubectl create secret generic entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}"
+        if ! kubectl get secret entitlement-pdp-secret; then
+          kubectl create secret generic entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}"
+        fi
         ;;
       entitlements)
         monolog TRACE "Creating 'entitlements-secrets'..."
-        kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        if ! kubectl get secret entitlements-secrets; then
+          kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        fi
         ;;
       kas)
         monolog TRACE "Creating 'kas-secrets'..."
-        kubectl create secret generic kas-secrets \
-          "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
-          "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
-          "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
-          "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
-          "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt"
+        if ! kubectl get secret kas-secrets; then
+          kubectl create secret generic kas-secrets \
+            "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
+            "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
+            "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
+            "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
+            "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt"
+        fi
         ;;
       keycloak)
         monolog TRACE "Creating 'keycloak-secrets'..."
-        kubectl create secret generic keycloak-secrets \
-          --from-literal=KEYCLOAK_ADMIN=keycloakadmin \
-          --from-literal=KEYCLOAK_ADMIN_PASSWORD=mykeycloakpassword \
-          --from-literal=KC_HOSTNAME=localhost:65432 \
-          --from-literal=KC_HOSTNAME_ADMIN=localhost:65432 \
-          --from-literal=KC_DB_USERNAME=postgres \
-          --from-literal=KC_DB_PASSWORD=myPostgresPassword \
-          --from-literal=KC_DB_URL_HOST=postgresql \
-          --from-literal=KC_DB_URL_DATABASE=keycloak_database
+        if ! kubectl get secret keycloak-secrets; then
+          kubectl create secret generic keycloak-secrets \
+            --from-literal=KEYCLOAK_ADMIN=keycloakadmin \
+            --from-literal=KEYCLOAK_ADMIN_PASSWORD=mykeycloakpassword \
+            --from-literal=KC_HOSTNAME=localhost:65432 \
+            --from-literal=KC_HOSTNAME_ADMIN=localhost:65432 \
+            --from-literal=KC_DB_USERNAME=postgres \
+            --from-literal=KC_DB_PASSWORD=myPostgresPassword \
+            --from-literal=KC_DB_URL_HOST=postgresql \
+            --from-literal=KC_DB_URL_DATABASE=keycloak_database
+        fi
         ;;
       keycloak-bootstrap)
         monolog TRACE "Creating 'keycloak-bootstrap-secret'..."
-        kubectl create secret generic keycloak-bootstrap-secret \
-          --from-literal=CLIENT_SECRET=123-456 \
-          --from-literal=keycloak_admin_username=keycloakadmin \
-          --from-literal=keycloak_admin_password=mykeycloakpassword \
-          --from-literal=ATTRIBUTES_USERNAME=user1 \
-          --from-literal=ATTRIBUTES_PASSWORD=testuser123
+        if ! kubectl get secret keycloak-bootstrap-secret; then
+          kubectl create secret generic keycloak-bootstrap-secret \
+            --from-literal=CLIENT_SECRET=123-456 \
+            --from-literal=keycloak_admin_username=keycloakadmin \
+            --from-literal=keycloak_admin_password=mykeycloakpassword \
+            --from-literal=ATTRIBUTES_USERNAME=user1 \
+            --from-literal=ATTRIBUTES_PASSWORD=testuser123
+        fi
         ;;
       abacus | entity-resolution)
         # Service without its own secrets
@@ -247,7 +261,7 @@ if [[ $INIT_POSTGRES ]]; then
   if [[ $RUN_OFFLINE ]]; then
     helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
   else
-    helm upgrade --install postgresql --repo https://charts.bitnami.com/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml"
+    helm upgrade --install postgresql --repo https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml"
   fi
   e "Unable to helm upgrade postgresql"
   wait_for_pod postgresql-0
