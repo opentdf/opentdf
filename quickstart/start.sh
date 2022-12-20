@@ -138,11 +138,10 @@ maybe_load() {
 }
 
 load_or_pull() {
-  docker image inspect "$1" &>/dev/null
-  if [ "$?" = "0" ]; then
-    maybe_load "$1"
-  else
+  if ! docker image inspect "$1" &>/dev/null; then
     docker pull "$1"
+  else
+    maybe_load "$1"
   fi
 }
 
