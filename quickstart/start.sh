@@ -271,12 +271,12 @@ fi
 if [[ $USE_KEYCLOAK ]]; then
   monolog INFO --- "Installing Virtru-ified Keycloak"
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install keycloak "${CHART_ROOT}"/keycloakx-1.6.1.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
+    helm upgrade --install keycloak "${CHART_ROOT}"/keycloakx-1.6.1.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=19.0.2
   else
-    helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloakx -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
+    helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloakx -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=19.0.2
   fi
   e "Unable to helm upgrade keycloak"
-  wait_for_pod keycloak-0
+  #wait_for_pod keycloak-0
 fi
 
 if [[ $INIT_NGINX_CONTROLLER ]]; then
@@ -284,9 +284,9 @@ if [[ $INIT_NGINX_CONTROLLER ]]; then
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching ingress-nginx image"
     # TODO: Figure out how to guess the correct nginx tag
-    maybe_load k8s.gcr.io/ingress-nginx/controller:v1.1.1
+    load_or_pull k8s.gcr.io/ingress-nginx/controller:v1.1.1
   fi
-  nginx_params=("--set" "controller.config.large-client-header-buffers=20 32k" "--set" "controller.admissionWebhooks.enabled=false")
+  nginx_params=("--set" "controller.config.large-client-header-buffers=20 32k" "--set" "controller.admissionWebhooks.enabled=false" "--set" "controller.image.tag=v1.1.1")
   if [[ $RUN_OFFLINE ]]; then
     # TODO: Figure out how to set controller.image.tag to the correct value
     monolog TRACE "helm upgrade --install ingress-nginx ${CHART_ROOT}/ingress-nginx-4.0.16.tgz --set controller.image.digest= ${nginx_params[*]}"
@@ -327,7 +327,7 @@ fi
 if [[ $INIT_SAMPLE_DATA ]]; then
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching bootstrap image in cluster"
-    maybe_load ghcr.io/opentdf/keycloak-bootstrap:${SERVICE_IMAGE_TAG}
+    load_or_pull ghcr.io/opentdf/keycloak-bootstrap:${SERVICE_IMAGE_TAG}
   fi
   load-chart keycloak-bootstrap keycloak-bootstrap "${BACKEND_CHART_TAG}"
 fi
