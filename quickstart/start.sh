@@ -101,7 +101,6 @@ wait_for_pod() {
   pod="$1"
 
   monolog INFO "Waiting until $1 is ready"
-  #while [[ $(kubectl get pods "${pod}" -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
   while [ "$(kubectl get pods -l=app.kubernetes.io/name="${pod}" -o jsonpath='{.items[*].status.containerStatuses[0].ready}')" != "true" ]; do
     echo "waiting for ${pod}..."
     sleep 5
