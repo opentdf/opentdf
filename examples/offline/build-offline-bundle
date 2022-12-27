@@ -198,7 +198,7 @@ if [[ ! $no_third_party && ! $no_charts ]]; then
     monolog ERROR "Unable to helm pull keycloak"
     exit 1
   fi
-  if ! helm pull --repo https://charts.bitnami.com/bitnami --version 10.16.2 --destination "${OUT_DIR}/charts" postgresql; then
+  if ! helm pull --repo https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami --version 10.16.2 --destination "${OUT_DIR}/charts" postgresql; then
     monolog ERROR "Unable to helm pull postgresql"
     exit 1
   fi
