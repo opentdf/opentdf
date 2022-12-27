@@ -101,7 +101,8 @@ wait_for_pod() {
   pod="$1"
 
   monolog INFO "Waiting until $1 is ready"
-  while [[ $(kubectl get pods "${pod}" -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+  #while [[ $(kubectl get pods "${pod}" -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+  while [ "$(kubectl get pods -l=app.kubernetes.io/name="${pod}" -o jsonpath='{.items[*].status.containerStatuses[0].ready}')" != "true" ]; do
     echo "waiting for ${pod}..."
     sleep 5
   done
@@ -263,7 +264,7 @@ if [[ $INIT_POSTGRES ]]; then
     helm upgrade --install postgresql --repo https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml"
   fi
   e "Unable to helm upgrade postgresql"
-  wait_for_pod postgresql-0
+  wait_for_pod postgresql
 fi
 
 # Only do this if we were told to disable Keycloak
@@ -276,7 +277,7 @@ if [[ $USE_KEYCLOAK ]]; then
     helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloakx -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=19.0.2
   fi
   e "Unable to helm upgrade keycloak"
-  #wait_for_pod keycloak-0
+  wait_for_pod keycloakx
 fi
 
 if [[ $INIT_NGINX_CONTROLLER ]]; then
@@ -293,7 +294,8 @@ if [[ $INIT_NGINX_CONTROLLER ]]; then
     helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "--set" "controller.image.digest=" "${nginx_params[@]}"
   else
     monolog TRACE "helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx ${nginx_params[*]}"
-    helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}"
+    #helm upgrade --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}"
+    helm upgrade --install ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace "${nginx_params[@]}"
   fi
   e "Unable to helm upgrade ingress-nginx"
 fi
