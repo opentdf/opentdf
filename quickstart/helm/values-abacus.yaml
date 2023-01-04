@@ -18,6 +18,12 @@ ingress:
       paths: &paths
         - path: /(.*)
           pathType: Prefix
+        - path: /authorities
+          pathType: Exact
+        - path: /attributes
+          pathType: Exact
+        - path: /entitlements
+          pathType: Exact
     - host: host.docker.internal
       paths: *paths
     - host: offline.demo.internal
