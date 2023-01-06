@@ -1,0 +1,117 @@
+#  configuration https://github.com/bitnami/charts/tree/master/bitnami/postgresql/#parameters
+image:
+  debug: true
+initdbUser: postgres
+initdbPassword: mydbapassword
+initdbScripts:
+  init.sql: |
+    -- Keycloak DB
+    CREATE DATABASE keycloak_database;
+
+    -- Attributes and entitlements used in the Trusted Data Format
+    CREATE DATABASE tdf_database;
+    \connect tdf_database;
+
+    -- performs nocase checks
+    CREATE COLLATION IF NOT EXISTS NOCASE
+    (
+        provider = 'icu',
+        locale = 'und-u-ks-level2'
+    );
+
+    CREATE SCHEMA IF NOT EXISTS tdf_attribute;
+    CREATE TABLE IF NOT EXISTS tdf_attribute.attribute_namespace
+    (
+        id   SERIAL PRIMARY KEY,
+        name VARCHAR COLLATE NOCASE NOT NULL UNIQUE
+    );
+    
+    CREATE TABLE IF NOT EXISTS tdf_attribute.attribute
+    (
+        id           SERIAL PRIMARY KEY,
+        namespace_id INTEGER NOT NULL REFERENCES tdf_attribute.attribute_namespace,
+        state        VARCHAR NOT NULL,
+        rule         VARCHAR NOT NULL,
+        name         VARCHAR NOT NULL UNIQUE, -- ??? COLLATE NOCASE
+        description  VARCHAR,
+        values_array TEXT[],
+        group_by_attr INTEGER REFERENCES tdf_attribute.attribute(id),
+        group_by_attrval VARCHAR,
+        CONSTRAINT no_attrval_without_attrid CHECK(group_by_attrval is not null or group_by_attr is null)
+    );
+
+    CREATE SCHEMA IF NOT EXISTS tdf_entitlement;
+    CREATE TABLE IF NOT EXISTS tdf_entitlement.entity_attribute
+    (
+        id        SERIAL PRIMARY KEY,
+        entity_id VARCHAR NOT NULL,
+        namespace VARCHAR NOT NULL,
+        name      VARCHAR NOT NULL,
+        value     VARCHAR NOT NULL
+    );
+
+    CREATE INDEX entity_id_index ON tdf_entitlement.entity_attribute (entity_id);
+
+    CREATE SCHEMA IF NOT EXISTS tdf_entity;
+    CREATE TABLE IF NOT EXISTS tdf_entity.entity
+    (
+        id        SERIAL PRIMARY KEY,
+        is_person BOOLEAN NOT NULL,
+        state     INTEGER,
+        entity_id VARCHAR,
+        name      VARCHAR,
+        email     VARCHAR
+    );
+
+    CREATE SCHEMA IF NOT EXISTS secure_cycle;
+    CREATE TABLE IF NOT EXISTS secure_cycle.uuids
+    (
+        id          SERIAL PRIMARY KEY,
+        keycloak_id VARCHAR COLLATE NOCASE NOT NULL UNIQUE,
+        uuid        VARCHAR NOT NULL
+        );
+    CREATE TABLE IF NOT EXISTS secure_cycle.cycle_data
+    (
+        id         SERIAL PRIMARY KEY,
+        uuid       VARCHAR NOT NULL,
+        date       VARCHAR NOT NULL,
+        on_period  VARCHAR NOT NULL,
+        symptoms  VARCHAR NOT NULL
+    );
+
+    -- tdf_attribute
+    CREATE ROLE tdf_attribute_manager WITH LOGIN PASSWORD 'myPostgresPassword';
+    GRANT USAGE ON SCHEMA tdf_attribute TO tdf_attribute_manager;
+    GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_attribute TO tdf_attribute_manager;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_attribute TO tdf_attribute_manager;
+
+    -- tdf_entitlement
+    CREATE ROLE tdf_entitlement_manager WITH LOGIN PASSWORD 'myPostgresPassword';
+    GRANT USAGE ON SCHEMA tdf_entitlement TO tdf_entitlement_manager;
+    GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entitlement TO tdf_entitlement_manager;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_entitlement TO tdf_entitlement_manager;
+
+    -- entitlement-store
+    CREATE ROLE tdf_entitlement_reader WITH LOGIN PASSWORD 'myPostgresPassword';
+    GRANT USAGE ON SCHEMA tdf_entitlement TO tdf_entitlement_reader;
+    GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entitlement TO tdf_entitlement_reader;
+    GRANT SELECT ON tdf_entitlement.entity_attribute TO tdf_entitlement_reader;
+
+    -- tdf_entity
+    CREATE ROLE tdf_entity_manager WITH LOGIN PASSWORD 'myPostgresPassword';
+    GRANT USAGE ON SCHEMA tdf_entity TO tdf_entity_manager;
+    GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_entity TO tdf_entity_manager;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_entity TO tdf_entity_manager;
+
+    -- secure_cycle
+    CREATE ROLE secure_cycle_manager WITH LOGIN PASSWORD 'myPostgresPassword';
+    GRANT USAGE ON SCHEMA secure_cycle TO secure_cycle_manager;
+    GRANT USAGE ON ALL SEQUENCES IN SCHEMA secure_cycle TO secure_cycle_manager;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA secure_cycle TO secure_cycle_manager;
+
+  upgrade-1.0.0.sql: |
+    -- Add groupby
+    ALTER TABLE tdf_attribute.attribute ADD COLUMN IF NOT EXISTS group_by_attr INTEGER REFERENCES tdf_attribute.attribute(id);
+    ALTER TABLE tdf_attribute.attribute ADD COLUMN IF NOT EXISTS group_by_attrval VARCHAR;
+    ALTER TABLE tdf_attribute.attribute DROP CONSTRAINT IF EXISTS no_attrval_without_attrid;
+    ALTER TABLE tdf_attribute.attribute ADD CONSTRAINT no_attrval_without_attrid CHECK(group_by_attrval is not null or group_by_attr is null)

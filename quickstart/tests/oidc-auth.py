@@ -2,8 +2,10 @@ import sys
 from opentdf import TDFClient, NanoTDFClient, OIDCCredentials, LogLevel, TDFStorageType
 
 # encrypt the file and apply the policy on tdf file and also decrypt.
-OIDC_ENDPOINT = "http://localhost:65432"
-KAS_URL = "http://localhost:65432/api/kas"
+# OIDC_ENDPOINT = "http://localhost:65432/"
+# KAS_URL = "http://localhost:65432/api/kas"
+OIDC_ENDPOINT = "http://192.168.86.39:3000"
+KAS_URL = "http://192.168.86.39:3000/api/kas"
 
 try:
     # Create OIDC credentials object
