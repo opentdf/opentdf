@@ -6,6 +6,8 @@ image:
 # is available: https://github.com/bitnami/containers/tree/main/bitnami/postgresql 
 auth:
   postgresPassword: myPostgresPassword
+image:
+  tag: "11"
 initdbUser: postgres
 initdbPassword: myPostgresPassword
 extraEnv: |
@@ -68,7 +70,7 @@ primary:
         GRANT USAGE ON SCHEMA tdf_attribute TO tdf_attribute_manager;
         GRANT USAGE ON ALL SEQUENCES IN SCHEMA tdf_attribute TO tdf_attribute_manager;
         GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA tdf_attribute TO tdf_attribute_manager;
-    
+
         -- tdf_entitlement
         CREATE ROLE tdf_entitlement_manager WITH LOGIN PASSWORD '{{ .Values.initdbPassword }}';
         GRANT USAGE ON SCHEMA tdf_entitlement TO tdf_entitlement_manager;
