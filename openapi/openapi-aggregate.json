@@ -6,11 +6,16 @@
       "name": "BSD 3-Clause Clear",
       "url": "https://github.com/opentdf/backend/blob/main/LICENSE"
     },
-    "version": "0.9.0",
+    "version": "1.1.1",
     "x-logo": {
       "url": "https://avatars.githubusercontent.com/u/90051847?s=200&v=4"
     }
   },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
   "externalDocs": {
     "description": "Developer Hub",
     "url": "https://developer.virtru.com/"
@@ -18,7 +23,7 @@
   "tags": [
     {
       "name": "Attributes",
-      "description": "Operations to view data attributes. TDF protocol supports ABAC (Attribute Based Access Control). \n        This allows TDF protocol to implement policy driven and highly scalable access control mechanism."
+      "description": "Operations to view data attributes. TDF protocol supports ABAC (Attribute Based Access Control).\n        This allows TDF protocol to implement policy driven and highly scalable access control mechanism."
     },
     {
       "name": "Authorities",
@@ -256,7 +261,12 @@
                       "Proprietary",
                       "BusinessSensitive",
                       "Open"
-                    ]
+                    ],
+                    "group_by": {
+                      "authority": "https://opentdf.io",
+                      "name": "ClassificationUS",
+                      "value": "Proprietary"
+                    }
                   }
                 ]
               }
@@ -301,7 +311,12 @@
                   "Proprietary",
                   "BusinessSensitive",
                   "Open"
-                ]
+                ],
+                "group_by": {
+                  "authority": "https://opentdf.io",
+                  "name": "ClassificationUS",
+                  "value": "Proprietary"
+                }
               }
             }
           },
@@ -369,7 +384,12 @@
                   "Proprietary",
                   "BusinessSensitive",
                   "Open"
-                ]
+                ],
+                "group_by": {
+                  "authority": "https://opentdf.io",
+                  "name": "ClassificationUS",
+                  "value": "Proprietary"
+                }
               }
             }
           },
@@ -393,7 +413,12 @@
                     "Proprietary",
                     "BusinessSensitive",
                     "Open"
-                  ]
+                  ],
+                  "group_by": {
+                    "authority": "https://opentdf.io",
+                    "name": "ClassificationUS",
+                    "value": "Proprietary"
+                  }
                 }
               }
             }
@@ -527,6 +552,54 @@
                 "example": [
                   "https://opentdf.io"
                 ]
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "OAuth2AuthorizationCodeBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Authorities"
+        ],
+        "summary": "Delete Authorities",
+        "operationId": "delete_authorities_authorities_delete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthorityDefinition"
+              },
+              "example": {
+                "authority": "https://opentdf.io"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "No Content",
+            "content": {
+              "application/json": {
+                "schema": {},
+                "example": {
+                  "detail": "Item deleted"
+                }
               }
             }
           },
@@ -866,7 +939,6 @@
     "/api/kas/kas_public_key": {
       "get": {
         "summary": "Get the public key for KAS",
-        "deprecated": true,
         "description": "This endpoint provides a public key for the private key that the\nkas has internally. The public key is used to wrap object keys in\nthe TDF3 or NanoTDF files.\n",
         "operationId": "tdf3_kas_core.web.public_key.get",
         "parameters": [
@@ -909,6 +981,15 @@
         "summary": "Request a rewrap",
         "description": "This endpoint performs the primary service of the KAS; to re-wrap\ndata keys as needed to provide access for entities with a TDF that they\nwould like to open.\n",
         "operationId": "tdf3_kas_core.web.rewrap.rewrap",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "dpop",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "$ref": "#/components/requestBodies/Rewrap"
         },
@@ -980,6 +1061,15 @@
         "summary": "Request a rewrap",
         "description": "This endpoint performs the primary service of the KAS; to re-wrap\ndata keys as needed to provide access for entities with a TDF that they\nwould like to open.\n",
         "operationId": "tdf3_kas_core.web.rewrap.rewrap_v2",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "dpop",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "$ref": "#/components/requestBodies/RewrapV2"
         },
@@ -1051,6 +1141,15 @@
         "summary": "Request a upsert",
         "description": "The upsert service is a proxy to the back-end services that persist\npolicies and keys.\n",
         "operationId": "tdf3_kas_core.web.upsert.upsert",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "dpop",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "$ref": "#/components/requestBodies/Upsert"
         },
@@ -1107,6 +1206,15 @@
         "summary": "Request a upsert",
         "description": "The upsert service is a proxy to the back-end services that persist\npolicies and keys.\n",
         "operationId": "tdf3_kas_core.web.upsert.upsert_v2",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "dpop",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "$ref": "#/components/requestBodies/UpsertV2"
         },
@@ -1199,6 +1307,9 @@
             "title": "State",
             "maxLength": 64,
             "type": "string"
+          },
+          "group_by": {
+            "$ref": "#/components/schemas/AttributeInstance"
           }
         },
         "example": {
@@ -1211,7 +1322,45 @@
             "Proprietary",
             "BusinessSensitive",
             "Open"
-          ]
+          ],
+          "group_by": {
+            "authority": "https://opentdf.io",
+            "name": "ClassificationUS",
+            "value": "Proprietary"
+          }
+        }
+      },
+      "AttributeInstance": {
+        "title": "AttributeInstance",
+        "required": [
+          "authority",
+          "name",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "authority": {
+            "title": "Authority",
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string",
+            "format": "uri"
+          },
+          "name": {
+            "title": "Name",
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "maxLength": 2000,
+            "type": "string"
+          }
+        },
+        "example": {
+          "authority": "https://opentdf.io",
+          "name": "IntellectualProperty",
+          "value": "Proprietary"
         }
       },
       "AuthorityDefinition": {

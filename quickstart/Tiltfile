@@ -30,7 +30,7 @@ k8s_yaml(
 )
 
 helm_repo(
-    "bitnami",
+    "bitnami-archive",
     "https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami",
     labels="utility",
 )
@@ -63,10 +63,10 @@ helm_resource(
 
 helm_resource(
     "postgresql",
-    "bitnami/postgresql",
+    "bitnami-archive/postgresql",
     flags=["--version", "10.16.2", "-f", "helm/values-postgresql.yaml"],
     labels="third-party",
-    resource_deps=["bitnami"],
+    resource_deps=["bitnami-archive"],
 )
 
 helm_resource(

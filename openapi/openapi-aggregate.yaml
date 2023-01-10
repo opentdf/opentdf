@@ -7,6 +7,8 @@ info:
   version: 1.1.1
   x-logo:
     url: 'https://avatars.githubusercontent.com/u/90051847?s=200&v=4'
+servers:
+  - url: /
 externalDocs:
   description: Developer Hub
   url: 'https://developer.virtru.com/'
@@ -14,7 +16,7 @@ tags:
   - name: Attributes
     description: >-
       Operations to view data attributes. TDF protocol supports ABAC (Attribute
-      Based Access Control). 
+      Based Access Control).
               This allows TDF protocol to implement policy driven and highly scalable access control mechanism.
   - name: Authorities
     description: Operations to view and create attribute authorities.
@@ -187,6 +189,10 @@ paths:
                     - Proprietary
                     - BusinessSensitive
                     - Open
+                  group_by:
+                    authority: 'https://opentdf.io'
+                    name: ClassificationUS
+                    value: Proprietary
         '422':
           description: Validation Error
           content:
@@ -215,6 +221,10 @@ paths:
                 - Proprietary
                 - BusinessSensitive
                 - Open
+              group_by:
+                authority: 'https://opentdf.io'
+                name: ClassificationUS
+                value: Proprietary
         required: true
       responses:
         '200':
@@ -261,6 +271,10 @@ paths:
                 - Proprietary
                 - BusinessSensitive
                 - Open
+              group_by:
+                authority: 'https://opentdf.io'
+                name: ClassificationUS
+                value: Proprietary
         required: true
       responses:
         '200':
@@ -279,6 +293,10 @@ paths:
                   - Proprietary
                   - BusinessSensitive
                   - Open
+                group_by:
+                  authority: 'https://opentdf.io'
+                  name: ClassificationUS
+                  value: Proprietary
         '422':
           description: Validation Error
           content:
@@ -361,6 +379,35 @@ paths:
               schema: {}
               example:
                 - 'https://opentdf.io'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+        - OAuth2AuthorizationCodeBearer: []
+    delete:
+      tags:
+        - Authorities
+      summary: Delete Authorities
+      operationId: delete_authorities_authorities_delete
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorityDefinition'
+            example:
+              authority: 'https://opentdf.io'
+        required: true
+      responses:
+        '202':
+          description: No Content
+          content:
+            application/json:
+              schema: {}
+              example:
+                detail: Item deleted
         '422':
           description: Validation Error
           content:
@@ -580,7 +627,6 @@ paths:
   /api/kas/kas_public_key:
     get:
       summary: Get the public key for KAS
-      deprecated: true
       description: |
         This endpoint provides a public key for the private key that the
         kas has internally. The public key is used to wrap object keys in
@@ -614,6 +660,11 @@ paths:
         data keys as needed to provide access for entities with a TDF that they
         would like to open.
       operationId: tdf3_kas_core.web.rewrap.rewrap
+      parameters:
+        - in: header
+          name: dpop
+          schema:
+            type: string
       requestBody:
         $ref: '#/components/requestBodies/Rewrap'
       responses:
@@ -656,6 +707,11 @@ paths:
         data keys as needed to provide access for entities with a TDF that they
         would like to open.
       operationId: tdf3_kas_core.web.rewrap.rewrap_v2
+      parameters:
+        - in: header
+          name: dpop
+          schema:
+            type: string
       requestBody:
         $ref: '#/components/requestBodies/RewrapV2'
       responses:
@@ -697,6 +753,11 @@ paths:
         The upsert service is a proxy to the back-end services that persist
         policies and keys.
       operationId: tdf3_kas_core.web.upsert.upsert
+      parameters:
+        - in: header
+          name: dpop
+          schema:
+            type: string
       requestBody:
         $ref: '#/components/requestBodies/Upsert'
       responses:
@@ -729,6 +790,11 @@ paths:
         The upsert service is a proxy to the back-end services that persist
         policies and keys.
       operationId: tdf3_kas_core.web.upsert.upsert_v2
+      parameters:
+        - in: header
+          name: dpop
+          schema:
+            type: string
       requestBody:
         $ref: '#/components/requestBodies/UpsertV2'
       responses:
@@ -788,6 +854,8 @@ components:
           title: State
           maxLength: 64
           type: string
+        group_by:
+          $ref: '#/components/schemas/AttributeInstance'
       example:
         authority: 'https://opentdf.io'
         name: IntellectualProperty
@@ -798,6 +866,36 @@ components:
           - Proprietary
           - BusinessSensitive
           - Open
+        group_by:
+          authority: 'https://opentdf.io'
+          name: ClassificationUS
+          value: Proprietary
+    AttributeInstance:
+      title: AttributeInstance
+      required:
+        - authority
+        - name
+        - value
+      type: object
+      properties:
+        authority:
+          title: Authority
+          maxLength: 2000
+          minLength: 1
+          type: string
+          format: uri
+        name:
+          title: Name
+          maxLength: 2000
+          type: string
+        value:
+          title: Value
+          maxLength: 2000
+          type: string
+      example:
+        authority: 'https://opentdf.io'
+        name: IntellectualProperty
+        value: Proprietary
     AuthorityDefinition:
       title: AuthorityDefinition
       required:
