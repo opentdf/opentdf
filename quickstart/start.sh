@@ -255,7 +255,11 @@ if [[ $INIT_POSTGRES ]]; then
   monolog INFO --- "Installing Postgresql for opentdf backend"
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching postgresql image"
-    load_or_pull bitnami/postgresql:latest
+    if [[ $RUN_OFFLINE ]]; then
+      load_or_pull docker.io/bitnami/postgresql:${SERVICE_IMAGE_TAG}
+    else
+      load_or_pull docker.io/bitnami/postgresql:11
+    fi
   fi
   if [[ $RUN_OFFLINE ]]; then
     helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-12.1.8.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
