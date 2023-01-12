@@ -110,7 +110,7 @@ ingress-nginx     	default  	1       	2022-04-21 07:38:59.421522 -0400 EDT	deplo
 kas               	default  	1       	2022-04-21 07:41:44.364691 -0400 EDT	deployed	kas-0.0.1               	0.6.3a0    
 keycloak          	default  	1       	2022-04-21 07:41:03.576945 -0400 EDT	deployed	keycloak-17.0.1         	16.1.1     
 keycloak-bootstrap	default  	1       	2022-04-21 07:41:43.03611 -0400 EDT 	deployed	keycloak-bootstrap-0.4.2	0.4.2      
-postgresql        	default  	1       	2022-04-21 07:40:40.562598 -0400 EDT	deployed	postgresql-10.16.2      	11.14.0    
+postgresql        	default  	1       	2022-04-21 07:40:40.562598 -0400 EDT	deployed	postgresql-12.1.8      	11.14.0    
 
 -----K8s PODS-----
 NAMESPACE            NAME                                            READY   STATUS      RESTARTS   AGE

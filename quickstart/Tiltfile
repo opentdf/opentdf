@@ -64,7 +64,7 @@ helm_resource(
 helm_resource(
     "postgresql",
     "bitnami-archive/postgresql",
-    flags=["--version", "10.16.2", "-f", "helm/values-postgresql.yaml"],
+    flags=["--version", "12.1.8", "-f", "helm/values-postgresql.yaml"],
     labels="third-party",
     resource_deps=["bitnami-archive"],
 )
