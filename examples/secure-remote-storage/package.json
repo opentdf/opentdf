@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "webpack serve --mode development",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "test:playwright": "playwright test --config=tests/e2e/playwright.config.ts"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
     "@opentdf/client": "file:opentdf-client-0.2.2.tgz",
     "@react-keycloak/web": "^3.4.0",
     "antd": "^4.20.5",
+    "dotenv": "^16.0.3",
     "filereader-stream": "^2.0.0",
     "keycloak-js": "^18.0.1",
     "prop-types": "^15.8.1",
@@ -29,6 +31,7 @@
     "@babel/core": "^7.17.10",
     "@babel/preset-env": "^7.17.10",
     "@babel/preset-react": "^7.16.7",
+    "@playwright/test": "^1.23.3",
     "babel-loader": "^8.2.5",
     "buffer": "^6.0.3",
     "css-loader": "^6.7.1",
