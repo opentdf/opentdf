@@ -39,6 +39,7 @@ test.describe('<App/>', () => {
       await page.fill(selectors.s3ObjectInput, s3jsonObject)
     })
 
+    // upload may fail due to CORS issues on the S3 bucket side, please follow the Readme to solve that
     await test.step('Perform Encrypt/Upload operation and assert responses', async() => {
       const publicKeyPromise = page.waitForResponse('**/kas_public_key');
       await page.click(selectors.encryptAndUploadButton)
