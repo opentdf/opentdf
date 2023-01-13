@@ -101,7 +101,7 @@ wait_for_pod() {
   pod="$1"
 
   monolog INFO "Waiting until $1 is ready"
-  while [[ $(kubectl get pods "${pod}" -n default -o 'jsonpath={..status.conditions[?(@.type=="Ready")].status}') != "True" ]]; do
+  while [ "$(kubectl get pods -l=app.kubernetes.io/name="${pod}" -o jsonpath='{.items[*].status.containerStatuses[0].ready}')" != "true" ]; do
     echo "waiting for ${pod}..."
     sleep 5
   done
@@ -137,6 +137,14 @@ maybe_load() {
   fi
 }
 
+load_or_pull() {
+  if ! docker image inspect "$1" &>/dev/null; then
+    docker pull "$1"
+  else
+    maybe_load "$1"
+  fi
+}
+
 if [[ $LOAD_IMAGES ]]; then
   monolog INFO "Caching locally-built development opentdf/backend images in dev cluster"
   # Cache locally-built `latest` images, bypassing registry.
@@ -145,9 +153,9 @@ if [[ $LOAD_IMAGES ]]; then
     if [[ "$s" == keycloak && ! $USE_KEYCLOAK ]]; then
       : # Skip loading keycloak in this case
     elif [[ "$s" == entitlement-store ]]; then
-      maybe_load "ghcr.io/opentdf/entitlement_store:${SERVICE_IMAGE_TAG}"
+      load_or_pull "ghcr.io/opentdf/entitlement_store:${SERVICE_IMAGE_TAG}"
     else
-      maybe_load "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}"
+      load_or_pull "ghcr.io/opentdf/$s:${SERVICE_IMAGE_TAG}"
     fi
   done
 else
@@ -162,50 +170,64 @@ if [[ $LOAD_SECRETS ]]; then
     case "$service" in
       attributes)
         monolog TRACE "Creating 'attributes-secrets'..."
-        kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        if ! kubectl get secret attributes-secrets; then
+          kubectl create secret generic attributes-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        fi
         ;;
       entitlement-store)
         monolog TRACE "Creating 'entitlement-store-secrets'..."
-        kubectl create secret generic entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        if ! kubectl get secret entitlement-store-secrets; then
+          kubectl create secret generic entitlement-store-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        fi
         ;;
       entitlement-pdp)
         monolog TRACE "Creating 'entitlement-pdp-secret'..."
         # If CR_PAT is undefined and the entitlement-pdp chart is configured to use the policy bundle baked in at container build time, this isn't used and can be empty
-        kubectl create secret generic entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}"
+        if ! kubectl get secret entitlement-pdp-secret; then
+          kubectl create secret generic entitlement-pdp-secret --from-literal=opaPolicyPullSecret="${CR_PAT}"
+        fi
         ;;
       entitlements)
         monolog TRACE "Creating 'entitlements-secrets'..."
-        kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        if ! kubectl get secret entitlements-secrets; then
+          kubectl create secret generic entitlements-secrets --from-literal=POSTGRES_PASSWORD=myPostgresPassword
+        fi
         ;;
       kas)
         monolog TRACE "Creating 'kas-secrets'..."
-        kubectl create secret generic kas-secrets \
-          "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
-          "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
-          "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
-          "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
-          "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt"
+        if ! kubectl get secret kas-secrets; then
+          kubectl create secret generic kas-secrets \
+            "--from-file=KAS_EC_SECP256R1_CERTIFICATE=${CERTS_ROOT}/kas-ec-secp256r1-public.pem" \
+            "--from-file=KAS_CERTIFICATE=${CERTS_ROOT}/kas-public.pem" \
+            "--from-file=KAS_EC_SECP256R1_PRIVATE_KEY=${CERTS_ROOT}/kas-ec-secp256r1-private.pem" \
+            "--from-file=KAS_PRIVATE_KEY=${CERTS_ROOT}/kas-private.pem" \
+            "--from-file=ca-cert.pem=${CERTS_ROOT}/ca.crt"
+        fi
         ;;
       keycloak)
         monolog TRACE "Creating 'keycloak-secrets'..."
-        kubectl create secret generic keycloak-secrets \
-          --from-literal=KEYCLOAK_ADMIN=keycloakadmin \
-          --from-literal=KEYCLOAK_ADMIN_PASSWORD=mykeycloakpassword \
-          --from-literal=KC_HOSTNAME=localhost:65432 \
-          --from-literal=KC_HOSTNAME_ADMIN=localhost:65432 \
-          --from-literal=KC_DB_USERNAME=postgres \
-          --from-literal=KC_DB_PASSWORD=myPostgresPassword \
-          --from-literal=KC_DB_URL_HOST=postgresql \
-          --from-literal=KC_DB_URL_DATABASE=keycloak_database
+        if ! kubectl get secret keycloak-secrets; then
+          kubectl create secret generic keycloak-secrets \
+            --from-literal=KEYCLOAK_ADMIN=keycloakadmin \
+            --from-literal=KEYCLOAK_ADMIN_PASSWORD=mykeycloakpassword \
+            --from-literal=KC_HOSTNAME=localhost:65432 \
+            --from-literal=KC_HOSTNAME_ADMIN=localhost:65432 \
+            --from-literal=KC_DB_USERNAME=postgres \
+            --from-literal=KC_DB_PASSWORD=myPostgresPassword \
+            --from-literal=KC_DB_URL_HOST=postgresql \
+            --from-literal=KC_DB_URL_DATABASE=keycloak_database
+        fi
         ;;
       keycloak-bootstrap)
         monolog TRACE "Creating 'keycloak-bootstrap-secret'..."
-        kubectl create secret generic keycloak-bootstrap-secret \
-          --from-literal=CLIENT_SECRET=123-456 \
-          --from-literal=keycloak_admin_username=keycloakadmin \
-          --from-literal=keycloak_admin_password=mykeycloakpassword \
-          --from-literal=ATTRIBUTES_USERNAME=user1 \
-          --from-literal=ATTRIBUTES_PASSWORD=testuser123
+        if ! kubectl get secret keycloak-bootstrap-secret; then
+          kubectl create secret generic keycloak-bootstrap-secret \
+            --from-literal=CLIENT_SECRET=123-456 \
+            --from-literal=keycloak_admin_username=keycloakadmin \
+            --from-literal=keycloak_admin_password=mykeycloakpassword \
+            --from-literal=ATTRIBUTES_USERNAME=user1 \
+            --from-literal=ATTRIBUTES_PASSWORD=testuser123
+        fi
         ;;
       abacus | entity-resolution)
         # Service without its own secrets
@@ -233,15 +255,19 @@ if [[ $INIT_POSTGRES ]]; then
   monolog INFO --- "Installing Postgresql for opentdf backend"
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching postgresql image"
-    maybe_load bitnami/postgresql:${SERVICE_IMAGE_TAG}
+    if [[ $RUN_OFFLINE ]]; then
+      load_or_pull docker.io/bitnami/postgresql:${SERVICE_IMAGE_TAG}
+    else
+      load_or_pull docker.io/bitnami/postgresql:11
+    fi
   fi
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-10.16.2.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
+    helm upgrade --install postgresql "${CHART_ROOT}"/postgresql-12.1.8.tgz -f "${DEPLOYMENT_DIR}/values-postgresql.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
   else
     helm upgrade --install postgresql --repo https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami postgresql -f "${DEPLOYMENT_DIR}/values-postgresql.yaml"
   fi
   e "Unable to helm upgrade postgresql"
-  wait_for_pod postgresql-postgresql-0
+  wait_for_pod postgresql
 fi
 
 # Only do this if we were told to disable Keycloak
@@ -249,12 +275,12 @@ fi
 if [[ $USE_KEYCLOAK ]]; then
   monolog INFO --- "Installing Virtru-ified Keycloak"
   if [[ $RUN_OFFLINE ]]; then
-    helm upgrade --install keycloak "${CHART_ROOT}"/keycloakx-1.6.1.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
+    helm upgrade --install keycloak "${CHART_ROOT}"/keycloakx-1.6.1.tgz -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=19.0.2
   else
-    helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloakx -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=${SERVICE_IMAGE_TAG}
+    helm upgrade --install keycloak --repo https://codecentric.github.io/helm-charts keycloakx -f "${DEPLOYMENT_DIR}/values-keycloak.yaml" --set image.tag=19.0.2
   fi
   e "Unable to helm upgrade keycloak"
-  wait_for_pod keycloak-0
+  wait_for_pod keycloakx
 fi
 
 if [[ $INIT_NGINX_CONTROLLER ]]; then
@@ -262,16 +288,17 @@ if [[ $INIT_NGINX_CONTROLLER ]]; then
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching ingress-nginx image"
     # TODO: Figure out how to guess the correct nginx tag
-    maybe_load k8s.gcr.io/ingress-nginx/controller:v1.1.1
+    load_or_pull k8s.gcr.io/ingress-nginx/controller:v1.1.1
   fi
-  nginx_params=("--set" "controller.config.large-client-header-buffers=20 32k" "--set" "controller.admissionWebhooks.enabled=false")
+  nginx_params=("--set" "controller.config.large-client-header-buffers=20 32k" "--set" "controller.admissionWebhooks.enabled=false" "--set" "controller.image.tag=v1.1.1")
   if [[ $RUN_OFFLINE ]]; then
     # TODO: Figure out how to set controller.image.tag to the correct value
     monolog TRACE "helm upgrade --install ingress-nginx ${CHART_ROOT}/ingress-nginx-4.0.16.tgz --set controller.image.digest= ${nginx_params[*]}"
     helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "--set" "controller.image.digest=" "${nginx_params[@]}"
   else
     monolog TRACE "helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx ${nginx_params[*]}"
-    helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}"
+    #helm upgrade --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}"
+    helm upgrade --install ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace "${nginx_params[@]}"
   fi
   e "Unable to helm upgrade ingress-nginx"
 fi
@@ -305,7 +332,7 @@ fi
 if [[ $INIT_SAMPLE_DATA ]]; then
   if [[ $LOAD_IMAGES ]]; then
     monolog INFO "Caching bootstrap image in cluster"
-    maybe_load ghcr.io/opentdf/keycloak-bootstrap:${SERVICE_IMAGE_TAG}
+    load_or_pull ghcr.io/opentdf/keycloak-bootstrap:${SERVICE_IMAGE_TAG}
   fi
   load-chart keycloak-bootstrap keycloak-bootstrap "${BACKEND_CHART_TAG}"
 fi
