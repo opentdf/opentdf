@@ -31,8 +31,8 @@ test.describe('<App/>', () => {
     await expect(emptyTablePlaceholder).toBeVisible()
 
     await test.step('Select a file and assert its presence', async() => {
-      await selectFile(page, 'tests/e2e/fileforupload.jpg', selectors.selectFileButton)
-      await expect(page.locator(selectors.uploadedFileName)).toHaveText("fileforupload.jpg")
+      await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
+      await expect(page.locator(selectors.uploadedFileName)).toHaveText("fileforupload.docx")
     })
 
     await test.step('Fill configuration object field', async() => {
@@ -47,7 +47,7 @@ test.describe('<App/>', () => {
     })
 
     await test.step('Assert adding of table item', async() => {
-      const addedTableItem = page.locator(selectors.filesTableItem, {hasText: 'fileforupload.jpg'})
+      const addedTableItem = page.locator(selectors.filesTableItem, {hasText: 'fileforupload.docx'})
       await expect(addedTableItem).toBeVisible()
     })
 
@@ -69,7 +69,7 @@ test.describe('<App/>', () => {
   });
 
   test('proper error notifications are shown on uploading file if S3 object creds are not filled', async ({ page }) => {
-    await selectFile(page, 'tests/e2e/fileforupload.jpg', selectors.selectFileButton)
+    await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
     await page.click(selectors.encryptAndUploadButton)
 
     const s3ObjectMissingMsg = page.locator(selectors.alertMessage, {hasText: `Please enter a valid S3 compatible json object.`})
@@ -79,7 +79,7 @@ test.describe('<App/>', () => {
   test('able to perform log out', async ({ page }) => {
     await page.fill(selectors.s3ObjectInput, s3jsonObject)
 
-    await selectFile(page, 'tests/e2e/fileforupload.jpg', selectors.selectFileButton)
+    await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
 
     await Promise.all([
       page.waitForNavigation(),
@@ -110,7 +110,7 @@ test.describe('<Login/>', () => {
 
   test('proper error notification is shown on uploading file if user is not logged in', async ({ page }) => {
     await page.goto("/secure-remote-storage")
-    await selectFile(page, 'tests/e2e/fileforupload.jpg', selectors.selectFileButton)
+    await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
     await page.fill(selectors.s3ObjectInput, s3jsonObject)
     await page.click(selectors.encryptAndUploadButton)
 

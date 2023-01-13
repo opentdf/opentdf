@@ -25,7 +25,7 @@ const config: PlaywrightTestConfig = {
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     browserName: "chromium",
-    headless: false,
+    headless: !false,
     launchOptions: {
       slowMo: 50,
     }
