@@ -17,7 +17,6 @@
     "@opentdf/client": "file:opentdf-client-0.2.2.tgz",
     "@react-keycloak/web": "^3.4.0",
     "antd": "^4.20.5",
-    "dotenv": "^16.0.3",
     "filereader-stream": "^2.0.0",
     "keycloak-js": "^18.0.1",
     "prop-types": "^15.8.1",

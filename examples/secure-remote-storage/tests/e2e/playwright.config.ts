@@ -1,7 +1,4 @@
 import { PlaywrightTestConfig, devices } from '@playwright/test';
-// @ts-ignore
-import dotenv from "dotenv";
-dotenv.config({ multiline: true });
 
 /* See https://playwright.dev/docs/test-configuration. */
 const config: PlaywrightTestConfig = {
