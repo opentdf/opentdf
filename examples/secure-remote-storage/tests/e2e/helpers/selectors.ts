@@ -6,6 +6,7 @@ export const selectors = {
     s3ObjectInput: '.newS3TextArea',
     selectFileButton: '#select-file-button',
     uploadedFileName: '.ant-upload-list-item-name',
+    deleteFileIcon: '.anticon-delete',
     encryptAndUploadButton: '#encrypt-and-upload-button',
     downloadAndDecryptButton: '#download-decrypt-button',
     filesTableItem: '.ant-table-cell',

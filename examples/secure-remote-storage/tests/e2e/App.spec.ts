@@ -22,7 +22,7 @@ test.describe('<App/>', () => {
     await expect(page.locator(selectors.pageTitle)).toBeVisible();
   });
 
-  test('able to perform file Encrypt/Upload and then Download/Decrypt', async ({ page }) => {
+  test('able to perform file Encrypt/Upload and then Download/Decrypt, able to replace target file', async ({ page }) => {
     await expect(page.locator(selectors.tokenMessage)).toBeVisible()
     const logoutButton = page.locator(selectors.logoutButton);
     expect(logoutButton).toBeTruthy();
@@ -30,13 +30,19 @@ test.describe('<App/>', () => {
     const emptyTablePlaceholder = page.locator(selectors.filesTableItem, {hasText: 'No uploaded files'})
     await expect(emptyTablePlaceholder).toBeVisible()
 
+    await test.step('Fill configuration object field', async() => {
+      await page.fill(selectors.s3ObjectInput, s3jsonObject)
+    })
+
     await test.step('Select a file and assert its presence', async() => {
       await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
       await expect(page.locator(selectors.uploadedFileName)).toHaveText("fileforupload.docx")
     })
 
-    await test.step('Fill configuration object field', async() => {
-      await page.fill(selectors.s3ObjectInput, s3jsonObject)
+    await test.step('Replace a file', async() => {
+      await selectFile(page, 'tests/e2e/fileForReplacement.jpeg', selectors.selectFileButton)
+      const replacedFile = page.locator(selectors.uploadedFileName, {hasText: "fileForReplacement.jpeg"})
+      await expect(replacedFile).toBeVisible()
     })
 
     // upload may fail due to CORS issues on the S3 bucket side, please follow the Readme to solve that
@@ -48,7 +54,7 @@ test.describe('<App/>', () => {
     })
 
     await test.step('Assert adding of table item', async() => {
-      const addedTableItem = page.locator(selectors.filesTableItem, {hasText: 'fileforupload.docx'})
+      const addedTableItem = page.locator(selectors.filesTableItem, {hasText: 'fileForReplacement.jpeg'})
       await expect(addedTableItem).toBeVisible()
     })
 
@@ -67,6 +73,30 @@ test.describe('<App/>', () => {
 
     const fileMissingMsg = page.locator(selectors.alertMessage, {hasText: 'Please select a file to upload/encrypt.'})
     await expect(fileMissingMsg).toBeVisible()
+  });
+
+  // TODO: skipped because of PLAT-2271 bug in the app. Enable back after fixing
+  test.skip('proper error notification is shown on uploading if file was deleted', async ({ page }) => {
+    await page.fill(selectors.s3ObjectInput, s3jsonObject)
+
+    await test.step('Select a file', async() => {
+      await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
+      await expect(page.locator(selectors.uploadedFileName)).toHaveText("fileforupload.docx")
+    })
+
+    await test.step('Delete the file', async() => {
+      await page.hover(selectors.uploadedFileName)
+      await page.click(selectors.deleteFileIcon)
+    })
+
+    await test.step('Initiate upload', async() => {
+      await page.click(selectors.encryptAndUploadButton)
+    })
+
+    await test.step('Assert proper error notification', async() => {
+      const fileMissingMsg = page.locator(selectors.alertMessage, {hasText: 'Please select a file to upload/encrypt.'})
+      await expect(fileMissingMsg).toBeVisible()
+    })
   });
 
   test('proper error notifications are shown on uploading file if S3 object creds are not filled', async ({ page }) => {
