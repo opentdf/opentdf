@@ -63,3 +63,7 @@ virtru-tdf3-lib-python*
 .DS_Store
 /quickstart/sample.txt.ntdf
 /quickstart/sample_out.txt
+
+#testing
+examples/secure-remote-storage/playwright-report
+examples/secure-remote-storage/test-results

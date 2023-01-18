@@ -60,7 +60,7 @@ const App = () => {
       render: (text, record, index) => (
         <div className="spinnerContainer">
           <Spin spinning={showDownloadSpinner}>
-            <Button onClick={() => lfsDownload(text, record, index)}>Download/Decrypt</Button>
+            <Button onClick={() => lfsDownload(text, record, index)} id='download-decrypt-button'>Download/Decrypt</Button>
           </Spin>
         </div>
       ),
@@ -248,7 +248,7 @@ const App = () => {
           <br/>
           <h3>Upload a file as an encrypted TDF to an S3 compatible remote store</h3><br/>
           <Upload className='upload' multiple={false} maxCount={1} fileList={uploadFileList} beforeUpload={handleFileSelect} onRemove={e => setUploadFileList([])} removeIcon={true}>
-            <Button type='upload' icon={<UploadOutlined />}>Select File</Button>
+            <Button type='upload' icon={<UploadOutlined />} id='select-file-button'>Select File</Button>
           </Upload>
           <br/>
           <Input.Group className='newS3ConfigInputContainer' compact>
@@ -286,7 +286,7 @@ const App = () => {
           <br/>
           <div className="spinnerContainer">
             <Spin spinning={showUploadSpinner}>
-              <Button type='primary' onClick={lfsUpload} >
+              <Button type='primary' onClick={lfsUpload} id='encrypt-and-upload-button' >
                 Encrypt and Upload
               </Button>
             </Spin>
