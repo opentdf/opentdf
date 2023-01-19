@@ -15,7 +15,7 @@ FRONTEND_CHART_TAG = read_json('../../chartsVersions.json')['frontendVersion']
 os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')
 
 # Where helm values for examples
-os.putenv('HELM_VALUES_PATH', '../examples/helm')
+os.putenv('OPENTDF_HELM_VALUES_PATH', '../examples/helm')
 
 # start Quickstart
 # https://docs.tilt.dev/api.html#api.include

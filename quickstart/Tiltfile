@@ -1,7 +1,13 @@
 load("ext://helm_resource", "helm_resource", "helm_repo")
 load("ext://min_tilt_version", "min_tilt_version")
 # load("ext://min_k8s_version", "min_k8s_version")
-load('../version-tool/Tiltfile', 'min_helm_version', "min_kind_version", "min_ctlptl_version", "min_k8s_version")
+load(
+    "../version-tool/Tiltfile",
+    "min_helm_version",
+    "min_kind_version",
+    "min_ctlptl_version",
+    "min_k8s_version",
+)
 
 # The helm_resource extension uses the 'new extensions api' introduced in tilt 0.25
 min_tilt_version("0.25")
@@ -11,17 +17,24 @@ min_kind_version("0.12.0")
 min_ctlptl_version("0.7.4")
 
 
-
-# Where the redirect URI should go to, for example
-EXTERNAL_URL = "http://localhost:65432"
-
 # Versions of things backend to pull (attributes, kas, etc)
 BACKEND_CHART_TAG = read_json('../chartsVersions.json')['backendVersion']
 FRONTEND_CHART_TAG = read_json('../chartsVersions.json')['frontendVersion']
-HELM_VALUES_PATH = "helm/"
+
 # Where helm values for quickstart
-if "HELM_VALUES_PATH" in os.environ:
-    HELM_VALUES_PATH = os.getenv("HELM_VALUES_PATH")
+HELM_VALUES_PATH = os.getenv("OPENTDF_HELM_VALUES_PATH", "helm/")
+
+# Where the redirect URI should go to, for example
+EXTERNAL_URL = os.getenv("OPENTDF_EXTERNAL_URL", "http://localhost:65432")
+
+# Where the redirect URI should go to, for example
+LOAD_FRONTEND = os.getenv("OPENTDF_LOAD_FRONTEND", "1")
+LOAD_FRONTEND = (
+    LOAD_FRONTEND and LOAD_FRONTEND != "0" and LOAD_FRONTEND.lower() != "false"
+)
+
+# Ingress host port
+INGRESS_HOST_PORT = os.getenv("OPENTDF_INGRESS_HOST_PORT", "65432")
 
 k8s_yaml(
     helm(
@@ -57,7 +70,7 @@ helm_resource(
         "controller.admissionWebhooks.enabled=false",
     ],
     labels="third-party",
-    port_forwards="65432:80",
+    port_forwards=("{}:80".format(INGRESS_HOST_PORT) if INGRESS_HOST_PORT else None),
     resource_deps=["k8s-in"],
 )
 
@@ -172,24 +185,25 @@ if not os.environ.get("QUICKSTART_BOOTSTRAP_DISABLED"):
     )
 
 
-helm_resource(
-    "abacus",
-    "oci://ghcr.io/opentdf/charts/abacus",
-    flags=[
-        "--version",
-        FRONTEND_CHART_TAG,
-        "-f",
-        "%s/values-abacus.yaml" % HELM_VALUES_PATH,
-        "--set",
-        "attributes.serverUrl=%s/api/attributes" % EXTERNAL_URL,
-        "--set",
-        "entitlements.serverUrl=%s/api/entitlements" % EXTERNAL_URL,
-        "--set",
-        "oidc.serverUrl=%s/auth/" % EXTERNAL_URL,
-    ],
-    labels="frontend",
-    resource_deps=["keycloak-bootstrap"],
-)
+if LOAD_FRONTEND:
+    helm_resource(
+        "abacus",
+        "oci://ghcr.io/opentdf/charts/abacus",
+        flags=[
+            "--version",
+            FRONTEND_CHART_TAG,
+            "-f",
+            "%s/values-abacus.yaml" % HELM_VALUES_PATH,
+            "--set",
+            "attributes.serverUrl=%s/api/attributes" % EXTERNAL_URL,
+            "--set",
+            "entitlements.serverUrl=%s/api/entitlements" % EXTERNAL_URL,
+            "--set",
+            "oidc.serverUrl=%s/auth/" % EXTERNAL_URL,
+        ],
+        labels="frontend",
+        resource_deps=["keycloak-bootstrap"],
+    )
 
 # ability to pass in custom test script with path to script as env var
 # e.g.: CI=1 TEST_SCRIPT=tests/wait-and-test.sh tilt up
