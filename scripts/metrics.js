@@ -11,24 +11,11 @@ async function getMetrics(github, context) {
         repo: process.env.REPO,
         })
 
-    // // Forks -- all time
-    // const forks = await github.rest.repos.listForks({
-    //     owner: process.env.OWNER,
-    //     repo: process.env.REPO,
-    // })
-
+    // General info -- includes forks, stars, watchers
     const get_info = await github.rest.repos.get({
         owner: process.env.OWNER,
         repo: process.env.REPO,
     })
-
-    // Stars -- all time listStargazersForRepo: ["GET /repos/{owner}/{repo}/stargazers"]
-    // const stars = await github.rest.repos.listStargazersForRepo({
-    //     owner: process.env.OWNER,
-    //     repo: process.env.REPO,
-    // })
-
-    // Watchers listWatchersForRepo: ["GET /repos/{owner}/{repo}/subscribers"]
 
 
     // Commits -- last 14 days getParticipationStats: ["GET /repos/{owner}/{repo}/stats/participation"] -- add togethor last two
