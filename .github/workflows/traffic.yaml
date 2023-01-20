@@ -40,7 +40,7 @@ jobs:
           const result = await getMetrics({github, context})
           console.log(result)
           const jsonObj = JSON.stringify(result)
-          fs.writeFile(process.env.REPO+".json", jsonObj)
+          await fs.writeFile(process.env.REPO+".json", jsonObj)
           return result
     - name: List items in repo
       run: ls
