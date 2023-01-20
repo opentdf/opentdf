@@ -14,7 +14,7 @@ jobs:
     - name: fail if even week
       id: check-odd-week
       run: |
-        [ $(expr $(date '+%W') % 2) = 0 ] && exit 1
+        if [ $(expr $(date '+%W') % 2) = 0 ]; then exit 1; else echo "getting traffic"; fi
 
   traffic:
     needs: check-even-week
