@@ -16,6 +16,8 @@ jobs:
     #   uses: actions/github-script@v6
     #   with:
     #     script: console.log(context)
+    - name: checkout repo
+      uses: actions/checkout@v3
     - name: opentdf/opentdf traffic  
       uses: actions/github-script@v6
       id: opentdf-traffic
