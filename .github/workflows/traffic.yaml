@@ -11,10 +11,10 @@ jobs:
   check-even-week:
     runs-on: ubuntu-latest
     steps:
-    - name: fail if odd week
+    - name: fail if even week
       id: check-odd-week
       run: |
-        [ $(expr $(date '+%W') % 2) = 1 ] && exit 1
+        [ $(expr $(date '+%W') % 2) = 0 ] && exit 1
 
   traffic:
     needs: check-even-week
