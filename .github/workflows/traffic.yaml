@@ -11,6 +11,12 @@ jobs:
   traffic:
     runs-on: ubuntu-latest
     permissions: write-all
+    strategy:
+      matrix:
+        repo:
+          - opentdf
+          - backend
+          - frontend
     steps:
     # - name: View context attributes
     #   uses: actions/github-script@v6
@@ -18,36 +24,40 @@ jobs:
     #     script: console.log(context)
     - name: checkout repo
       uses: actions/checkout@v3
-    - name: opentdf/opentdf traffic  
+    - name: Get Traffic
       uses: actions/github-script@v6
-      id: opentdf-traffic
+      id: get-traffic
       env:
         OWNER: opentdf
-        REPO: opentdf
-        EVENT_TYPE: opentdf-github
+        REPO: ${{ matrix.version }}
+        EVENT_TYPE: opentdf-${{ matrix.version }}-github
       with:
         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
         retries: 3
         script: |
-          const script = require('./scripts/metrics.js')
-          const result = await script({github, context})
+          var fs = require('fs')
+          const getMetrics = require('./scripts/metrics.js')
+          const result = await getMetrics({github, context})
           console.log(result)
+          fs.writeFile(process.env.REPO+".json", JSON.stringify(result))
           return result
-    - name: opentdf/backend traffic  
-      uses: actions/github-script@v6
-      id: backend-traffic
-      env:
-        OWNER: opentdf
-        REPO: backend
-        EVENT_TYPE: opentdf-backend-github
-      with:
-        github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
-        retries: 3
-        script: |
-          const script = require('./scripts/metrics.js')
-          const result = await script({github, context})
-          console.log(result)
-          return result
+    - name: List items in repo
+      run: ls
+    # - name: opentdf/backend traffic  
+    #   uses: actions/github-script@v6
+    #   id: backend-traffic
+    #   env:
+    #     OWNER: opentdf
+    #     REPO: backend
+    #     EVENT_TYPE: opentdf-backend-github
+    #   with:
+    #     github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
+    #     retries: 3
+    #     script: |
+    #       const script = require('./scripts/metrics.js')
+    #       const result = await script({github, context})
+    #       console.log(result)
+    #       return result
     # - name: Write to CSV
     #   uses: gr2m/write-csv-file-action@v1.x
     #   with:
