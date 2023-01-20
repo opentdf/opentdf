@@ -29,8 +29,8 @@ jobs:
       id: get-traffic
       env:
         OWNER: opentdf
-        REPO: ${{ matrix.version }}
-        EVENT_TYPE: opentdf-${{ matrix.version }}-github
+        REPO: ${{ matrix.repo }}
+        EVENT_TYPE: opentdf-${{ matrix.repo }}-github
       with:
         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
         retries: 3
