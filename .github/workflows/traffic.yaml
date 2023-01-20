@@ -2,13 +2,22 @@ on:
   pull_request:
       branches:
         - main
-  # schedule: 
-  #   # runs once a week on sunday
-  #   - cron: "55 23 * * 0"
+  schedule: 
+    # runs once a week on sunday
+    - cron: "55 23 * * 0"
 
     
 jobs:
+  check-even-week:
+    runs-on: ubuntu-latest
+    steps:
+    - name: fail if odd week
+      id: check-odd-week
+      run: |
+        [ $(expr $(date '+%W') % 2) = 1 ] && exit 1
+
   traffic:
+    needs: check-even-week
     runs-on: ubuntu-latest
     permissions: write-all
     strategy:
