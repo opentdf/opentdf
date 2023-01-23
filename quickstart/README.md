@@ -2,7 +2,6 @@
 
 **_Not for production_**
 
-
 A quick (less than 10 minutes) and easy process to protect data with TDF using the opentdf stack.
 
 ## Getting a Local Backend Up and Running
