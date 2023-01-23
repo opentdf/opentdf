@@ -12,8 +12,8 @@ jobs:
           name: my-artifact
           path: charts_versions.json
       - run: |-
-        if [test -f "version.txt"]; then
-          echo "no file"
-        else
+        if [ -f "charts_versions1.json" ]; then
           echo "file exists."
+        else
+          echo "no file"
         fi
