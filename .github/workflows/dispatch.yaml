@@ -11,7 +11,7 @@ jobs:
         with:
           name: my-artifact
           path: charts_versions.json
-      - run: |-
+      - run: |
         (
           if [ -f "charts_versions1.json" ]; then
             echo "file exists."
