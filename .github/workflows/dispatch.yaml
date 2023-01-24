@@ -20,9 +20,10 @@ jobs:
         id: get-new-chart-versions
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
         run: |
-          chartsVersions=$(cat ../../chartsVersions.json)
-          backendVersion="${{fromJson($chartsVersions).backendVersion}}"
-          frontendVersion="${{fromJson($chartsVersions).frontendVersion}}"
+          backendVersion= $(cat ../../chartsVersions.json) \
+          | python3 -c "import sys, json; sys.stdout.write(json.load(sys.stdin)['backendVersion'])")
+          frontendVersion=$(cat ../../chartsVersions.json) \
+          | python3 -c "import sys, json; sys.stdout.write(json.load(sys.stdin)['frontendVersion'])")
           echo "::set-output name=backendVersion::$backendVersion"
           echo "::set-output name=frontendVersion::$frontendVersion"
 
@@ -37,8 +38,10 @@ jobs:
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
         run: |
           test -f "chartsVersions.json" && artifact=$(cat "chartsVersions.json") || artifact="{ "backendVersion" : "1.1.1", "frontendVersion": "1.1.1" }"
-          backendVersion="${{fromJson($artifact).backendVersion}}"
-          frontendVersion="${{fromJson($artifact).frontendVersion}}"
+          backendVersion=echo $artifact \
+          | python3 -c "import sys, json; sys.stdout.write(json.load(sys.stdin)['backendVersion'])") 
+          frontendVersion=echo $artifact \
+          | python3 -c "import sys, json; sys.stdout.write(json.load(sys.stdin)['frontendVersion'])")
           echo "::set-output name=backendVersion::$backendVersion"
           echo "::set-output name=frontendVersion::$frontendVersion"
 
