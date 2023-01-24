@@ -20,9 +20,9 @@ jobs:
         id: get-new-chart-versions
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
         run: |
-          backendVersion=cat "../../chartsVersions.json" \
+          backendVersion=cat "chartsVersions.json" \
           | python3 -c "import sys, json; sys.stdout.write(json.load(sys.stdin)['backendVersion'])"
-          frontendVersion=cat "../../chartsVersions.json" \
+          frontendVersion=cat "chartsVersions.json" \
           | python3 -c "import sys, json; sys.stdout.write(json.load(sys.stdin)['frontendVersion'])"
           echo "::set-output name=backendVersion::$backendVersion"
           echo "::set-output name=frontendVersion::$frontendVersion"
