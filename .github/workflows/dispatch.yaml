@@ -7,15 +7,52 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
         with:
-          name: my-artifact
-          path: charts_versions.json
-      - run: |
-        (
-          if [ -f "charts_versions1.json" ]; then
-            echo "file exists."
-          else
-            echo "no file"
-          fi
-        )
+          fetch-depth: 0
+
+      - name: If chartsVersions.json file were changed?
+        id: changed-chartsVersion-file
+        uses: tj-actions/changed-files@v35
+        with:
+          files: chartsVersions.json
+
+      - name: So config file changed, we should get updated chart versions
+        id: get-new-chart-versions
+        if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
+        run: |
+          chartsVersions=$(cat ../../chartsVersions.json)
+          backendVersion="${{fromJson($chartsVersions).backendVersion}}"
+          frontendVersion="${{fromJson($chartsVersions).frontendVersion}}"
+          echo "::set-output name=backendVersion::$backendVersion"
+          echo "::set-output name=frontendVersion::$frontendVersion"
+
+      - name: Read what versions were saved in artifacts
+        uses: actions/download-artifact@v3
+        if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
+        with:
+          name: chartsVersions
+
+      - name: Parse versions from artifacts
+        id: parse-artifact
+        if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
+        run: |
+          test -f "chartsVersions.json" && artifact=$(cat "chartsVersions.json") || artifact="{ "backendVersion" : "1.1.1", "frontendVersion": "1.1.1" }"
+          backendVersion="${{fromJson($artifact).backendVersion}}"
+          frontendVersion="${{fromJson($artifact).frontendVersion}}"
+          echo "::set-output name=backendVersion::$backendVersion"
+          echo "::set-output name=frontendVersion::$frontendVersion"
+
+      - name: Trigger tests repo with old and new versions
+        id: parse-artifact
+        if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
+        run: |
+          echo "new versions">>$GITHUB_STEP_SUMMARY
+          echo "$(steps.get-new-chart-versions.outputs.backendVersion)">>$GITHUB_STEP_SUMMARY
+          echo "$(steps.get-new-chart-versions.outputs.frontendVersion)">>$GITHUB_STEP_SUMMARY
+          echo "old versions">>$GITHUB_STEP_SUMMARY
+          echo "$(steps.parse-artifact.outputs.backendVersion)">>$GITHUB_STEP_SUMMARY
+          echo "$(steps.parse-artifact.outputs.frontendVersion)">>$GITHUB_STEP_SUMMARY
+
+
+        
+
