@@ -27,7 +27,7 @@ helm upgrade --install  \
     --set backend.kas.envConfig.ecPrivKey="$KAS_SEC_PRIV" \
     --set backend.kas.envConfig.cert="$KAS_PUB" \
     --set backend.kas.envConfig.privKey="$KAS_PRIV" \
-    -f  values.yaml \
+    -f  values-x509.yaml \
     -f  values-openshift.yaml \
      tdf-platform .
  ```

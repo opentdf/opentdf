@@ -20,7 +20,7 @@ spec:
           number: 80
   - match:
       - uri:
-          prefix: /abacus/
+          prefix: /abacus
     name: abacus
     rewrite:
       uri: /
