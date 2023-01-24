@@ -45,6 +45,10 @@ backend:
     serverCorsOrigins: https://opentdf.us
   kas:
     logLevel: INFO
+  entity-resolution:
+    secret:
+      keycloak:
+        clientSecret: 123-456
   keycloak:
     postgresql:
       enabled: false
