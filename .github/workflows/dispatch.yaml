@@ -46,7 +46,6 @@ jobs:
           echo "::set-output name=frontendVersion::$frontendVersion"
 
       - name: Trigger tests repo with old and new versions
-        id: parse-artifact
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
         run: |
           echo "new versions">>$GITHUB_STEP_SUMMARY
