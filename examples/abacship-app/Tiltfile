@@ -8,8 +8,8 @@ load("ext://helm_resource", "helm_resource", "helm_repo")
 EXTERNAL_URL = "http://localhost:65432"
 
 # Versions of things backend to pull (attributes, kas, etc)
-BACKEND_CHART_TAG = "1.1.1"
-FRONTEND_CHART_TAG = "1.1.1"
+BACKEND_CHART_TAG = "1.2.1"
+FRONTEND_CHART_TAG = "1.2.0"
 
 # disable Quickstart bootstrap
 os.putenv('QUICKSTART_BOOTSTRAP_DISABLED', 'True')

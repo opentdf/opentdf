@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "webpack serve --mode development",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "test:playwright": "playwright test --config=tests/e2e/playwright.config.ts"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,7 @@
     "@babel/core": "^7.17.10",
     "@babel/preset-env": "^7.17.10",
     "@babel/preset-react": "^7.16.7",
+    "@playwright/test": "^1.23.3",
     "babel-loader": "^8.2.5",
     "buffer": "^6.0.3",
     "css-loader": "^6.7.1",
