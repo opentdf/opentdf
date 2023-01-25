@@ -13,6 +13,9 @@ const selectFile = async (page: Page, pathToFile: string, triggerButton: string)
 // be aware that private sensitive info is used for the operation, avoid sharing these credentials
 const s3jsonObject = `{ \"Bucket\": \"${testS3Credentials.s3BucketName}\", \"credentials\": { \"accessKeyId\": \"${testS3Credentials.accessKeyId}\", \"secretAccessKey\": \"${testS3Credentials.secretAccessKey}\" }, \"region\": \"${testS3Credentials.region}\", \"signatureVersion\": \"v4\", \"s3ForcePathStyle\": true }`
 
+// example object doesn't contain valid existed data
+const exampleS3JsonObject = "{ \"Bucket\": \"myBucketName\", \"credentials\": { \"accessKeyId\": \"IELVUWIEUD7U99JHPPES\", \"secretAccessKey\": \"N7RTPIqNRR7iqRo/a9WnrXryq7hSQvpCjVueRXLo\" }, \"region\": \"us-east-2\", \"signatureVersion\": \"v4\", \"s3ForcePathStyle\": true }"
+
 test.describe('<App/>', () => {
   test.beforeEach(async ({ page }) => {
     await authorize(page);
@@ -66,6 +69,52 @@ test.describe('<App/>', () => {
     })
   });
 
+  test('be able to save remote store and select it to use', async ({ page }) => {
+    const addedStoreItemWithDefaultName = page.locator(selectors.selectStoreDialog.storeTableItem, {hasText: '1'})
+    const addedStoreItemWithCustomName = page.locator(selectors.selectStoreDialog.storeTableItem, {hasText: 'TestName'})
+
+    await test.step('Save remote store without defining a name', async() => {
+      await page.fill(selectors.s3ObjectInput, s3jsonObject)
+      await page.click(selectors.selectRemoteStoreDropdownButton)
+      await page.click(selectors.selectStoreDialog.saveStoreButton)
+    })
+
+    await test.step('Assert adding of first store table item', async() => {
+      await expect(addedStoreItemWithDefaultName).toBeVisible()
+    })
+
+    await test.step('Assert table item is present after reopening the dialog', async() => {
+      await page.keyboard.press('Escape')
+      await page.click(selectors.selectRemoteStoreDropdownButton)
+      await expect(addedStoreItemWithDefaultName).toBeVisible()
+    })
+
+    await test.step('Save remote store with custom name', async() => {
+      await page.locator(selectors.s3ObjectInput).clear()
+      await page.fill(selectors.s3ObjectInput, exampleS3JsonObject)
+      await page.click(selectors.selectRemoteStoreDropdownButton)
+      await page.fill(selectors.selectStoreDialog.storeNameInputField, 'TestName')
+      await page.click(selectors.selectStoreDialog.saveStoreButton)
+    })
+
+    await test.step('Assert adding of second store table item', async() => {
+      await expect(addedStoreItemWithCustomName).toBeVisible()
+    })
+
+    await test.step('Select a table item and check proper value of s3 object input', async() => {
+      await addedStoreItemWithDefaultName.click()
+      await expect(page.locator(selectors.s3ObjectInput)).toHaveText(s3jsonObject)
+    })
+  });
+
+  test('proper error notification is shown on saving a remote store if s3 object is not defined', async ({ page }) => {
+    await page.click(selectors.selectRemoteStoreDropdownButton)
+    await page.click(selectors.selectStoreDialog.saveStoreButton)
+
+    const s3ObjectMissingMsg = page.locator(selectors.alertMessage, {hasText: `Please enter a valid S3 compatible json object.`})
+    await expect(s3ObjectMissingMsg).toBeVisible()
+  });
+
   test('proper error notification is shown on uploading file if file is not selected', async ({ page }) => {
     await page.fill(selectors.s3ObjectInput, s3jsonObject)
 
@@ -99,7 +148,7 @@ test.describe('<App/>', () => {
     })
   });
 
-  test('proper error notifications are shown on uploading file if S3 object creds are not filled', async ({ page }) => {
+  test('proper error notification is shown on uploading file if S3 object credentials are not filled', async ({ page }) => {
     await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
     await page.click(selectors.encryptAndUploadButton)
 
