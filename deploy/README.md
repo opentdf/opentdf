@@ -60,12 +60,12 @@ For production deployments, it is recommended to use a hosted PostgreSQL compati
 3. Enable Service Mesh Sidecar injection: ```kubectl label namespace $ns istio-injection=enabled```
 4. Go to chart directory ```cd <project_root>/deploy/charts/tdf-platform```
 5. Update Helm dependencies ```helm dependency update```
-6. Update values-mine.yaml (Use the examples values files for reference)
+6. Update values-mine.yaml (Use the examples values files for reference and Helm docs https://github.com/opentdf/backend/tree/main/charts/backend) 
 7. Install OpenTDF Chart (note kubernetes storage is required)
      ```
      helm install otdf -f values-mine.yaml -n $ns .
       ```
-8. cert-manager ```kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml```
+8. Install cert-manager ```kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml```.  This is used by `deploy/charts/cert-manager.yaml`
 9. Validate the deployment  
 10. Check to see that the pods are running (Learn more [here](https://kubebyexample.com/concept/deployments)):
      ```
