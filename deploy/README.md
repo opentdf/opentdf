@@ -37,10 +37,6 @@ Install istio via helm [Istio Docs](https://istio.io/latest/docs/setup/install/h
    kubectl label namespace istio-ingress istio-injection=enabled
    helm install istio-ingress istio/gateway -n istio-ingress
    ```
-   Example for AWS EKS using AWS CERT ARN:
-   ```
-   helm install istio-ingress istio/gateway -n istio-ingress -f charts/aws-eks-example.yaml
-   ```
 
 ## Database
 
@@ -104,7 +100,18 @@ deployment.apps/otdf-abacus         1/1     1            1           20m
 ```
    - Run the [Python Test Script](../quickstart/tests/oidc-auth.py) to validate that the OpenTDF services can successfully encrypt and decrypt a file.
 
-### Alternative deployment with OpenShift
+### Alternative deployments 
+
+#### OpenShift
 Check out [this guide](./README_OpenShift.md) for notes on deploying to the Red Hat OpenShift Service integration on AWS ([ROSA](https://aws.amazon.com/rosa/)). 
 
 Check out `deploy/charts/tdf-platform/values-x509.yaml` for an example of how to accept x509 client certificates
+
+#### AWS EKS and AWS CERT ARN
+Follow the above prerequisite step, "Install Istio Ingress Gateway". You can use AWS CERT ARN if you're deploying to an AWS EKS Cluster.
+
+Example:
+```
+helm install istio-ingress istio/gateway -n istio-ingress -f charts/aws-eks-example.yaml
+```
+
