@@ -30,7 +30,9 @@ jobs:
         id: download-artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          run_id: 4016322955
+          workflow_conclusion: success
+          name: chartsVersions
+          check_artifacts:  true
           github_token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
           if_no_artifact_found: warn
 
@@ -38,8 +40,8 @@ jobs:
         id: parse-artifact
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
         run: |
-          backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersionsArtifact.json'))['backendVersion'])")
-          backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersionsArtifact.json'))['frontendVersion'])")
+          backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersions/chartsVersionsArtifact.json'))['backendVersion'])")
+          backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersions/chartsVersionsArtifact.json'))['frontendVersion'])")
           echo "::set-output name=backendVersion::$backendVersion"
           echo "::set-output name=frontendVersion::$frontendVersion"
 
