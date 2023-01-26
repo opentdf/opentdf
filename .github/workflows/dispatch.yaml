@@ -26,6 +26,11 @@ jobs:
           echo "::set-output name=backendVersion::$backendVersion"
           echo "::set-output name=frontendVersion::$frontendVersion"
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: chartsVersions
+          path: chartsVersionsArtifact.json
+
       - name: Read what versions were saved in artifacts
         uses: actions/download-artifact@v3
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
