@@ -26,11 +26,14 @@ jobs:
           echo "::set-output name=backendVersion::$backendVersion"
           echo "::set-output name=frontendVersion::$frontendVersion"
 
-      - name: Read what versions were saved in artifacts
-        uses: actions/download-artifact@v3
-        if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
         with:
           name: chartsVersions
+          workflow_conclusion: success
+          github_token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+          if_no_artifact_found: warn
 
       - name: Parse versions from artifacts
         id: parse-artifact
