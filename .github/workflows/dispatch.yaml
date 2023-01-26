@@ -40,8 +40,9 @@ jobs:
         id: parse-artifact
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
         run: |
-          backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersions/chartsVersionsArtifact.json'))['backendVersion'])")
-          backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersions/chartsVersionsArtifact.json'))['frontendVersion'])")
+          ls
+          backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('./chartsVersions/chartsVersionsArtifact.json'))['backendVersion'])")
+          backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('./chartsVersions/chartsVersionsArtifact.json'))['frontendVersion'])")
           echo "::set-output name=backendVersion::$backendVersion"
           echo "::set-output name=frontendVersion::$frontendVersion"
 
