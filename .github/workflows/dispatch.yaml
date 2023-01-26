@@ -20,7 +20,7 @@ jobs:
         id: get-new-chart-versions
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
         run: |
-          versionsFile=cat $("chartsVersions.json")
+          versionsFile=$(cat "chartsVersions.json")
           backendVersion=python3 -c "import sys, os, json; sys.stdout.write(json.load(os.getenv(versionsFile))['backendVersion'])"
           frontendVersion= python3 -c "import sys, os, json; sys.stdout.write(json.load(os.getenv(versionsFile))['frontendVersion'])"
           echo "::set-output name=backendVersion::$backendVersion"
