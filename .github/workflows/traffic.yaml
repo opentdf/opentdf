@@ -50,7 +50,8 @@ jobs:
           const result = await getMetrics({github, context})
           console.log(result)
           const jsonObj = JSON.stringify(result)
-          await fs.writeFile(process.env.REPO+".json", jsonObj, err =>{
+          var date = new Date()
+          await fs.writeFile(date.toISOString().split('T')[0].replaceAll('-', '') + "-" + process.env.EVENT_TYPE +".json", jsonObj, err =>{
           if(err) throw err})
           return result
       
@@ -75,5 +76,5 @@ jobs:
     - id: 'upload-file'
       uses: 'google-github-actions/upload-cloud-storage@v1'
       with:
-        path: './${{ matrix.repo-values.repo }}.json'
-        destination: 'virtru01dw_staging/${{ steps.get-date.outputs.DATE }}-opentdf-${{ matrix.repo-values.event }}github.json'
+        path: './${{ steps.get-date.outputs.DATE }}-opentdf-${{ matrix.repo-values.event }}github.json'
+        destination: 'virtru01dw_staging/OpenTDF Metrics'
