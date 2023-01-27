@@ -48,7 +48,7 @@ jobs:
       - name: Trigger tests repo with old and new versions
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
         run: |
-          curl
+          curl \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
