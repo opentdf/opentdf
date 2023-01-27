@@ -1,4 +1,7 @@
 on:
+  pull_request:
+    branches:
+      - main
   schedule: 
     # runs once a week on sunday
     - cron: "50 23 * * 0"
@@ -31,6 +34,10 @@ jobs:
     - name: checkout repo
       uses: actions/checkout@v3
 
+    - id: get-date
+      name: Set current date as env variable
+      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
     - name: Get Traffic
       uses: actions/github-script@v6
       id: get-traffic
@@ -38,6 +45,7 @@ jobs:
         OWNER: opentdf
         REPO: ${{ matrix.repo-values.repo }}
         EVENT_TYPE: opentdf-${{ matrix.repo-values.event }}github
+        TODAY_DATE: ${{ steps.get-date.outputs.DATE }}
       with:
         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
         retries: 3
@@ -47,14 +55,9 @@ jobs:
           const result = await getMetrics({github, context})
           console.log(result)
           const jsonObj = JSON.stringify(result)
-          var date = new Date()
-          await fs.writeFile(date.toISOString().split('T')[0].replaceAll('-', '') + "-" + process.env.EVENT_TYPE +".json", jsonObj, err =>{
+          await fs.writeFile(process.env.TODAY_DATE + "-" + process.env.EVENT_TYPE +".json", jsonObj, err =>{
           if(err) throw err})
           return result
-      
-    - id: get-date
-      name: Set current date as env variable
-      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
           
     #https://github.com/marketplace/actions/authenticate-to-google-cloud#setup
     - id: 'auth'
