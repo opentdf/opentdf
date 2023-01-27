@@ -23,8 +23,8 @@ jobs:
         run: |
           backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersions.json'))['backendVersion'])")
           frontendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersions.json'))['frontendVersion'])")
-          echo "updatedBackendVersion=$($backendVersion)" >> $GITHUB_ENV
-          echo "updatedFrontendVersion=$($frontendVersion)" >> $GITHUB_ENV
+          echo "updatedBackendVersion=$backendVersion" >> $GITHUB_ENV
+          echo "updatedFrontendVersion=$frontendVersion" >> $GITHUB_ENV
 
       - name: Download artifact
         id: download-artifact
@@ -42,8 +42,8 @@ jobs:
         run: |
           backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersionsArtifact.json'))['backendVersion'])")
           frontendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersionsArtifact.json'))['frontendVersion'])")
-          echo "oldBackendVersion=$($backendVersion)" >> $GITHUB_ENV
-          echo "oldFrontendVersion=$($frontendVersion)" >> $GITHUB_ENV
+          echo "oldBackendVersion=$backendVersion" >> $GITHUB_ENV
+          echo "oldFrontendVersion=$frontendVersion" >> $GITHUB_ENV
 
       - name: Trigger tests repo with old and new versions
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
