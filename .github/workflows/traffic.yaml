@@ -2,33 +2,34 @@ on:
   pull_request:
       branches:
         - main
-  schedule: 
-    # runs once a week on sunday
-    - cron: "55 23 * * 0"
+  # schedule: 
+  #   # runs once a week on sunday
+  #   - cron: "55 23 * * 0"
 
     
 jobs:
-  check-even-week:
-    runs-on: ubuntu-latest
-    steps:
-    - name: fail if even week
-      id: check-odd-week
-      run: |
-        if [ $(expr $(date '+%W') % 2) = 0 ]; then exit 1; else echo "getting traffic"; fi
+  # because cron doesnt allow for "every other week"
+  # check-even-week:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: fail if even week
+  #     id: check-even-week
+  #     run: |
+  #       if [ $(expr $(date '+%W') % 2) = 0 ]; then exit 1; else echo "getting traffic"; fi
 
   traffic:
-    needs: check-even-week
+    # needs: check-even-week
     runs-on: ubuntu-latest
     permissions: write-all
     strategy:
       matrix:
         repo-values:
           - {repo: opentdf, event: ""}
-          - {repo: backend, event: backend-}
-          - {repo: frontend, event: frontend-}
-          - {repo: tests, event: tests-}
-          - {repo: client-web, event: clientweb-}
-          - {repo: client-cpp, event: core-sdk-}
+          # - {repo: backend, event: backend-}
+          # - {repo: frontend, event: frontend-}
+          # - {repo: tests, event: tests-}
+          # - {repo: client-web, event: clientweb-}
+          # - {repo: client-cpp, event: core-sdk-}
     steps:
     - name: checkout repo
       uses: actions/checkout@v3
@@ -52,14 +53,18 @@ jobs:
           await fs.writeFile(process.env.REPO+".json", jsonObj, err =>{
           if(err) throw err})
           return result
+      
+    - id: get-date
+      name: Set current date as env variable
+      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
           
     #https://github.com/marketplace/actions/authenticate-to-google-cloud#setup
-    # - id: 'auth'
-    #   name: 'Authenticate to Google Cloud'
-    #   uses: 'google-github-actions/auth@v1'
-    #   with:
-    #     workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
-    #     service_account: 'my-service-account@my-project.iam.gserviceaccount.com'
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/766358470289/locations/global/workloadIdentityPools/opentdf-metrics-id-pool/providers/opentdf-metrics-id-provider'
+        service_account: 'opentdf-metrics@virtru01dw.iam.gserviceaccount.com'
     # # or with a service account key
     # - id: 'auth'
     #   name: 'Authenticate to Google Cloud'
@@ -67,8 +72,8 @@ jobs:
     #   with:
     #     credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
-    # - id: 'upload-file'
-    #   uses: 'google-github-actions/upload-cloud-storage@v1'
-    #   with:
-    #     path: './opentdf-${{ matrix.repo-values.event }}github.json'
-    #     destination: 'bucket-name/file'
+    - id: 'upload-file'
+      uses: 'google-github-actions/upload-cloud-storage@v1'
+      with:
+        path: './${{ matrix.repo-values.repo }}.json'
+        destination: 'virtru01dw_staging/${{ steps.get-date.outputs.DATE }}-opentdf-${{ matrix.repo-values.event }}github.json'
