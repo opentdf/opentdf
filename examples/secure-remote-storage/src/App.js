@@ -267,12 +267,13 @@ const App = () => {
             onSelect={handleS3ConfigSelect}
             value={selectedS3Config}
             onChange={val => {setSelectedS3Config(val)}}
+            id='select-store'
             dropdownRender={(menu) => (
               <React.Fragment>
                 {menu}
                 <Divider className='divider' />
                 <Space align="center" className='space'>
-                  <Input placeholder="Remote store name" onPressEnter={handleSaveS3Config} value={newS3Name} onChange={handleNewS3ConfigName} />
+                  <Input placeholder="Remote store name" onPressEnter={handleSaveS3Config} value={newS3Name} onChange={handleNewS3ConfigName} id='store-name-input'/>
                   <Typography.Link onClick={handleSaveS3Config} className='saveRemoteStoreButton'> <PlusOutlined /> Save remote store</Typography.Link>
                 </Space>
               </React.Fragment>
