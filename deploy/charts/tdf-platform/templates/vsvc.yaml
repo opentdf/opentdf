@@ -1,0 +1,98 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: platform-ingress
+spec:
+  hosts:
+    - '*'
+  gateways:
+    - platform-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /auth
+    rewrite:
+      uri: /auth
+    route:
+    - destination:
+        host: keycloak-http
+        port:
+          number: 80
+  - match:
+      - uri:
+          prefix: /abacus
+    name: abacus
+    rewrite:
+      uri: /
+    route:
+      - destination:
+          host: abacus
+          port:
+            number: 8080
+    # Hack for abacus to get it's static content
+  - match:
+      - uri:
+          prefix: /static
+    name: abacus
+    rewrite:
+      uri: /static
+    route:
+      - destination:
+          host: abacus
+          port:
+            number: 8080
+  - match:
+      - uri:
+          prefix: /manifest.json
+    name: abacus
+    rewrite:
+      uri: /manifest.json
+    route:
+      - destination:
+          host: abacus
+          port:
+            number: 8080
+  - match:
+      - uri:
+          prefix: /api/attributes/
+    name: attributes
+    rewrite:
+      uri: /
+    route:
+      - destination:
+          host: attributes
+          port:
+            number: 4020
+  - match:
+      - uri:
+          prefix: /api/claims/
+    name: claims
+    rewrite:
+      uri: /
+    route:
+      - destination:
+          host: entitlements-pdp
+          port:
+            number: 5000
+  - match:
+      - uri:
+          prefix: /api/entitlements/
+    name: entitlements
+    rewrite:
+      uri: /
+    route:
+      - destination:
+          host: entitlements
+          port:
+            number: 4030
+  - match:
+      - uri:
+          prefix: /api/kas/
+    name: key-access
+    rewrite:
+      uri: /
+    route:
+      - destination:
+          host: kas
+          port:
+            number: 8000

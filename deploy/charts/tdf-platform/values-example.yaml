@@ -1,0 +1,81 @@
+global:
+  opentdf:
+    common:
+      oidcExternalBaseUrl: https://opentdf.us
+      tls: true
+      ingress:
+        hostname: opentdf.us
+      postgres:
+        host: opentdfp.cbctrt5uljm5.us-west-2.rds.amazonaws.com
+abacus:
+  basePath: /abacus
+  attributes:
+    serverUrl: https://opentdf.us/api/attributes/
+  entitlements:
+    serverUrl: https://opentdf.us/api/entitlements/
+  ingress:
+    enabled: false
+    annotations:
+      kubernetes.io/ingress.class: istio-ingress
+    className: istio-ingress
+    hosts:
+      - host: opentdf.us
+        paths:
+          - path: /abacus
+            pathType: Prefix
+      - host: a1676caa0cc0a4304825cf11bb217327-1328155176.us-west-2.elb.amazonaws.com
+        paths:
+          - path: /abacus
+            pathType: Prefix
+backend:
+  bootstrapKeycloak: false
+  embedded:
+    postgresql: false
+  secrets:
+    postgres:
+      # -- The postgres admin username
+      dbUser: postgres
+      # -- The postgres admin password
+      dbPassword: z7I5DDDdkPaME8gzS5GL
+  attributes:
+    logLevel: INFO
+    serverCorsOrigins: https://opentdf.us
+  entitlements:
+    logLevel: INFO
+    serverCorsOrigins: https://opentdf.us
+  kas:
+    logLevel: INFO
+  entity-resolution:
+    secret:
+      keycloak:
+        clientSecret: 123-456
+  keycloak:
+    postgresql:
+      enabled: false
+    proxy:
+      enabled: true
+      # Sets KC_PROXY
+      mode: edge
+    http:
+      # Sets KC_HTTP_RELATIVE_PATH
+      relativePath: "/auth"
+    database:
+      # Sets KC_DB_URL_PORT
+      port: 5432
+      # Sets KC_DB
+      vendor: postgres
+    extraEnv: |-
+      - name: KC_LOG_LEVEL
+        value: INFO
+      - name: CLAIMS_URL
+        value: http://entitlement-pdp:3355/entitlements
+      - name: KC_HOSTNAME_STRICT_HTTPS
+        value: "true"
+      - name: KC_HOSTNAME_STRICT
+        value: "false"
+      - name: KC_HTTP_ENABLED
+        value: "true"
+      - name: JAVA_OPTS_APPEND
+        value: -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+      - name: KC_FEATURES
+        value: preview, token-exchange      
