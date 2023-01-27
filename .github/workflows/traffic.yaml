@@ -2,34 +2,34 @@ on:
   pull_request:
       branches:
         - main
-  # schedule: 
-  #   # runs once a week on sunday
-  #   - cron: "55 23 * * 0"
+  schedule: 
+    # runs once a week on sunday
+    - cron: "50 23 * * 0"
 
     
 jobs:
   # because cron doesnt allow for "every other week"
-  # check-even-week:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: fail if even week
-  #     id: check-even-week
-  #     run: |
-  #       if [ $(expr $(date '+%W') % 2) = 0 ]; then exit 1; else echo "getting traffic"; fi
+  check-even-week:
+    runs-on: ubuntu-latest
+    steps:
+    - name: fail if odd week
+      id: check-even-week
+      run: |
+        if [ $(expr $(date '+%W') % 2) = 1 ]; then exit 1; else echo "getting traffic"; fi
 
   traffic:
-    # needs: check-even-week
+    needs: check-even-week
     runs-on: ubuntu-latest
     permissions: write-all
     strategy:
       matrix:
         repo-values:
           - {repo: opentdf, event: ""}
-          # - {repo: backend, event: backend-}
-          # - {repo: frontend, event: frontend-}
-          # - {repo: tests, event: tests-}
-          # - {repo: client-web, event: clientweb-}
-          # - {repo: client-cpp, event: core-sdk-}
+          - {repo: backend, event: backend-}
+          - {repo: frontend, event: frontend-}
+          - {repo: tests, event: tests-}
+          - {repo: client-web, event: clientweb-}
+          - {repo: client-cpp, event: core-sdk-}
     steps:
     - name: checkout repo
       uses: actions/checkout@v3
@@ -66,12 +66,6 @@ jobs:
       with:
         workload_identity_provider: 'projects/766358470289/locations/global/workloadIdentityPools/opentdf-metrics-id-pool/providers/opentdf-metrics-id-provider'
         service_account: 'opentdf-metrics@virtru01dw.iam.gserviceaccount.com'
-    # # or with a service account key
-    # - id: 'auth'
-    #   name: 'Authenticate to Google Cloud'
-    #   uses: 'google-github-actions/auth@v1'
-    #   with:
-    #     credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
 
     - id: 'upload-file'
       uses: 'google-github-actions/upload-cloud-storage@v1'
