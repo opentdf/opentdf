@@ -1,7 +1,4 @@
 on:
-  pull_request:
-      branches:
-        - main
   schedule: 
     # runs once a week on sunday
     - cron: "50 23 * * 0"
