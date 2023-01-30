@@ -1,0 +1,17 @@
+global:
+  opentdf:
+    common:
+      oidcExternalBaseUrl: https://replaceme.example.com
+      ingress:
+        hostname: replaceme.example.com
+        gatewaySelector: ingressgateway
+
+backend:
+  keycloak:
+    # https://fswb-documentation.knowis.net/1.0/Installation/content/install_3rd_party_os3.html
+    podSecurityContext:
+      fsGroup: 1000670000
+
+    securityContext:
+      runAsUser: 1000670000
+      runAsNonRoot: true
