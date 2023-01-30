@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - feature/PLAT-2146
+      - main
 jobs:
   dispatch_if_charts_updated:
     runs-on: ubuntu-latest
@@ -56,14 +56,14 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/opentdf/tests/actions/workflows/abacus-playwright-tests.yml/dispatches \
-            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.oldBackendVersion }}","frontendVersion":"${{ env.oldFrontendVersion }}"}}'
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.oldBackendVersion }}","frontendVersion":"${{ env.oldFrontendVersion }}"}}'
           curl \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/opentdf/tests/actions/workflows/abacus-playwright-tests.yml/dispatches \
-            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}","frontendVersion":"${{ env.updatedFrontendVersion }}"}}'
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}","frontendVersion":"${{ env.updatedFrontendVersion }}"}}'
           
           echo "Triggering X-Test"
           curl \
@@ -72,14 +72,14 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/opentdf/tests/actions/workflows/xtest.yml/dispatches \
-            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.oldBackendVersion }}"}}'
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.oldBackendVersion }}"}}'
           curl \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/opentdf/tests/actions/workflows/xtest.yml/dispatches \
-            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}"}}'
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}"}}'
 
           echo "Triggering vulnerability test"
           curl \
@@ -88,14 +88,14 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/opentdf/tests/actions/workflows/vulnerability.yml/dispatches \
-            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.oldBackendVersion }}","frontendVersion":"${{ env.oldFrontendVersion }}"}}'
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.oldBackendVersion }}","frontendVersion":"${{ env.oldFrontendVersion }}"}}'
           curl \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/opentdf/tests/actions/workflows/vulnerability.yml/dispatches \
-            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}","frontendVersion":"${{ env.updatedFrontendVersion }}"}}'
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}","frontendVersion":"${{ env.updatedFrontendVersion }}"}}'
 
       - uses: actions/upload-artifact@v3
         with:
