@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - main
+      - feature/PLAT-2146
 jobs:
   dispatch_if_charts_updated:
     runs-on: ubuntu-latest
