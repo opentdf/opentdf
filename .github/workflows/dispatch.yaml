@@ -44,6 +44,7 @@ jobs:
           frontendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersionsArtifact.json'))['frontendVersion'])")
           echo "oldBackendVersion=$backendVersion" >> $GITHUB_ENV
           echo "oldFrontendVersion=$frontendVersion" >> $GITHUB_ENV
+          cp chartsVersions.json chartsVersionsArtifact.json
 
       - name: Trigger tests repo with old and new versions
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
@@ -95,3 +96,8 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/opentdf/tests/actions/workflows/vulnerability.yml/dispatches \
             -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}","frontendVersion":"${{ env.updatedFrontendVersion }}"}}'
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: chartsVersions
+          path: chartsVersionsArtifact.json
