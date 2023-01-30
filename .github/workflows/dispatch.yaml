@@ -23,8 +23,8 @@ jobs:
         run: |
           backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersions.json'))['backendVersion'])")
           frontendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersions.json'))['frontendVersion'])")
-          echo "updatedBackendVersion=$backendVersion" >> $GITHUB_ENV
-          echo "updatedFrontendVersion=$frontendVersion" >> $GITHUB_ENV
+          echo "updatedBackendVersion=[$backendVersion]" >> $GITHUB_ENV
+          echo "updatedFrontendVersion=[$frontendVersion]" >> $GITHUB_ENV
 
       - name: Download artifact
         id: download-artifact
@@ -42,16 +42,56 @@ jobs:
         run: |
           backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersionsArtifact.json'))['backendVersion'])")
           frontendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersionsArtifact.json'))['frontendVersion'])")
-          echo "oldBackendVersion=$backendVersion" >> $GITHUB_ENV
-          echo "oldFrontendVersion=$frontendVersion" >> $GITHUB_ENV
+          echo "oldBackendVersion=[$backendVersion]" >> $GITHUB_ENV
+          echo "oldFrontendVersion=[$frontendVersion]" >> $GITHUB_ENV
 
       - name: Trigger tests repo with old and new versions
         if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
         run: |
+          echo "Triggering abacus playwright tests"
           curl \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/opentdf/tests/actions/workflows/abacus-playwright-tests.yml/dispatches \
+            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.oldBackendVersion }}","frontendVersion":"${{ env.oldFrontendVersion }}"}}'
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/abacus-playwright-tests.yml/dispatches \
+            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}","frontendVersion":"${{ env.updatedFrontendVersion }}"}}'
+          
+          echo "Triggering X-Test"
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/xtest.yml/dispatches \
+            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.oldBackendVersion }}"}}'
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/xtest.yml/dispatches \
+            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.oldBackendVersion }}"}}'
+
+          echo "Triggering vulnerability test"
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/vulnerability.yml/dispatches \
+            -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.oldBackendVersion }}","frontendVersion":"${{ env.oldFrontendVersion }}"}}'
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/vulnerability.yml/dispatches \
             -d '{"ref":"feature/PLAT-2146","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}","frontendVersion":"${{ env.updatedFrontendVersion }}"}}'
