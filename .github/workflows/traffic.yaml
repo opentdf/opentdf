@@ -1,19 +1,10 @@
 on:
   schedule: 
     # runs once a week on sunday
-    - cron: "50 23 * * 0"
+    - cron: "55 23 * * 0"
 
     
 jobs:
-  # because cron doesnt allow for "every other week"
-  check-even-week:
-    runs-on: ubuntu-latest
-    steps:
-    - name: fail if odd week
-      id: check-even-week
-      run: |
-        if [ $(expr $(date '+%W') % 2) = 1 ]; then exit 1; else echo "getting traffic"; fi
-
   traffic:
     needs: check-even-week
     runs-on: ubuntu-latest
@@ -49,7 +40,7 @@ jobs:
         script: |
           var fs = require('fs')
           const getMetrics = require('./scripts/metrics.js')
-          const result = await getMetrics({github, context})
+          const result = await getMetrics({github})
           console.log(result)
           const jsonObj = JSON.stringify(result)
           await fs.writeFile(process.env.TODAY_DATE + "-" + process.env.EVENT_TYPE +".json", jsonObj, err =>{

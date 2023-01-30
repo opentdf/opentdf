@@ -1,4 +1,4 @@
-async function getMetrics(github, context) {   
+async function getMetrics(github) {   
     // Views -- last 14 days
     const views = await github.rest.repos.getViews({
         owner: process.env.OWNER,
