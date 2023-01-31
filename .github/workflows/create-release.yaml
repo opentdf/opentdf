@@ -56,7 +56,7 @@ jobs:
           # repository: # optional
 
           # Authorized secret GitHub Personal Access Token. Defaults to github.token
-          token: ${{ github.token }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
           # Commitish value that determines where the Git tag is created from. Can be any branch or commit SHA.
           # target_commitish: # optional
