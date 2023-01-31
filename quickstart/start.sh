@@ -210,8 +210,6 @@ if [[ $LOAD_SECRETS ]]; then
           kubectl create secret generic keycloak-secrets \
             --from-literal=KEYCLOAK_ADMIN=keycloakadmin \
             --from-literal=KEYCLOAK_ADMIN_PASSWORD=mykeycloakpassword \
-            --from-literal=KC_HOSTNAME=localhost:65432 \
-            --from-literal=KC_HOSTNAME_ADMIN=localhost:65432 \
             --from-literal=KC_DB_USERNAME=postgres \
             --from-literal=KC_DB_PASSWORD=myPostgresPassword \
             --from-literal=KC_DB_URL_HOST=postgresql \

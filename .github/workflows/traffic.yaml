@@ -2,54 +2,61 @@ on:
   schedule: 
     # runs once a week on sunday
     - cron: "55 23 * * 0"
+
     
 jobs:
   traffic:
+    needs: check-even-week
     runs-on: ubuntu-latest
     permissions: write-all
+    strategy:
+      matrix:
+        repo-values:
+          - {repo: opentdf, event: ""}
+          - {repo: backend, event: backend-}
+          - {repo: frontend, event: frontend-}
+          - {repo: tests, event: tests-}
+          - {repo: client-web, event: clientweb-}
+          - {repo: client-cpp, event: core-sdk-}
     steps:
-    - name: View context attributes
-      uses: actions/github-script@v6
-      with:
-        script: console.log(context)
     - name: checkout repo
       uses: actions/checkout@v3
-      with:
-        ref: analytics
-    - name: GitHub traffic  
+
+    - id: get-date
+      name: Set current date as env variable
+      run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+
+    - name: Get Traffic
       uses: actions/github-script@v6
       id: get-traffic
+      env:
+        OWNER: opentdf
+        REPO: ${{ matrix.repo-values.repo }}
+        EVENT_TYPE: opentdf-${{ matrix.repo-values.event }}github
+        TODAY_DATE: ${{ steps.get-date.outputs.DATE }}
       with:
         github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
         retries: 3
         script: |
-          const script = require('./scripts/metrics.js')
-          const result = await script({github, context})
+          var fs = require('fs')
+          const getMetrics = require('./scripts/metrics.js')
+          const result = await getMetrics({github})
           console.log(result)
+          const jsonObj = JSON.stringify(result)
+          await fs.writeFile(process.env.TODAY_DATE + "-" + process.env.EVENT_TYPE +".json", jsonObj, err =>{
+          if(err) throw err})
           return result
-    - name: Write to CSV
-      uses: gr2m/write-csv-file-action@v1.x
+          
+    #https://github.com/marketplace/actions/authenticate-to-google-cloud#setup
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
       with:
-        path: data/traffic.csv
-        columns: timestamp, views, clones, forks
-        timestamp: ${{ fromJson(steps.get-traffic.outputs.result).timestamp }}
-        views: ${{ fromJson(steps.get-traffic.outputs.result).views }}
-        clones: ${{ fromJson(steps.get-traffic.outputs.result).clones }}
-        forks: ${{ fromJson(steps.get-traffic.outputs.result).forks }}
-  # Use the REST API to commit changes, so we get automatic commit signing. See https://gist.github.com/swinton/03e84635b45c78353b1f71e41007fc7c
-    - name: Commit changes
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        FILE_TO_COMMIT: data/traffic.csv
-        DESTINATION_BRANCH: analytics
-      run: |
-        export TODAY=$( date -u '+%Y-%m-%d' )
-        export MESSAGE="Weekly Traffic Report Update: regenerate $FILE_TO_COMMIT for $TODAY"
-        export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
-        export CONTENT=$( base64 -i $FILE_TO_COMMIT )
-        gh api --method PUT /repos/:owner/:repo/contents/$FILE_TO_COMMIT \
-          --field message="$MESSAGE" \
-          --field content="$CONTENT" \
-          --field encoding="base64" \
-          --field branch="$DESTINATION_BRANCH" \
-          --field sha="$SHA"
+        workload_identity_provider: 'projects/766358470289/locations/global/workloadIdentityPools/opentdf-metrics-id-pool/providers/opentdf-metrics-id-provider'
+        service_account: 'opentdf-metrics@virtru01dw.iam.gserviceaccount.com'
+
+    - id: 'upload-file'
+      uses: 'google-github-actions/upload-cloud-storage@v1'
+      with:
+        path: './${{ steps.get-date.outputs.DATE }}-opentdf-${{ matrix.repo-values.event }}github.json'
+        destination: 'virtru01dw_staging/OpenTDF Metrics'

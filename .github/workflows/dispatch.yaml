@@ -1,0 +1,102 @@
+on:
+  push:
+    branches:
+      - main
+jobs:
+  dispatch_if_charts_updated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: If chartsVersions.json file were changed?
+        id: changed-chartsVersion-file
+        uses: tj-actions/changed-files@v35
+        with:
+          files: chartsVersions.json
+
+      - name: So config file changed, we should get updated chart versions
+        id: get-new-chart-versions
+        if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
+        run: |
+          backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersions.json'))['backendVersion'])")
+          frontendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersions.json'))['frontendVersion'])")
+          echo "updatedBackendVersion=$backendVersion" >> $GITHUB_ENV
+          echo "updatedFrontendVersion=$frontendVersion" >> $GITHUB_ENV
+
+      - name: Download artifact
+        id: download-artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow_conclusion: success
+          name: chartsVersions
+          check_artifacts:  true
+          github_token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+          if_no_artifact_found: warn
+
+      - name: Parse versions from artifacts
+        id: parse-artifact
+        if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
+        run: |
+          backendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersionsArtifact.json'))['backendVersion'])")
+          frontendVersion=$(python3 -c "import sys, json; sys.stdout.write(json.load(open('chartsVersionsArtifact.json'))['frontendVersion'])")
+          echo "oldBackendVersion=$backendVersion" >> $GITHUB_ENV
+          echo "oldFrontendVersion=$frontendVersion" >> $GITHUB_ENV
+          cp chartsVersions.json chartsVersionsArtifact.json
+
+      - name: Trigger tests repo with old and new versions
+        if: steps.changed-chartsVersion-file.outputs.any_changed == 'true'
+        run: |
+          echo "Triggering abacus playwright tests"
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/abacus-playwright-tests.yml/dispatches \
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.oldBackendVersion }}","frontendVersion":"${{ env.oldFrontendVersion }}"}}'
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/abacus-playwright-tests.yml/dispatches \
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}","frontendVersion":"${{ env.updatedFrontendVersion }}"}}'
+          
+          echo "Triggering X-Test"
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/xtest.yml/dispatches \
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.oldBackendVersion }}"}}'
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/xtest.yml/dispatches \
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}"}}'
+
+          echo "Triggering vulnerability test"
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/vulnerability.yml/dispatches \
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.oldBackendVersion }}","frontendVersion":"${{ env.oldFrontendVersion }}"}}'
+          curl \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/opentdf/tests/actions/workflows/vulnerability.yml/dispatches \
+            -d '{"ref":"main","inputs":{"backendVersion":"${{ env.updatedBackendVersion }}","frontendVersion":"${{ env.updatedFrontendVersion }}"}}'
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: chartsVersions
+          path: chartsVersionsArtifact.json
