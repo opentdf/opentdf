@@ -1,20 +1,20 @@
-name: Release
+name: Create Release
 on:
   workflow_dispatch:
     inputs:
       releaseVersion:
         description: 'New version of release'
         required: true
-        # frontChartVersion:
-        # description: 'Front-end chart version'
-        # required: true
-        # backChartVersion:
-        # description: 'Back-end chart version'
-        # required: true
-        # isDraft:
-        # type: boolean
-        # description: 'Created draft release'
-        # required: true
+      frontChartVersion:
+         description: 'Front-end chart version'
+         required: true
+      backChartVersion:
+         description: 'Back-end chart version'
+         required: true
+      isPreRelease:
+        type: boolean
+        description: 'Create release candidate'
+        required: true
 jobs:
   release:
     permissions:
@@ -23,6 +23,39 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
+      - uses: dcarbone/install-yq-action@v1.1.0
+      - uses: dcarbone/install-jq-action@v1.0.1
+
+      - name: Install sponge
+        run: sudo apt-get install moreutils
+
+      - name: Git config
+        run: |
+          git config --global user.email "${{ github.actor }}@virtru.com"
+          git config --global user.name ${{ github.actor }}
+
+      - name: Status
+        run: git status
+
+      - name: Bump backendVersion in chartsVersions.json
+        run: jq '.backendVersion = "${{ inputs.backChartVersion }}"' chartsVersions.json | sponge chartsVersions.json
+
+      - name: Bump frontendVersion in chartsVersions.json
+        run:  jq '.frontendVersion = "${{ inputs.frontChartVersion }}"' chartsVersions.json | sponge chartsVersions.json
+
+      - name: Bump version openapi-aggregate.json
+        run:  jq '.info.version = "${{ inputs.releaseVersion }}"' openapi-aggregate.json | sponge openapi-aggregate.json
+
+      - name: Bump version openapi-aggregate.yaml
+        run:  yq -i '.info.version = "${{ inputs.releaseVersion }}"' openapi-aggregate.yaml
+
+      - name: Commit updates
+        run: git commit -a -m "⬆️ [Release] OpenTDF ${{ inputs.releaseVersion }} with charts frontend ${{ inputs.frontChartVersion }}, backend ${{ inputs.backChartVersion }}"
+
+      - name: Pushing updates
+        run: git push origin main
+
       - name: Creating Release
         # You may pin to the exact commit or the version.
         # uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
@@ -38,7 +71,7 @@ jobs:
           draft: false # ${{ inputs.isDraft }}
 
           # Identify the release as a prerelease. Defaults to false
-          prerelease: false
+          prerelease: ${{ inputs.isPreRelease }}
 
           # Note-worthy description of changes in release
           # body: # optional
