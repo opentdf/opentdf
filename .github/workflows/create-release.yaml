@@ -27,7 +27,7 @@ jobs:
       - uses: dcarbone/install-yq-action@v1.1.0
       - uses: dcarbone/install-jq-action@v1.0.1
 
-      - name: Install sponge
+      - name: Install moreutils
         run: sudo apt-get install moreutils
 
       - name: Git config
