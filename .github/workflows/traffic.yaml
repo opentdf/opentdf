@@ -2,11 +2,14 @@ on:
   schedule: 
     # runs once a week on sunday
     - cron: "55 23 * * 0"
+  # run once to check
+  pull_request:
+    branches:
+      - main
 
     
 jobs:
   traffic:
-    needs: check-even-week
     runs-on: ubuntu-latest
     permissions: write-all
     strategy:
