@@ -7,6 +7,12 @@ export const selectors = {
     selectFileButton: '#select-file-button',
     uploadedFileName: '.ant-upload-list-item-name',
     deleteFileIcon: '.anticon-delete',
+    selectRemoteStoreDropdownButton: '#select-store',
+    selectStoreDialog: {
+        storeNameInputField: '#store-name-input',
+        storeTableItem: '.ant-select-item-option-content',
+        saveStoreButton: '.saveRemoteStoreButton'
+    },
     encryptAndUploadButton: '#encrypt-and-upload-button',
     downloadAndDecryptButton: '#download-decrypt-button',
     filesTableItem: '.ant-table-cell',
