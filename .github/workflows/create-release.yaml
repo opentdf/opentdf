@@ -17,7 +17,6 @@ on:
         required: true
 jobs:
   release:
-    if: github.ref_name == 'main'
     permissions:
       contents: write
 
@@ -27,6 +26,7 @@ jobs:
       - name: This workflow should run only main branch
         if: github.ref_name != 'main'
         run: echo This workflow should run only main branch. Please switch from "${{ github.ref_name }}" to main and try again >> $GITHUB_STEP_SUMMARY && exit 1
+
       - uses: actions/checkout@v3
       - uses: dcarbone/install-yq-action@v1.1.0
       - uses: dcarbone/install-jq-action@v1.0.1
