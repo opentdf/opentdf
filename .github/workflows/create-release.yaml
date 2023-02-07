@@ -16,12 +16,6 @@ on:
         description: 'Create release candidate'
         required: true
 jobs:
-  branch-warning:
-    runs-on: ubuntu-latest
-    if: github.ref_name != 'main'
-    steps:
-      - name: This workflow should run only main branch
-        run: echo Current branch is "${{ github.ref_name }}"
   release:
     if: github.ref_name == 'main'
     permissions:
@@ -30,20 +24,15 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     steps:
+      - name: This workflow should run only main branch
+        if: github.ref_name != 'main'
+        run: echo This workflow should run only main branch. Please switch from "${{ github.ref_name }}" to main and try again >> $GITHUB_STEP_SUMMARY && exit 1
       - uses: actions/checkout@v3
       - uses: dcarbone/install-yq-action@v1.1.0
       - uses: dcarbone/install-jq-action@v1.0.1
 
       - name: Install moreutils
         run: sudo apt-get install moreutils
-
-      - name: Git config
-        run: |
-          git config --global user.email "${{ github.actor }}@virtru.com"
-          git config --global user.name ${{ github.actor }}
-
-      - name: Status
-        run: git status
 
       - name: Bump backendVersion in chartsVersions.json
         run: jq '.backendVersion = "${{ inputs.backChartVersion }}"' chartsVersions.json | sponge chartsVersions.json
@@ -52,16 +41,22 @@ jobs:
         run:  jq '.frontendVersion = "${{ inputs.frontChartVersion }}"' chartsVersions.json | sponge chartsVersions.json
 
       - name: Bump version openapi-aggregate.json
-        run:  jq '.info.version = "${{ inputs.releaseVersion }}"' openapi-aggregate.json | sponge openapi-aggregate.json
+        run:  jq '.info.version = "${{ inputs.releaseVersion }}"' openapi/openapi-aggregate.json | sponge openapi/openapi-aggregate.json
 
       - name: Bump version openapi-aggregate.yaml
-        run:  yq -i '.info.version = "${{ inputs.releaseVersion }}"' openapi-aggregate.yaml
+        run:  yq -i '.info.version = "${{ inputs.releaseVersion }}"' openapi/openapi-aggregate.yaml
 
       - name: Commit updates
-        run: git commit -a -m "⬆️ [Release] OpenTDF ${{ inputs.releaseVersion }} with charts frontend ${{ inputs.frontChartVersion }}, backend ${{ inputs.backChartVersion }}"
-
-      - name: Pushing updates
-        run: git push origin main
+        uses: swinton/commit@v2.0.0
+        env:
+          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        with:
+          files: |
+            chartsVersions.json
+            openapi/openapi-aggregate.json
+            openapi/openapi-aggregate.yaml
+          commit-message: "⬆️ [Release] OpenTDF ${{ inputs.releaseVersion }} with charts frontend ${{ inputs.frontChartVersion }}, backend ${{ inputs.backChartVersion }}"
+          ref: ${{ github.ref }}
 
       - name: Creating Release
         # You may pin to the exact commit or the version.
