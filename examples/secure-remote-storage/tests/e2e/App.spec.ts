@@ -148,8 +148,18 @@ test.describe('<App/>', () => {
     })
   });
 
-  test('proper error notification is shown on uploading file if S3 object credentials are not filled', async ({ page }) => {
+  test('proper error notification is shown on uploading file if S3 config object is not set', async ({ page }) => {
     await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
+    await page.click(selectors.encryptAndUploadButton)
+
+    const s3ObjectMissingMsg = page.locator(selectors.alertMessage, {hasText: `Please enter a valid S3 compatible json object.`})
+    await expect(s3ObjectMissingMsg).toBeVisible()
+  });
+
+  test.skip('proper error notification is shown if wrong format of S3 object is used', async ({ page }) => {
+    await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
+    await page.fill(selectors.s3ObjectInput, s3jsonObject)
+
     await page.click(selectors.encryptAndUploadButton)
 
     const s3ObjectMissingMsg = page.locator(selectors.alertMessage, {hasText: `Please enter a valid S3 compatible json object.`})
@@ -193,6 +203,16 @@ test.describe('<Login/>', () => {
     await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
     await page.fill(selectors.s3ObjectInput, s3jsonObject)
     await page.click(selectors.encryptAndUploadButton)
+
+    const userNotLoggedMsg = page.locator(selectors.alertMessage, {hasText: `You must login to perform this action.`})
+    await expect(userNotLoggedMsg).toBeVisible()
+  });
+
+  test('proper error notification is shown on saving a store if user is not logged in', async ({ page }) => {
+    await page.goto("/secure-remote-storage")
+    await page.fill(selectors.s3ObjectInput, s3jsonObject)
+    await page.click(selectors.selectRemoteStoreDropdownButton)
+    await page.click(selectors.selectStoreDialog.saveStoreButton)
 
     const userNotLoggedMsg = page.locator(selectors.alertMessage, {hasText: `You must login to perform this action.`})
     await expect(userNotLoggedMsg).toBeVisible()
