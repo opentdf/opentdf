@@ -6,7 +6,6 @@ on:
     
 jobs:
   traffic:
-    needs: check-even-week
     runs-on: ubuntu-latest
     permissions: write-all
     strategy:
