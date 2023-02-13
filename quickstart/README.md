@@ -64,6 +64,8 @@ we provide a [Tiltfile](https://tilt.dev/):
 tilt up
 ```
 
+#### Alternative install
+
 As an alternative, the `start.sh` script can be used to set up a similar cluster.
 This bash shell script will use helm to install the required services;
 for more options, read the script and review the actions it takes.
@@ -71,9 +73,25 @@ Notably, has options to assist with loading an 'offline bundle' generated with
 the [`build-offline-bundle`](../examples/offline/build-offline-bundle) script,
 and options to disable or skip configuration of various features and services.
 
+The script is run with the following options:
+- MONOLOG_LEVEL: Logging level. See documentation [here](https://github.com/opentdf/opentdf/blob/main/scripts/monolog)
+- LOCAL_TOOL: Which container orchestration tool helper library to use. Supported options are "kind", "minikube". See [lib-local](https://github.com/opentdf/opentdf/blob/main/scripts/lib-local.sh) for implementation. 
+- SERVICE_IMAGE_TAG: The semver OpenTDF version to install 
+
+Example:
+
 ```shell
+export MONOLOG_LEVEL=0
+export LOCAL_TOOL=kind
+export SERVICE_IMAGE_TAG=1.1.1
 ./start.sh
 ```
+
+Note the following when attempting to use the start.sh script method:
+- In-line rewriting of values files may be prone to error, and only works once, so changing the INGRESS_HOSTNAME and re-running won’t change anything. This probably should be a separate script that is run manually before start.sh, and reports errors if it fails. See [Line 245](https://github.com/opentdf/opentdf/blob/main/quickstart/start.sh#L245)
+- 3rd party version information hard-coded on [Line 263](https://github.com/opentdf/opentdf/blob/main/quickstart/start.sh#L263)
+- some waiter methods may wait indefinitely when they should have a timeout; e.g., [Line 105](https://github.com/opentdf/opentdf/blob/main/quickstart/start.sh#L105)
+
 
 #### Monitor services
 
