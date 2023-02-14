@@ -1,2 +1,9 @@
 name: entity-resolution
 replicaCount: 1
+config:
+  disableTracing: true
+  keycloak:
+    url: http://keycloak-http/auth/
+secret:
+  keycloak:
+    clientSecret: 123-456
