@@ -20,7 +20,7 @@ python-dotenv==0.20.0
 python-editor==1.0.4
 # pyyaml==6.0
 sqlalchemy==1.4.32
-starlette==0.17.1; python_version >= '3.6'
+starlette==0.25.0; python_version >= '3.6'
 typing-extensions==4.1.1
 uvicorn[standard]==0.17.6
 uvloop==0.16.0
