@@ -3,6 +3,8 @@ export const selectors = {
     pageTitle: '.logoTitle',
     loginButton: '[data-test-id=login-button]',
     logoutButton: '[data-test-id=logout-button]',
+    s3ObjectFieldTitle: '.newS3Tooltip',
+    s3ObjectTooltip: '.ant-tooltip-inner',
     s3ObjectInput: '.newS3TextArea',
     selectFileButton: '#select-file-button',
     uploadedFileName: '.ant-upload-list-item-name',

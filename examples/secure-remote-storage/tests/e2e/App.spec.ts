@@ -73,13 +73,16 @@ test.describe('<App/>', () => {
     const addedStoreItemWithDefaultName = page.locator(selectors.selectStoreDialog.storeTableItem, {hasText: '1'})
     const addedStoreItemWithCustomName = page.locator(selectors.selectStoreDialog.storeTableItem, {hasText: 'TestName'})
 
-    await test.step('Save remote store without defining a name', async() => {
+    await test.step('Open Save Store dialog and check its empty state', async() => {
       await page.fill(selectors.s3ObjectInput, s3jsonObject)
       await page.click(selectors.selectRemoteStoreDropdownButton)
-      await page.click(selectors.selectStoreDialog.saveStoreButton)
+
+      const noSavedItemsInfo = page.locator('.ant-empty-description', {hasText: 'No data'})
+      await expect(noSavedItemsInfo).toBeVisible()
     })
 
-    await test.step('Assert adding of first store table item', async() => {
+    await test.step('Save remote store without defining a name and assert adding an item', async() => {
+      await page.click(selectors.selectStoreDialog.saveStoreButton)
       await expect(addedStoreItemWithDefaultName).toBeVisible()
     })
 
@@ -105,6 +108,12 @@ test.describe('<App/>', () => {
       await addedStoreItemWithDefaultName.click()
       await expect(page.locator(selectors.s3ObjectInput)).toHaveText(s3jsonObject)
     })
+  });
+
+  test('proper tooltip is shown on hover s3 object description', async ({ page }) => {
+    await page.hover(selectors.s3ObjectFieldTitle)
+    await expect(page.locator(selectors.s3ObjectTooltip)).toBeVisible()
+    await expect(page.locator(selectors.s3ObjectTooltip)).toHaveText(`Example: ${exampleS3JsonObject}`)
   });
 
   test('proper error notification is shown on saving a remote store if s3 object is not defined', async ({ page }) => {
@@ -156,10 +165,11 @@ test.describe('<App/>', () => {
     await expect(s3ObjectMissingMsg).toBeVisible()
   });
 
-  test.skip('proper error notification is shown if wrong format of S3 object is used', async ({ page }) => {
-    await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
-    await page.fill(selectors.s3ObjectInput, s3jsonObject)
+  test('proper error notification is shown if wrong format of S3 object is used', async ({ page }) => {
+    const invalidS3Object = "{\"key\": value}"
 
+    await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
+    await page.fill(selectors.s3ObjectInput, invalidS3Object)
     await page.click(selectors.encryptAndUploadButton)
 
     const s3ObjectMissingMsg = page.locator(selectors.alertMessage, {hasText: `Please enter a valid S3 compatible json object.`})
