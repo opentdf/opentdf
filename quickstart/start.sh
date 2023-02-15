@@ -292,7 +292,7 @@ if [[ $INIT_NGINX_CONTROLLER ]]; then
   if [[ $RUN_OFFLINE ]]; then
     # TODO: Figure out how to set controller.image.tag to the correct value
     monolog TRACE "helm upgrade --install ingress-nginx ${CHART_ROOT}/ingress-nginx-4.0.16.tgz --set controller.image.digest= ${nginx_params[*]}"
-    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz --namespace ingress-nginx --create-namespace "--set" "controller.image.digest=" "${nginx_params[@]}"
+    helm upgrade --install ingress-nginx "${CHART_ROOT}"/ingress-nginx-4.0.16.tgz "--set" "controller.image.digest=" "${nginx_params[@]}"
   else
     monolog TRACE "helm upgrade --version v1.1.1 --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx ${nginx_params[*]}"
     #helm upgrade --install ingress-nginx --repo https://kubernetes.github.io/ingress-nginx "${nginx_params[@]}"
@@ -335,9 +335,11 @@ if [[ $INIT_SAMPLE_DATA ]]; then
   load-chart keycloak-bootstrap keycloak-bootstrap "${BACKEND_CHART_TAG}"
 fi
 
-kubectl wait --namespace ingress-nginx \
-  --for=condition=ready pod \
-  --selector=app.kubernetes.io/component=controller \
-  --timeout=120s
+if [[ ! $RUN_OFFLINE ]]; then
+  kubectl wait --namespace ingress-nginx \
+    --for=condition=ready pod \
+    --selector=app.kubernetes.io/component=controller \
+    --timeout=120s
 
-kubectl port-forward --namespace=ingress-nginx service/ingress-nginx-controller 65432:80
+    kubectl port-forward --namespace=ingress-nginx service/ingress-nginx-controller 65432:80
+fi
