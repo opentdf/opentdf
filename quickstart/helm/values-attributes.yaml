@@ -5,7 +5,7 @@ serverPublicName: "Attribute Authority"
 serverCorsOrigins: "*"
 oidc:
   clientId: tdf-attributes
-  externalHost: http://offline.demo.internal/auth
+  externalHost: http://localhost:65432/auth
   internalHost: http://keycloak-http/auth
 ingress:
   enabled: true

@@ -2,7 +2,7 @@ name: keycloak-bootstrap
 image:
   pullPolicy: IfNotPresent
 
-externalUrl: http://offline.demo.internal/
+externalUrl: http://localhost:65432/
 
 keycloak:
   hostname: http://keycloak-http/auth
