@@ -2,6 +2,7 @@ import {test, expect, Page} from '@playwright/test';
 import { selectors } from "./helpers/selectors";
 import {authorize, login} from "./helpers/operations";
 import { testS3Credentials } from "./testCredentials"
+import * as fs from "fs";
 
 const selectFile = async (page: Page, pathToFile: string, triggerButton: string) => {
   const fileChooserPromise = page.waitForEvent('filechooser');
@@ -26,6 +27,9 @@ test.describe('<App/>', () => {
   });
 
   test('able to perform file Encrypt/Upload and then Download/Decrypt, able to replace target file', async ({ page }) => {
+    const originalFile = 'fileforupload.docx'
+    const replacementFile = 'fileForReplacement.jpeg'
+
     await expect(page.locator(selectors.tokenMessage)).toBeVisible()
     const logoutButton = page.locator(selectors.logoutButton);
     expect(logoutButton).toBeTruthy();
@@ -38,13 +42,13 @@ test.describe('<App/>', () => {
     })
 
     await test.step('Select a file and assert its presence', async() => {
-      await selectFile(page, 'tests/e2e/fileforupload.docx', selectors.selectFileButton)
-      await expect(page.locator(selectors.uploadedFileName)).toHaveText("fileforupload.docx")
+      await selectFile(page, `tests/e2e/${originalFile}`, selectors.selectFileButton)
+      await expect(page.locator(selectors.uploadedFileName)).toHaveText(originalFile)
     })
 
     await test.step('Replace a file', async() => {
-      await selectFile(page, 'tests/e2e/fileForReplacement.jpeg', selectors.selectFileButton)
-      const replacedFile = page.locator(selectors.uploadedFileName, {hasText: "fileForReplacement.jpeg"})
+      await selectFile(page, `tests/e2e/${replacementFile}`, selectors.selectFileButton)
+      const replacedFile = page.locator(selectors.uploadedFileName, {hasText: replacementFile})
       await expect(replacedFile).toBeVisible()
     })
 
@@ -57,15 +61,21 @@ test.describe('<App/>', () => {
     })
 
     await test.step('Assert adding of table item', async() => {
-      const addedTableItem = page.locator(selectors.filesTableItem, {hasText: 'fileForReplacement.jpeg'})
+      const addedTableItem = page.locator(selectors.filesTableItem, {hasText: `${replacementFile}.tdf`})
       await expect(addedTableItem).toBeVisible()
     })
 
-    await test.step('Perform Download/Decrypt operation and assert responses', async() => {
+    await test.step('Perform Download/Decrypt operation, assert filename, size and responses', async() => {
       const rewrapPromise = page.waitForResponse('**/rewrap');
-      await page.click(selectors.downloadAndDecryptButton)
+      const [ download ] = await Promise.all([
+        page.waitForEvent('download'),
+        page.click(selectors.downloadAndDecryptButton),
+      ]);
       const rewrapResponse = await rewrapPromise;
       await expect(rewrapResponse.status()).toBeTruthy()
+
+      expect(download.suggestedFilename()).toBe(`${replacementFile}.tdf.decrypted`);
+      expect((await fs.promises.stat(await download.path() as string)).size).toBeGreaterThan(185000);
     })
   });
 
