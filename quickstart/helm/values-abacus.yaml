@@ -1,10 +1,10 @@
 attributes:
-  serverUrl: http://offline.demo.internal/api/attributes
+  serverUrl: http://localhost:65432/api/attributes
 basePath: ""
 entitlements:
-  serverUrl: http://offline.demo.internal/api/entitlements
+  serverUrl: http://localhost:65432/api/entitlements
 oidc:
-  serverUrl: http://offline.demo.internal/auth/
+  serverUrl: http://localhost:65432/auth/
   clientId: dcr-test
   queryRealms: tdf
 ingress:
