@@ -10,7 +10,7 @@ jobs:
       contents: write
       pull-requests: read
     name: Create Release
-    if: github.event.pull_request.merged == true && (startsWith(github.head_ref, 'release/')
+    if: github.event.pull_request.merged == true && (startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'pre-release/'))
     runs-on: ubuntu-latest
     steps:
       - name: Get Release
@@ -22,19 +22,13 @@ jobs:
           -H "Accept: application/vnd.github+json" \
           /repos/${{ github.repository }}/pulls/${{ github.event.number }} | jq '.head.ref')" >> $GITHUB_OUTPUT
 
-      - name: Get Release body
-        env:
-          GH_TOKEN: ${{ github.token }}
-        id: release_body_id
-        run: |
-          echo "RELEASE_BODY=$(gh api \
-          -H "Accept: application/vnd.github+json" \
-          /repos/${{ github.repository }}/pulls/${{ github.event.number }} | jq '.body')" >> $GITHUB_OUTPUT
-
       - name: Get Release version
         id: version
+        env:
+          condition: ${{ startsWith(github.head_ref, 'release/') }}
+          ref: ${{ steps.release_id.outputs.RELEASE_REF }}
         run: |
-          echo "VERSION=$(echo ${{ steps.release_id.outputs.RELEASE_REF }} | sed -e "s/^release\///")" >> $GITHUB_OUTPUT
+          echo "VERSION=$(echo ${{ steps.release_id.outputs.RELEASE_REF }} | sed -r "s/^(pre-)?release\///")" >> $GITHUB_OUTPUT
 
       - name: Get version
         run: echo ${{ steps.version.outputs.VERSION }}
@@ -70,7 +64,7 @@ jobs:
           # repository: # optional
 
           # Authorized secret GitHub Personal Access Token. Defaults to github.token
-          token: ${{ github.token }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
           # Commitish value that determines where the Git tag is created from. Can be any branch or commit SHA.
           # target_commitish: # optional

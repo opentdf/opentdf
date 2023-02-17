@@ -7,10 +7,15 @@ on:
         required: true
       frontChartVersion:
         description: 'Front-end chart version'
-        required: true
       backChartVersion:
         description: 'Back-end chart version'
-        required: true
+      isPreRelease:
+        type: boolean
+        description: 'Create release candidate'
+
+env:
+  BRANCH_PREFIX: ${{ inputs.isPreRelease && 'pre-release' || 'release'  }}
+  RELEASE_STATUS: ${{ inputs.isPreRelease && 'Release candidate' || 'Release'  }}
 
 jobs:
   release-pull-request-job:
@@ -40,13 +45,15 @@ jobs:
           --method POST \
           -H "Accept: application/vnd.github+json" \
           /repos/${{ github.repository }}/git/refs \
-          -f ref="refs/heads/release/${{ inputs.releaseVersion }}" \
+          -f ref="refs/heads/$BRANCH_PREFIX/${{ inputs.releaseVersion }}" \
           -f sha=${{ github.sha }} | jq '.object.sha')" >> $GITHUB_OUTPUT
 
       - name: Bump backendVersion in chartsVersions.json
+        if: inputs.backChartVersion != ''
         run: jq '.backendVersion = "${{ inputs.backChartVersion }}"' chartsVersions.json | sponge chartsVersions.json
 
       - name: Bump frontendVersion in chartsVersions.json
+        if: inputs.frontChartVersion != ''
         run:  jq '.frontendVersion = "${{ inputs.frontChartVersion }}"' chartsVersions.json | sponge chartsVersions.json
 
       - name: Bump version openapi-aggregate.json
@@ -55,7 +62,28 @@ jobs:
       - name: Bump version openapi-aggregate.yaml
         run:  yq -i '.info.version = "${{ inputs.releaseVersion }}"' openapi/openapi-aggregate.yaml
 
+      - name: Setting FRONT_CHART_VERSION
+        run: |
+          if [ "${{ inputs.frontChartVersion }}" != "" ]; then
+            echo "Setting FRONT_CHART_VERSION from input"
+            echo "FRONT_CHART_VERSION='${{ inputs.frontChartVersion }}'" >> $GITHUB_ENV
+          else
+            echo "Setting FRONT_CHART_VERSION from chartsVersions.json"
+            echo "FRONT_CHART_VERSION=$(jq -r '.frontendVersion' chartsVersions.json)" >> $GITHUB_ENV
+          fi
+
+      - name: Setting BACK_CHART_VERSION
+        run: |
+          if [ "${{ inputs.backChartVersion }}" != "" ]; then
+            echo "Setting BACK_CHART_VERSION from input"
+            echo "BACK_CHART_VERSION='${{ inputs.backChartVersion }}'" >> $GITHUB_ENV
+          else
+            echo "Setting BACK_CHART_VERSION from chartsVersions.json"
+            echo "BACK_CHART_VERSION=$(jq -r '.backendVersion' chartsVersions.json)" >> $GITHUB_ENV
+          fi
+
       - name: Create blob for chartsVersions.json
+        if: inputs.frontChartVersion != '' || inputs.backChartVersion != ''
         env:
           GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         id: chart_blob
@@ -94,17 +122,39 @@ jobs:
             -f encoding='base64' \
           | jq '.sha')" >> $GITHUB_OUTPUT
 
+      - name: Create Blob tree
+        run: |
+          # Define an array of JSON objects, enclosed in quotes
+          raw_array=(
+            '{ "path": "openapi-aggregate.json", "mode": "100644", "type": "blob", "sha": "'"${{ steps.openapi_json_blob.outputs.OPEN_API_JSON_SHA }}"'" }'
+            '{ "path": "openapi-aggregate.yaml", "mode": "100644", "type": "blob", "sha": "'"${{ steps.openapi_yaml_blob.outputs.OPEN_API_YAML_SHA }}"'" }'
+          )
+          
+          # Conditionally add a JSON object to the array
+          if [ "${{ inputs.frontChartVersion }}" != '' ] || [ "${{ inputs.backChartVersion }}" != '' ]; then
+            raw_array+=('{ "path": "chartsVersions.json", "mode": "100644", "type": "blob", "sha": "'"${{ steps.chart_blob.outputs.CHARTS_SHA }}"'" }')
+          fi
+          
+          # Join the array elements together into a single string
+          blob_tree=$(printf ",%s" "${raw_array[@]}")
+          blob_tree=${blob_tree:1}
+          
+          # Print the resulting string
+          echo "TREE_BLOB=[$blob_tree]" >> $GITHUB_ENV
+
       - name: Create tree
         id: create_tree
         run: |
-          echo "CREATED_TREE_SHA=$(curl \
+          RESPONSE=$(curl \
             -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/git/trees \
-            -d '{"base_tree":"${{ github.sha }}","tree":[{ "path":"chartsVersions.json","mode":"100644","type":"blob","sha":${{ steps.chart_blob.outputs.CHARTS_SHA }}},{ "path":"openapi-aggregate.json", "mode":"100644", "type":"blob", "sha":${{ steps.openapi_json_blob.outputs.OPEN_API_JSON_SHA }}},{ "path":"openapi-aggregate.yaml", "mode":"100644", "type":"blob", "sha":${{ steps.openapi_yaml_blob.outputs.OPEN_API_YAML_SHA }}}]}' | jq '.sha')" >> $GITHUB_OUTPUT
-
+            -d '{"base_tree":"${{ github.sha }}","tree": ${{ env.TREE_BLOB }}}' )
+          echo "Create tree response: $RESPONSE"
+          CREATED_TREE_SHA=$(echo $RESPONSE | jq '.sha')
+          echo "CREATED_TREE_SHA=$CREATED_TREE_SHA" >> $GITHUB_OUTPUT
 
       - name: Create commit
         id: create_commit
@@ -115,7 +165,7 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
             https://api.github.com/repos/${{ github.repository }}/git/commits \
-            -d '{"message":"⬆️ Release OpenTDF ${{ inputs.releaseVersion }} with charts frontend ${{ inputs.frontChartVersion }}, backend ${{ inputs.backChartVersion }}","parents":[${{ steps.created_ref.outputs.CREATED_REF_SHA }}],"tree":${{ steps.create_tree.outputs.CREATED_TREE_SHA }}}' | jq '.sha')" >> $GITHUB_OUTPUT
+            -d '{"message":"⬆️ OpenTDF ${{ inputs.releaseVersion }} with charts frontend ${{ env.FRONT_CHART_VERSION }}, backend ${{ env.BACK_CHART_VERSION }}","parents":[${{ steps.created_ref.outputs.CREATED_REF_SHA }}],"tree":${{ steps.create_tree.outputs.CREATED_TREE_SHA }}}' | jq '.sha')" >> $GITHUB_OUTPUT
 
       - name: Updating ref
         run: |
@@ -124,19 +174,19 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.PERSONAL_ACCESS_TOKEN }}"\
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            PATCH "https://api.github.com/repos/${{ github.repository }}/git/refs/heads/release/${{ inputs.releaseVersion }}"  \
+            PATCH "https://api.github.com/repos/${{ github.repository }}/git/refs/heads/$BRANCH_PREFIX/${{ inputs.releaseVersion }}"  \
             -d '{"sha": ${{ steps.create_commit.outputs.COMMIT_SHA }},"force":true}'
 
       - name: Create pull request
         env:
-          GH_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
         run: |
-            gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            /repos/${{ github.repository }}/pulls \
-            -f title='${{ inputs.releaseVersion }} Release' \
-            -f body="Release OpenTDF ${{ inputs.releaseVersion }}" \
-            -f head="release/${{ inputs.releaseVersion }}" \
-            -f base='main'
+          gh api \
+          --method POST \
+          -H "Accept: application/vnd.github+json" \
+          /repos/${{ github.repository }}/pulls \
+          -f title="${{ inputs.releaseVersion }} ${{ env.RELEASE_STATUS }}" \
+          -f body='Generated ${{ inputs.releaseVersion }} ${{ env.RELEASE_STATUS }}' \
+          -f head="$BRANCH_PREFIX/${{ inputs.releaseVersion }}" \
+          -f base='main'
 
