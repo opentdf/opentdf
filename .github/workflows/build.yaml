@@ -61,7 +61,7 @@ jobs:
     if: ${{ needs.deltas.outputs.quickstart == 'true' || github.event.schedule }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
           cache: "pip"
@@ -75,7 +75,6 @@ jobs:
           # This should be in sync with the minikube-deployed kube version below
           kubectl: "1.23.3"
           helm: "3.8.1"
-          helmv3: "3.8.1"
           tilt: "0.26.3"
       - run: |
           kustomize version
@@ -112,7 +111,7 @@ jobs:
           docker run --rm -v "$PWD:/mnt" --workdir "/mnt" "koalaman/shellcheck:v0.8.0" -x --color=always
           examples/offline/{build-offline-bundle,docker-load-and-tag-exports,test-offline-bundle}
           quickstart/start.sh
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
           cache: "pip"
@@ -157,7 +156,7 @@ jobs:
     if: ${{ needs.deltas.outputs.examples == 'true' || github.event.schedule }}
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
           cache: "pip"
@@ -171,7 +170,6 @@ jobs:
           # This should be in sync with the minikube-deployed kube version below
           kubectl: "1.23.3"
           helm: "3.8.1"
-          helmv3: "3.8.1"
           tilt: "0.26.3"
       - run: |
           kustomize version
