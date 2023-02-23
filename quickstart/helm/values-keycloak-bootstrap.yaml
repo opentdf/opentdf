@@ -6,11 +6,277 @@ externalUrl: http://localhost:65432/
 
 keycloak:
   hostname: http://keycloak-http/auth
-  username: keycloakadmin
-  password: mykeycloakpassword
-  clientId: tdf-client
-  clientSecret: 123-456
-  realm: tdf
+  adminUsername: keycloakadmin
+  adminPassword: mykeycloakpassword
+  customConfig:
+  - name: master
+    # master realm
+    clients:
+    - payload:
+        clientId: abacus-web
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        clientAuthenticatorType: client-secret
+        serviceAccountsEnabled: "true"
+        protocol: openid-connect
+        redirectUris:
+        - "{{ externalUrl }}/*"
+        webOrigins:
+        - "+"
+      mappers:
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-entitlement"
+        name: Virtru "tdf-entitlements" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-attributes"
+        name: Virtru "tdf-attributes" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+  - name: tdf
+    payload:
+      realm: tdf
+      enabled: "true"
+    clients:
+#     client used by this script
+    - payload:
+        clientId: bootstrap-client
+        secret: 123-456
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        clientAuthenticatorType: client-secret
+        serviceAccountsEnabled: "true"
+        baseUrl: "{{ externalUrl }}"
+        protocol: openid-connect
+        redirectUris:
+        - "{{ externalUrl }}/*"
+        webOrigins:
+        - "+"
+      mappers:
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-entitlement"
+        name: Virtru "tdf-entitlements" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-attributes"
+        name: Virtru "tdf-attributes" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+#    abacus client
+    - payload:
+        clientId: opentdf-abacus
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        clientAuthenticatorType: client-secret
+        serviceAccountsEnabled: "true"
+        protocol: openid-connect
+        redirectUris:
+        - "{{ externalUrl }}/*"
+        webOrigins:
+        - "+"
+        attributes:
+          post.logout.redirect.uris: "+"
+      mappers:
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-entitlement"
+        name: Virtru "tdf-entitlements" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-attributes"
+        name: Virtru "tdf-attributes" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+#    dcr-test client
+    - payload:
+        clientId: dcr-test
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        clientAuthenticatorType: client-secret
+        serviceAccountsEnabled: "true"
+        protocol: openid-connect
+        redirectUris:
+        - "http://localhost:3000/*"
+        - "http://localhost:65432/*"
+        webOrigins:
+        - "+"
+        attributes:
+          post.logout.redirect.uris: "+"
+      mappers:
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "false"
+          userinfo.token.claim: "true"
+          remote.parameters.username: "true"
+          remote.parameters.clientid: "true"
+          client.publickey: X-VirtruPubKey
+          claim.name: tdf_claims
+        name: Virtru OIDC UserInfo Mapper
+        protocolMapper: virtru-oidc-protocolmapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "true"
+          access.token.claim: "true"
+          userinfo.token.claim: "false"
+          remote.parameters.username: "true"
+          remote.parameters.clientid: "true"
+          client.publickey: X-VirtruPubKey
+          claim.name: tdf_claims
+        name: Virtru OIDC Auth Mapper
+        protocolMapper: virtru-oidc-protocolmapper
+#   abacus localhost client
+    - payload:
+        clientId: abacus-localhost
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        clientAuthenticatorType: client-secret
+        serviceAccountsEnabled: "true"
+        protocol: openid-connect
+        redirectUris:
+        - "http://localhost:3000/*"
+        webOrigins:
+        - "+"
+        attributes:
+          post.logout.redirect.uris: "+"
+      mappers:
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-entitlement"
+        name: Virtru "tdf-entitlements" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-attributes"
+        name: Virtru "tdf-attributes" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+#  client for entitlements
+    - payload:
+        clientId: tdf-entitlement
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        fullScopeAllowed: "false"
+        baseUrl: "{{ externalUrl }}/"
+        protocol: openid-connect
+        redirectUris:
+        - "{{ externalUrl }}/*"
+        webOrigins:
+        - "+"
+        attributes:
+          user.info.response.signature.alg: RS256
+#  client for attributes
+    - payload:
+        clientId: tdf-attributes
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        fullScopeAllowed: "false"
+        baseUrl: "{{ externalUrl }}/"
+        protocol: openid-connect
+        redirectUris:
+        - "{{ externalUrl }}/*"
+        webOrigins:
+        - "+"
+        attributes:
+          user.info.response.signature.alg: RS256
+#  client for entity-resolution
+    - payload:
+        clientId: tdf-entity-resolution-service
+        secret: 123-456
+        publicClient: "false"
+        serviceAccountsEnabled: "true"
+        standardFlowEnabled: "true"
+        directAccessGrantsEnabled: "true"
+        clientAuthenticatorType: client-secret
+        fullScopeAllowed: "true"
+        baseUrl: "{{ externalUrl }}/"
+        protocol: openid-connect
+        redirectUris:
+        - "{{ externalUrl }}/*"
+        webOrigins:
+        - "+"
+        attributes:
+          user.info.response.signature.alg: RS256
+#  general test client
+    - payload:
+        clientId: tdf-client
+        directAccessGrantsEnabled: "true"
+        clientAuthenticatorType: client-secret
+        secret: "123-456"
+        serviceAccountsEnabled: "true"
+        publicClient: "false"
+        redirectUris:
+        - "{{ externalUrl }}/*"
+        attributes:
+          user.info.response.signature.alg: RS256
+      mappers:
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "false"
+          userinfo.token.claim: "true"
+          remote.parameters.username: "true"
+          remote.parameters.clientid: "true"
+          client.publickey: X-VirtruPubKey
+          claim.name: tdf_claims
+        name: Virtru OIDC UserInfo Mapper
+        protocolMapper: virtru-oidc-protocolmapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "true"
+          access.token.claim: "true"
+          userinfo.token.claim: "false"
+          remote.parameters.username: "true"
+          remote.parameters.clientid: "true"
+          client.publickey: X-VirtruPubKey
+          claim.name: tdf_claims
+        name: Virtru OIDC Auth Mapper
+        protocolMapper: virtru-oidc-protocolmapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-attributes"
+        name: Virtru "tdf-attributes" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+
+    users:
+# general test users
+    - payload:
+        username: user1
+        enabled: "true"
+        credentials:
+        - value: testuser123
+          type: password
+      roles:
+      - view-clients
+      - view-users
+    - payload:
+        username: user2
+        enabled: "true"
+        credentials:
+        - value: testuser123
+          type: password
+      roles:
+      - view-clients
+      - view-users
 
 attributes:
   hostname: http://attributes:4020
@@ -25,7 +291,7 @@ attributes:
     name: Classification
     rule: hierarchy
     state: published
-    order: 
+    order:
     - TS
     - S
     - C
@@ -34,7 +300,7 @@ attributes:
     name: COI
     rule: allOf
     state: published
-    order: 
+    order:
     - PRX
     - PRA
     - PRB
