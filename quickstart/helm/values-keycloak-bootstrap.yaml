@@ -1,9 +1,3 @@
-name: keycloak-bootstrap
-image:
-  pullPolicy: IfNotPresent
-
-externalUrl: http://localhost:65432/
-
 keycloak:
   hostname: http://keycloak-http/auth
   adminUsername: keycloakadmin
@@ -101,44 +95,6 @@ keycloak:
           included.custom.audience: "tdf-attributes"
         name: Virtru "tdf-attributes" Audience Mapper
         protocolMapper: oidc-audience-mapper
-#    dcr-test client
-    - payload:
-        clientId: dcr-test
-        publicClient: "true"
-        standardFlowEnabled: "true"
-        clientAuthenticatorType: client-secret
-        serviceAccountsEnabled: "true"
-        protocol: openid-connect
-        redirectUris:
-        - "http://localhost:3000/*"
-        - "http://localhost:65432/*"
-        webOrigins:
-        - "+"
-        attributes:
-          post.logout.redirect.uris: "+"
-      mappers:
-      - protocol: openid-connect
-        config:
-          id.token.claim: "false"
-          access.token.claim: "false"
-          userinfo.token.claim: "true"
-          remote.parameters.username: "true"
-          remote.parameters.clientid: "true"
-          client.publickey: X-VirtruPubKey
-          claim.name: tdf_claims
-        name: Virtru OIDC UserInfo Mapper
-        protocolMapper: virtru-oidc-protocolmapper
-      - protocol: openid-connect
-        config:
-          id.token.claim: "true"
-          access.token.claim: "true"
-          userinfo.token.claim: "false"
-          remote.parameters.username: "true"
-          remote.parameters.clientid: "true"
-          client.publickey: X-VirtruPubKey
-          claim.name: tdf_claims
-        name: Virtru OIDC Auth Mapper
-        protocolMapper: virtru-oidc-protocolmapper
 #   abacus localhost client
     - payload:
         clientId: abacus-localhost
@@ -256,6 +212,59 @@ keycloak:
           included.custom.audience: "tdf-attributes"
         name: Virtru "tdf-attributes" Audience Mapper
         protocolMapper: oidc-audience-mapper
+# client for dcr-test
+    - payload:
+        clientId: dcr-test
+        secret: 123-456
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        clientAuthenticatorType: client-secret
+        serviceAccountsEnabled: "true"
+        baseUrl: "{{ externalUrl }}"
+        protocol: openid-connect
+        redirectUris:
+        - "{{ externalUrl }}/*"
+        webOrigins:
+        - "+"
+        attributes:
+          post.logout.redirect.uris: "+"
+      mappers:
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-entitlement"
+        name: Virtru "tdf-entitlements" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "true"
+          included.custom.audience: "tdf-attributes"
+        name: Virtru "tdf-attributes" Audience Mapper
+        protocolMapper: oidc-audience-mapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "false"
+          access.token.claim: "false"
+          userinfo.token.claim: "true"
+          remote.parameters.username: "true"
+          remote.parameters.clientid: "true"
+          client.publickey: X-VirtruPubKey
+          claim.name: tdf_claims
+        name: Virtru OIDC UserInfo Mapper
+        protocolMapper: virtru-oidc-protocolmapper
+      - protocol: openid-connect
+        config:
+          id.token.claim: "true"
+          access.token.claim: "true"
+          userinfo.token.claim: "false"
+          remote.parameters.username: "true"
+          remote.parameters.clientid: "true"
+          client.publickey: X-VirtruPubKey
+          claim.name: tdf_claims
+        name: Virtru OIDC Auth Mapper
+        protocolMapper: virtru-oidc-protocolmapper
 
     users:
 # general test users
@@ -281,17 +290,18 @@ keycloak:
 attributes:
   hostname: http://attributes:4020
   realm: tdf
-  clientId: dcr-test
+  clientId: bootstrap-client
   username: user1
   password: testuser123
   preloadedAuthorities:
-  - https://example.com
+    - https://example.com
   preloadedAttributes:
+  # general testing attributes
   - authority: https://example.com
     name: Classification
     rule: hierarchy
     state: published
-    order:
+    order: 
     - TS
     - S
     - C
@@ -300,7 +310,7 @@ attributes:
     name: COI
     rule: allOf
     state: published
-    order:
+    order: 
     - PRX
     - PRA
     - PRB
@@ -312,38 +322,25 @@ entitlements:
   hostname: http://entitlements:4030
   realms:
   - name: tdf
-    clientId: dcr-test
+    clientId: bootstrap-client
     username: user1
     password: testuser123
     preloadedClaims:
-      alice_1234:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRD
-      bob_1234:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRC
-      browsertest:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRA
-      client_x509:
-        - https://example.com/attr/Classification/value/S
-        - https://example.com/attr/COI/value/PRX
-      dcr-test:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRF
-      service-account-tdf-client:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRB
+      alice:
+        - https://example.com/attr/AudienceGuidance/value/Restricted
+        - https://example.com/attr/ContentExclusivity/value/Premium
+      bob:
+        - https://example.com/attr/AudienceGuidance/value/All
+        - https://example.com/attr/ContentExclusivity/value/Premium
+      examples-webcam-app:
+        - https://example.com/attr/AudienceGuidance/value/Restricted
+        - https://example.com/attr/ContentExclusivity/value/Deluxe
       tdf-client:
         - https://example.com/attr/Classification/value/S
         - https://example.com/attr/COI/value/PRX
         - https://example.com/attr/Env/value/CleanRoom
-      tdf-user:
-        - https://example.com/attr/Classification/value/C
-        - https://example.com/attr/COI/value/PRX
-      user1:
-        - https://example.com/attr/Classification/value/S
-        - https://example.com/attr/COI/value/PRX
+
+externalUrl: http://localhost:65432
 
 job:
-  backoffLimit: 3
+  backoffLimit: 1
