@@ -4,7 +4,7 @@ info:
   license:
     name: BSD 3-Clause Clear
     url: 'https://github.com/opentdf/backend/blob/main/LICENSE'
-  version: 1.2.0
+  version: 1.2.1
   x-logo:
     url: 'https://avatars.githubusercontent.com/u/90051847?s=200&v=4'
 servers:
@@ -15,8 +15,8 @@ externalDocs:
 tags:
   - name: Attributes
     description: >-
-      Operations to view data attributes. TDF protocol supports ABAC (Attribute
-      Based Access Control).
+      Operations to view data attributes. TDF protocol supports ABAC (Attribute Based Access Control).
+
               This allows TDF protocol to implement policy driven and highly scalable access control mechanism.
   - name: Authorities
     description: Operations to view and create attribute authorities.
@@ -174,8 +174,7 @@ paths:
             application/json:
               schema:
                 title: >-
-                  Response Read Attributes Definitions Definitions Attributes
-                  Get
+                  Response Read Attributes Definitions Definitions Attributes Get
                 type: array
                 items:
                   $ref: '#/components/schemas/AttributeDefinition'
@@ -1072,8 +1071,7 @@ components:
       type: string
     TDF_Algorithm:
       description: >-
-        String to define the type of algorithm the client performing the TDF
-        operations.
+        String to define the type of algorithm the client performing the TDF operations.
       type: string
       example: 'ec:secp256r1'
     AttributePolicyConfigError:
