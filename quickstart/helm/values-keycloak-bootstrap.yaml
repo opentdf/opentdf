@@ -340,7 +340,8 @@ entitlements:
         - https://example.com/attr/COI/value/PRX
         - https://example.com/attr/Env/value/CleanRoom
 
-externalUrl: http://localhost:65432
+opentdf:
+  externalUrl: http://localhost:65432
 
 job:
   backoffLimit: 1
