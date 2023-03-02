@@ -265,6 +265,42 @@ keycloak:
           claim.name: tdf_claims
         name: Virtru OIDC Auth Mapper
         protocolMapper: virtru-oidc-protocolmapper
+    # client for browser test apps
+    - payload:
+        clientId: browsertest
+        directAccessGrantsEnabled: "true"
+        publicClient: "true"
+        standardFlowEnabled: "true"
+        baseUrl: "{{ externalUrl }}"
+        protocol: openid-connect
+        redirectUris:
+        - "{{ externalUrl }}/*"
+        webOrigins:
+        - "+"
+        attributes:
+          user.info.response.signature.alg": "RS256"
+          post.logout.redirect.uris: "+"
+      mappers:
+      - protocol: openid-connect
+        config:
+          claim.name: tdf_claims
+          client.dpop: "true"
+          client.publickey: "X-VirtruPubKey"
+          access.token.claim: "false"
+          id.token.claim: "false"
+          userinfo.token.claim: "true"
+        name: Access tdf_claims
+        protocolMapper: oidc-audience-mapper
+      - protocol: openid-connect
+        config:
+          claim.name: tdf_claims
+          client.dpop: "true"
+          client.publickey: "X-VirtruPubKey"
+          access.token.claim: "true"
+          id.token.claim: "true"
+          userinfo.token.claim: "false"
+        name: UserInfo tdf_claims
+        protocolMapper: oidc-audience-mapper
 
     users:
 # general test users
