@@ -290,7 +290,7 @@ keycloak:
           id.token.claim: "false"
           userinfo.token.claim: "true"
         name: Access tdf_claims
-        protocolMapper: oidc-audience-mapper
+        protocolMapper: virtru-oidc-protocolmapper
       - protocol: openid-connect
         config:
           claim.name: tdf_claims
@@ -300,7 +300,7 @@ keycloak:
           id.token.claim: "true"
           userinfo.token.claim: "false"
         name: UserInfo tdf_claims
-        protocolMapper: oidc-audience-mapper
+        protocolMapper: virtru-oidc-protocolmapper
 
     users:
 # general test users
