@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  minio-storage-server:
+    image: minio/minio
+    ports:
+      - "80:9000"
+      - "9001:9001"
+    volumes:
+      - minio_storage:/data
+    environment:
+      MINIO_ROOT_USER: storage-testing
+      MINIO_ROOT_PASSWORD: storage-testing-pass
+      MINIO_DOMAIN: s3.testminio.com
+    command: server --console-address ":9001" /data
+    extra_hosts:
+      - "s3.testminio.com:127.0.0.1"
+      - "testbucketname.s3.testminio.com:127.0.0.1"
+
+  create-minio-bucket:
+    image: minio/mc
+    depends_on:
+      - minio-storage-server
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio:9000 storage-testing storage-testing-pass;
+      /usr/bin/mc rm -r --force myminio/testbucketname;
+      /usr/bin/mc mb myminio/testbucketname;
+      /usr/bin/mc policy download myminio/testbucketname;
+      exit 0;
+      "
+
+volumes:
+  minio_storage: {}
