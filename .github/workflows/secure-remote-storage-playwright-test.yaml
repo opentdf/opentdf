@@ -1,0 +1,60 @@
+name: Secure-Remote-Storage-Playwright-Tests
+on:
+  push:
+    branches: [plat_2256]
+#  pull_request:
+#    branches: [main]
+#  schedule:
+#    - cron: "0 22 * * 2,6"
+jobs:
+  secure-remote-storage-playwright-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/secure-remote-storage
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16.x"
+          registry-url: https://npm.pkg.github.com
+      - name: Install dependencies
+        run: |-
+          npm ci
+          npx playwright install
+      - uses: yokawasa/action-setup-kube-tools@v0.9.2
+        with:
+          setup-tools: |
+            kubectl
+            helm
+            tilt
+          kubectl: "1.24.1"
+          helm: "3.9.2"
+          tilt: "0.31.2"
+      - run: |
+          kubectl version --client
+          kustomize version
+          tilt version
+      - name: start minikube
+        id: minikube
+        uses: medyagh/setup-minikube@master
+        with:
+          minikube-version: 1.26.0
+          # This should be in sync with the setup-tools version above
+          kubernetes-version: 1.24.1
+      - name: Run tilt
+        run: |-
+          kubectl version
+          pwd
+          cd tests
+          tilt ci
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-test-results
+          path: ./examples/secure-remote-storage/test-results

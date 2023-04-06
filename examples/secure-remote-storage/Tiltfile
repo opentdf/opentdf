@@ -48,6 +48,4 @@ docker_build(
     "."
 )
 
-docker_compose("./minio-mock-storage-server/docker-compose.yaml")
-dc_resource('minio-storage-server', labels=["third-party"])
-dc_resource('create-minio-bucket', labels=["third-party"])
+
