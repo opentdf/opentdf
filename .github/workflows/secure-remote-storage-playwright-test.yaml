@@ -4,8 +4,8 @@ on:
     branches: [plat_2256]
 #  pull_request:
 #    branches: [main]
-#  schedule:
-#    - cron: "0 22 * * 2,6"
+  schedule:
+    - cron: "0 22 * * 2,6"
 jobs:
   secure-remote-storage-playwright-tests:
     timeout-minutes: 60
@@ -49,7 +49,6 @@ jobs:
       - name: Run tilt
         run: |-
           kubectl version
-          pwd
           cd tests
           tilt ci
       - name: Upload test results
