@@ -8,4 +8,4 @@ docker_compose("../minio-mock-storage-server/docker-compose.yaml")
 dc_resource('minio-storage-server', labels=["secure-remote-storage"])
 dc_resource('create-minio-bucket', labels=["secure-remote-storage"])
 
-local_resource("playwright-test", "npm run test:playwright", resource_deps=["opentdf-secure-remote-storage"], labels=["secure-remote-storage"])
+local_resource("playwright-test", "npm run test:playwright", resource_deps=["opentdf-secure-remote-storage", "minio-storage-server", "create-minio-bucket"], labels=["secure-remote-storage"])
