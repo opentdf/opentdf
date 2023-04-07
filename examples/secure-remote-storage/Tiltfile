@@ -47,5 +47,3 @@ docker_build(
     "opentdf/secure-remote-storage",
     "."
 )
-
-

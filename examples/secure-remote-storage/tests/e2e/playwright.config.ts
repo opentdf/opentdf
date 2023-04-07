@@ -5,14 +5,12 @@ const config: PlaywrightTestConfig = {
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: Boolean(process.env.CI),
   retries: 1,
-  /* Opt out of parallel tests on CI and Local env for now (due to test failures with multiple workers - PLAT-1774  */
-  workers: 3,
+  workers: 1,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   // globalSetup: require.resolve('./global-setup'),
   use: {
     actionTimeout: 30 * 1000,
     navigationTimeout: 30 * 1000,
-    // storageState: './tests/e2e/storageState.json',
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     // actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
