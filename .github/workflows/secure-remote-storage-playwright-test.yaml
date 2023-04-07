@@ -1,9 +1,5 @@
 name: Secure-Remote-Storage-Playwright-Tests
 on:
-  push:
-    branches: [plat_2256]
-#  pull_request:
-#    branches: [main]
   schedule:
     - cron: "0 22 * * 2,6"
 jobs:
