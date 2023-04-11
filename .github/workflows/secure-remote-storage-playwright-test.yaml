@@ -1,5 +1,7 @@
 name: Secure-Remote-Storage-Playwright-Tests
 on:
+  push:
+    branches: [debug-2424]
   schedule:
     - cron: "0 22 * * 2,6"
 jobs:
@@ -46,7 +48,9 @@ jobs:
         run: |-
           kubectl version
           cd tests
+          echo "$(cat /etc/hosts)"
           tilt ci
+          echo "$(cat /etc/hosts)"
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
