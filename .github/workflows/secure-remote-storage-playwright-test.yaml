@@ -45,9 +45,9 @@ jobs:
           # This should be in sync with the setup-tools version above
           kubernetes-version: 1.24.1
       - name: Add hosts to /etc/hosts
-          run: |-
-            echo "127.0.0.1 s3.testminio.com" | sudo tee -a /etc/hosts
-            echo "127.0.0.1 testbucketname.s3.testminio.com" | sudo tee -a /etc/hosts
+        run: |-
+          echo "127.0.0.1 s3.testminio.com" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 testbucketname.s3.testminio.com" | sudo tee -a /etc/hosts
       - name: Run tilt
         run: |-
           kubectl version
