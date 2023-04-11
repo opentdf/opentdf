@@ -49,10 +49,9 @@ jobs:
           kubectl version
           cd tests
           echo "$(cat /etc/hosts)"
-          sudo echo "127.0.0.1 s3.testminio.com" | sudo tee -a /etc/hosts
+          echo "127.0.0.1 s3.testminio.com" | sudo tee -a /etc/hosts
           sudo echo "127.0.0.1 testbucketname.s3.testminio.com" | sudo tee -a /etc/hosts
           tilt ci
-          echo "$(cat /etc/hosts)"
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
