@@ -1,7 +1,5 @@
 name: Secure-Remote-Storage-Playwright-Tests
 on:
-  push:
-    branches: [debug-2424]
   schedule:
     - cron: "0 22 * * 2,6"
 jobs:
@@ -44,7 +42,7 @@ jobs:
           minikube-version: 1.26.0
           # This should be in sync with the setup-tools version above
           kubernetes-version: 1.24.1
-      - name: Add hosts to /etc/hosts
+      - name: Add hosts to /etc/hosts for integration test purposes
         run: |-
           echo "127.0.0.1 s3.testminio.com" | sudo tee -a /etc/hosts
           echo "127.0.0.1 testbucketname.s3.testminio.com" | sudo tee -a /etc/hosts
@@ -52,7 +50,6 @@ jobs:
         run: |-
           kubectl version
           cd tests
-          echo "$(cat /etc/hosts)"
           tilt ci
       - name: Upload test results
         if: always()
