@@ -34,6 +34,7 @@ test.describe('<App/>', () => {
     await expect(page.locator(selectors.pageTitle)).toBeVisible();
   });
 
+  // test works properly locally but fails on CI for now (PLAT-2424)
   test.skip('able to perform file Encrypt/Upload and then Download/Decrypt, able to replace target file', async ({ page }) => {
     const originalFile = 'fileforupload.docx'
     const replacementFile = 'fileForReplacement.jpeg'

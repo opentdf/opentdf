@@ -1,7 +1,5 @@
 name: Secure-Remote-Storage-Playwright-Tests
 on:
-  push:
-    branches: [debug-2424]
   schedule:
     - cron: "0 22 * * 2,6"
 jobs:
@@ -48,7 +46,6 @@ jobs:
         run: |-
           kubectl version
           cd tests
-          echo "$(cat /etc/hosts)"
           echo "127.0.0.1 s3.testminio.com" | sudo tee -a /etc/hosts
           echo "127.0.0.1 testbucketname.s3.testminio.com" | sudo tee -a /etc/hosts
           tilt ci
