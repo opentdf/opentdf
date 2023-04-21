@@ -334,3 +334,12 @@ if [[ $INIT_SAMPLE_DATA ]]; then
   fi
   load-chart keycloak-bootstrap keycloak-bootstrap "${BACKEND_CHART_TAG}"
 fi
+
+if [[ ! $RUN_OFFLINE ]]; then
+  kubectl wait --namespace ingress-nginx \
+    --for=condition=ready pod \
+    --selector=app.kubernetes.io/component=controller \
+    --timeout=120s
+
+    kubectl port-forward --namespace=ingress-nginx service/ingress-nginx-controller 65432:80
+fi
