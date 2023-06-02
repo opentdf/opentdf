@@ -10,7 +10,7 @@ jobs:
       contents: write
       pull-requests: read
     name: Create Release
-    if: github.event.pull_request.merged == true && (startsWith(github.head_ref, 'release/') || startsWith(github.head_ref, 'pre-release/'))
+    if: github.event.pull_request.merged == true && (startsWith(github.head_ref, 'rc/') || startsWith(github.head_ref, 'pre-rc/'))
     runs-on: ubuntu-latest
     steps:
       - name: Get Release
@@ -25,10 +25,10 @@ jobs:
       - name: Get Release version
         id: version
         env:
-          condition: ${{ startsWith(github.head_ref, 'release/') }}
+          condition: ${{ startsWith(github.head_ref, 'rc/') }}
           ref: ${{ steps.release_id.outputs.RELEASE_REF }}
         run: |
-          echo "VERSION=$(echo ${{ steps.release_id.outputs.RELEASE_REF }} | sed -r "s/^(pre-)?release\///")" >> $GITHUB_OUTPUT
+          echo "VERSION=$(echo ${{ steps.release_id.outputs.RELEASE_REF }} | sed -r "s/^(pre-)?rc\///")" >> $GITHUB_OUTPUT
 
       - name: Get version
         run: echo ${{ steps.version.outputs.VERSION }}
@@ -46,7 +46,7 @@ jobs:
           draft: false # ${{ inputs.isDraft }}
 
           # Identify the release as a prerelease. Defaults to false
-          prerelease: ${{ startsWith(github.head_ref, 'pre-release/') }}
+          prerelease: ${{ startsWith(github.head_ref, 'pre-rc/') }}
 
           # Note-worthy description of changes in release
           # body: # optional

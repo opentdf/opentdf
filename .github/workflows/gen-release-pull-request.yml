@@ -14,7 +14,7 @@ on:
         description: 'Create release candidate'
 
 env:
-  BRANCH_PREFIX: ${{ inputs.isPreRelease && 'pre-release' || 'release'  }}
+  BRANCH_PREFIX: ${{ inputs.isPreRelease && 'pre-rc' || 'rc'  }}
   RELEASE_STATUS: ${{ inputs.isPreRelease && 'Release candidate' || 'Release'  }}
 
 jobs:
