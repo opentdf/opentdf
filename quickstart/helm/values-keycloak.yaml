@@ -2,12 +2,12 @@ fullnameOverride: keycloak
 image:
   # Keycloak is a non-OpenTDF chart, but with an OpenTDF image
   repository: ghcr.io/opentdf/keycloak
-  tag: 19.0.2-1.2.1
+  tag: 21.1.2-1.4.0
 postgresql:
-  # This next option (enabled) determines whehter or not Keycloak should 
+  # This next option (enabled) determines whether Keycloak should
   # create a Postgres (uniquely) for Keycloak (true) or not (false).
-  # 
-  # Since it's set to fallse, we'll use the Postgres provided by OpenTDF
+  #
+  # Since it's set to false, we'll use the Postgres provided by OpenTDF
   enabled: false
 command:
   - "/opt/keycloak/bin/kc.sh"
