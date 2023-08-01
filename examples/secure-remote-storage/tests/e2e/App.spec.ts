@@ -25,6 +25,8 @@ const minioSecretAccessKey = "storage-testing-pass"
 const minioServerRegion = "us-east-1"
 const minioConfigObject = `{ \"endpoint\": \"${minioServerEndpoint}\", \"Bucket\": \"${minioBucketName}\", \"credentials\": { \"accessKeyId\": \"${minioAccessKeyId}\", \"secretAccessKey\": \"${minioSecretAccessKey}\" }, \"region\": \"${minioServerRegion}\", \"signatureVersion\": \"v4\", \"s3ForcePathStyle\": true, \"useSSL\": false }`
 
+// { "endpoint": "http://s3.testminio.com", "Bucket": "testbucketname", "credentials": { "accessKeyId": "storage-testing", "secretAccessKey": "storage-testing-pass" }, "region": "us-east-1", "signatureVersion": "v4", "s3ForcePathStyle": true, "useSSL": false }
+
 test.describe('<App/>', () => {
   test.beforeEach(async ({ page }) => {
     await authorize(page);

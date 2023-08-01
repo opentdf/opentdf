@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { useKeycloak } from '@react-keycloak/web';
-import { Client, FileClient } from '@opentdf/client';
+// import { Client, AuthProviders } from './web/tdf3/index-web.js';
+import { Client, AuthProviders } from '@opentdf/client';
 import { Button, Divider, Input, Layout, Select, Space, Spin, Table, Tooltip, Typography, Upload } from 'antd';
 import { ToolOutlined } from '@ant-design/icons';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
-import { toWebReadableStream } from "web-streams-node";
-import fileReaderStream from 'filereader-stream';
 import UserStatus from "./components/UserStatus";
 import openTDFLogo from './assets/images/logo-masked-group.png';
 import './App.css';
@@ -153,8 +152,19 @@ const App = () => {
       );
 
       const decryptedFileName = `${fileToDecryptName}.decrypted`;
+      console.log(keycloak)
+      const authProvider = await AuthProviders.refreshAuthProvider({
+        exchange: 'refresh',
+        clientId: keycloak.clientId,
+        oidcOrigin: keycloak.authServerUrl + 'realms/tdf',
+        refreshToken: keycloak.refreshToken,
+      });
 
-      const client = new Client.Client(CLIENT_CONFIG);
+      const client = new Client.Client({
+        authProvider,
+        kasEndpoint: 'http://localhost:65432/api/kas',
+        readerUrl: 'https://secure.virtru.com/start?htmlProtocol=1',
+      });
 
       let plainTextStream = await client.decrypt(decryptParams);
 
@@ -170,7 +180,6 @@ const App = () => {
   };
 
   const lfsUpload = async () => {
-    try {
       if(!keycloak.authenticated) {
         toast.error('You must login to perform this action.');
         return;
@@ -191,16 +200,30 @@ const App = () => {
 
       setShowUploadSpinner(true);
 
-      const client = new Client.Client(CLIENT_CONFIG);
+      const authProvider = await AuthProviders.refreshAuthProvider({
+        exchange: 'refresh',
+        clientId: keycloak.clientId,
+        oidcOrigin: keycloak.authServerUrl + 'realms/tdf',
+        refreshToken: keycloak.refreshToken,
+      });
+
+      const client = new Client.Client({
+        authProvider,
+        kasEndpoint: 'http://localhost:65432/api/kas',
+        readerUrl: 'https://secure.virtru.com/start?htmlProtocol=1',
+      });
 
       const encryptParams = new Client.EncryptParamsBuilder()
-        .withStreamSource(toWebReadableStream(fileReaderStream(selectedFile)))
+        .withStreamSource(selectedFile.stream())
         .withOffline()
         .build();
-
+      debugger
       const cipherTextStream = await client.encrypt(encryptParams);
 
+      debugger;
+      console.log('toRemoteStore')
       cipherTextStream.toRemoteStore(`${selectedFile.name}.tdf`, s3ConfigJson).then(data => {
+        debugger;
         setShowUploadSpinner(false);
         setUploadFileList([]);
         setSelectedFile(null);
@@ -208,12 +231,10 @@ const App = () => {
       });
 
       cipherTextStream.on('progress', progress => {
+        debugger;
         console.log(`Uploaded ${progress.loaded} bytes`);
       });
-    } catch (e) {
-      setShowUploadSpinner(false);
-      console.error(e);
-    }
+
   };
 
   useEffect(() => {

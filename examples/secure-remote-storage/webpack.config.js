@@ -3,6 +3,11 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
+  mode: 'development',
+  devtool: 'source-map',
+  optimization: {
+    minimize: false
+  },
   output: {
     path: path.join(__dirname, '/dist'),
     filename: 'index.bundle.js',
@@ -16,6 +21,11 @@ module.exports = {
   },
   module: {
     rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
       {
         test: /\.(js|jsx)$/,
         exclude: /nodeModules/,
@@ -46,10 +56,20 @@ module.exports = {
     }),
   ],
   resolve: {
-    alias: {
-      stream: "stream-browserify",
-    },
     extensions: ['.js'],
+    fallback: {
+      constants: false,
+      // fs should resolve to undefined
+      fs: false,
+      // Required by hmmac, but we do not use HMAC auth in the browser.
+      querystring: false,
+      crypto: false,
+      // https: 'https-browserify',
+      // http: 'stream-http',
+      // stream: 'stream-browserify',
+      url: false,
+      path: false,
+    },
+    modules: [path.join(__dirname, './node_modules')],
   },
-  devtool: 'source-map',
 };

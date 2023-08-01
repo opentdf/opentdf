@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "serve": "webpack serve --mode development",
-    "build": "webpack --mode production",
+    "build": "webpack -c ./webpack.config.js",
     "test:playwright": "playwright test --config=tests/e2e/playwright.config.ts"
   },
   "keywords": [],
@@ -14,17 +14,26 @@
   "license": "BSD-3-Clause-Clear",
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
-    "@opentdf/client": "file:opentdf-client-0.2.2.tgz",
+    "@aws-sdk/client-s3": "^3.348.0",
+    "@aws-sdk/util-locate-window": "^3.310.0",
+    "@aws-sdk/util-utf8-browser": "^3.259.0",
+    "@opentdf/client": "file:opentdf-client-0.5.1.tgz",
     "@react-keycloak/web": "^3.4.0",
     "antd": "^4.20.5",
-    "filereader-stream": "^2.0.0",
+    "axios": "^1.4.0",
+    "axios-retry": "^3.5.0",
+    "browser-fs-access": "^0.34.1",
+    "buffer-crc32": "^0.2.13",
+    "dpop": "^1.2.0",
+    "jose": "^4.14.4",
+    "jsonschema": "^1.4.1",
     "keycloak-js": "^18.0.1",
     "prop-types": "^15.8.1",
     "react": "~17.0.2",
     "react-dom": "~17.0.2",
     "react-toastify": "^9.0.1",
     "stream-browserify": "^3.0.0",
-    "web-streams-node": "^0.4.0"
+    "streamsaver": "^2.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.17.10",
