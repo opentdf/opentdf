@@ -67,3 +67,5 @@ virtru-tdf3-lib-python*
 #testing
 examples/secure-remote-storage/playwright-report
 examples/secure-remote-storage/test-results
+/examples/todo-react/build/
+/examples/todo-react/node_modules/
