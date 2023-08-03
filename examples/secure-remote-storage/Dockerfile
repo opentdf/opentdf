@@ -11,10 +11,8 @@ RUN npm ci
 # builder - create-react-app build
 FROM depender as builder
 WORKDIR /build/
-COPY resource/ resource/
 COPY src/ src/
-COPY webpack.config.js/ .
-COPY .babelrc/ .
+COPY public/ public/
 RUN npm run build
 
 # server - nginx alpine
