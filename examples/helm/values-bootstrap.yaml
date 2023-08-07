@@ -344,6 +344,7 @@ keycloak:
           remote.parameters.username: "true"
           remote.parameters.clientid: "true"
           client.publickey: X-VirtruPubKey
+          client.dpop: "true"
           claim.name: tdf_claims
         name: Virtru OIDC UserInfo Mapper
         protocolMapper: virtru-oidc-protocolmapper
@@ -357,6 +358,7 @@ keycloak:
           client.publickey: X-VirtruPubKey
           claim.name: tdf_claims
         name: Virtru OIDC Auth Mapper
+        protocolMapper: virtru-oidc-protocolmapper
 #   client for secure-remote-storage
     - payload:
         clientId: secure-remote-storage-client
