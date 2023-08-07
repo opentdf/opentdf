@@ -48,6 +48,7 @@ function App() {
         oidcOrigin: 'http://localhost:65432/auth/realms/tdf',
         refreshToken: keycloak.refreshToken,
         kasEndpoint: KAS_URL,
+        dpopEnabled: true,
       };
 
       const protect = async (id) => {
@@ -57,7 +58,7 @@ function App() {
             task.name = await client.encrypt(
               new Client.EncryptParamsBuilder()
                 .withStringSource(task.name)
-                // .withAttributes([{ attribute }])
+                .withAttributes([{ attribute }])
                 .build()
             );
             task.protected = true;

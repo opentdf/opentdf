@@ -4,8 +4,8 @@ ARG NODE_VERSION=lts
 # depender - get production dependencies
 FROM node:${NODE_VERSION} as depender
 WORKDIR /build/
-COPY yarn.lock package.json opentdf-client-*.tgz ./
-RUN yarn install --frozen-lockfile
+COPY package.json opentdf-client-*.tgz ./
+RUN npm i
 
 
 # builder - create-react-app build
