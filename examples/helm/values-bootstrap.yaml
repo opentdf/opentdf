@@ -356,6 +356,7 @@ keycloak:
           remote.parameters.username: "true"
           remote.parameters.clientid: "true"
           client.publickey: X-VirtruPubKey
+          client.dpop: "true"
           claim.name: tdf_claims
         name: Virtru OIDC Auth Mapper
         protocolMapper: virtru-oidc-protocolmapper
