@@ -4,24 +4,24 @@ ARG NODE_VERSION=lts
 # depender - get production dependencies
 FROM node:${NODE_VERSION} as depender
 WORKDIR /build/
-COPY package-lock.json package.json opentdf-client-*.tgz ./
-RUN npm ci
+COPY package.json opentdf-client-*.tgz ./
+RUN npm i
 
 
 # builder - create-react-app build
 FROM depender as builder
 WORKDIR /build/
-COPY src/ src/
 COPY public/ public/
+COPY src/ src/
 RUN npm run build
 
 # server - nginx alpine
 FROM nginx:stable-alpine as server
-COPY --from=builder /build/dist /usr/share/nginx/html
+COPY --from=builder /build/build /usr/share/nginx/html
 COPY nginx-default.conf /etc/nginx/templates/default.conf.template
 ENV KEYCLOAK_HOST "http://localhost:65432/auth"
 ENV KAS_HOST "http://localhost:65432/api/kas"
-ENV KEYCLOAK_CLIENT_ID "secure-remote-storage-client"
+ENV KEYCLOAK_CLIENT_ID "todo-react-client"
 ENV KEYCLOAK_REALM "tdf"
 
 EXPOSE 80
