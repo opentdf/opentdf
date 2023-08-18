@@ -23,10 +23,10 @@ const requestToken = async (username: string, password: string) => {
 export const loginUser = async (username: string, password: string, attrs?: string[]) => {
     let responseJson = await requestToken(username, password);
     const authProviderEve = await AuthProviders.refreshAuthProvider({
+        refreshToken: responseJson.refresh_token,
         clientId: OIDC_CLIENT_ID,
         exchange: 'refresh',
-        oidcRefreshToken: responseJson.refresh_token,
-        oidcOrigin: OIDC_ENDPOINT,
+        oidcOrigin: OIDC_ENDPOINT
     });
     const tmpClient = new NanoTDFDatasetClient(authProviderEve, KAS_URL);
     if (attrs) {
