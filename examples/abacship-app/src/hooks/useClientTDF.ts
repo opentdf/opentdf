@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 // @ts-ignore
-import { AuthProviders, Client, NanoTDFClient } from "@opentdf/client";
+import { AuthProviders, NanoTDFClient } from "@opentdf/client";
 import { useKeycloak } from "@react-keycloak/web";
-import { KAS_HOST, KEYCLOAK_CLIENT_ID, KEYCLOAK_HOST, KEYCLOAK_REALM } from "../config";
-import { RefreshTokenCredentials } from "@opentdf/client/dist/types/src/auth/OIDCCredentials";
+import { KAS_HOST, KEYCLOAK_CLIENT_ID, KEYCLOAK_HOST } from "../config";
 
 interface ICypherTextInfo {
   cypher_text: string; // BASE 64 encoded string
@@ -21,14 +20,12 @@ export function useClientTDF() {
   const { keycloak, initialized } = useKeycloak();
   const decryptString = async (data: ICypherTextInfo) => {
     if (data?.cypher_text) {
-      const oidcCredentials: RefreshTokenCredentials = {
+      const authProvider = await AuthProviders.refreshAuthProvider({
         clientId: KEYCLOAK_CLIENT_ID,
         exchange: 'refresh',
-        oidcRefreshToken: data.refresh_token,
         oidcOrigin: KEYCLOAK_HOST.replace('/auth', ''),
-        organizationName: KEYCLOAK_REALM
-      }
-      const authProvider = await AuthProviders.refreshAuthProvider(oidcCredentials);
+        refreshToken: data.refresh_token,
+      });
       const client = new NanoTDFClient(authProvider, KAS_HOST);
       const clearText = await client.decrypt(data.cypher_text);
       const decoder = new TextDecoder("utf-8");
