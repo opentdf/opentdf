@@ -4,12 +4,8 @@ ARG NODE_VERSION=lts
 # depender - get production dependencies
 FROM node:${NODE_VERSION} as depender
 WORKDIR /build/
-COPY package-lock.json package.json opentdf-client-*.tgz ./
-RUN npm uninstall @opentdf/client
-RUN npm install opentdf-client-0.3.0.tgz
-RUN npm install
-RUN echo $(printenv)
-
+COPY package-lock.json package.json ./
+RUN npm ci
 
 # builder - create-react-app build
 FROM depender as builder

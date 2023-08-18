@@ -4,7 +4,7 @@ ARG NODE_VERSION=lts
 # depender - get production dependencies
 FROM node:${NODE_VERSION} as depender
 WORKDIR /build/
-COPY package-lock.json package.json opentdf-client-*.tgz ./
+COPY package-lock.json package.json ./
 RUN npm ci
 
 
