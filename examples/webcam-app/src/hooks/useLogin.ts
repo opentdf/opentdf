@@ -36,7 +36,7 @@ export const loginUser = async (username: string, password: string, attrs?: stri
     await tmpClient.decrypt(await tmpClient.encrypt("dummy"));
     // END
     // @ts-ignore
-    let token = await tmpClient.authProvider.oidcAuth?.getCurrentAccessToken(),
+    let token = await tmpClient.authProvider.oidcAuth?.currentAccessToken,
         // @ts-ignore
         decoded: { tdf_claims } = jwt_decode(token);
 
@@ -45,24 +45,3 @@ export const loginUser = async (username: string, password: string, attrs?: stri
         client: tmpClient
     };
 };
-
-// export const useLogin = async () => {
-//     const password = "myuserpassword";
-//     const [client, setClient] = useState();
-//     const [entitlements, setEntitlements] = useState();
-
-//     // hack
-//     // setClientWebcam(new NanoTDFDatasetClient(authProviderAlice, KAS_URL));
-//     // const tmpClientAlice = new NanoTDFDatasetClient(authProviderAlice, KAS_URL);
-//     let data = await loginUser("alice", password);
-//     // setEntitlementsAlice(decoded.tdf_claims.entitlements);
-//     // setClientAlice(tmpClientAlice);
-
-//     data = await loginUser("bob", password);
-//     // setEntitlementsBob(decoded.tdf_claims.entitlements);
-//     // setClientBob(tmpClientBob);
-
-//     data = await loginUser("eve", password);
-//     // setEntitlementsEve(data.entitlements);
-//     // setClientEve(data.client);
-// }
