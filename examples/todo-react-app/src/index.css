@@ -231,7 +231,8 @@ body {
   font-weight: 400;
   font-size: 1.6rem;
   line-height: 1.25;
-  display: block;
+  display: flex;
+  align-items: center;
   position: relative;
   min-height: 44px;
   padding-left: 40px;
@@ -259,7 +260,7 @@ body {
   line-height: inherit;
   display: inline-block;
   margin-bottom: 0;
-  padding: 8px 15px 5px;
+  padding: 0 10px;
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -290,4 +291,7 @@ body {
 }
 .c-cb > input[type="checkbox"]:checked + label::after {
   opacity: 1;
+}
+.MuiTypography-root {
+  font-size: 12px;
 }

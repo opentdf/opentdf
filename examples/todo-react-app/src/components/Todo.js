@@ -73,9 +73,14 @@ export default function Todo(props) {
             type="checkbox"
             defaultChecked={props.completed}
             onChange={() => props.toggleTaskCompleted(props.id)}
+            disabled={props.protected && !props.decryptedText}
           />
           <label className="todo-label" htmlFor={props.id}>
-            {props.protected ? (<span style={{ color: '#004987' }}>Classified</span>) : props.name}
+            {props.protected ? (
+              props.decryptedText
+                ? <span style={{ color: '#004987', textDecoration: 'underline' }}>{props.decryptedText} </span>
+                : <span style={{ color: '#004987', textDecoration: 'underline' }}>Encrypted, by {props.owner} <br/>Task id is {props.tdfId}</span>
+            ) : props.name}
           </label>
         </div>
         <div className="btn-group">
@@ -100,16 +105,16 @@ export default function Todo(props) {
             <button
               type="button"
               className="btn btn__protect"
-              onClick={() => props.encryptTask(props.id)}
+              onClick={() => props.encryptTask(props.id, props.name, props.team)}
             >
               Encrypt
             </button>
           )}
-          {props.encryptTask && props.protected && (
+          {props.encryptTask && props.protected && !props.decryptedText && (
             <button
               type="button"
               className="btn btn__protect"
-              onClick={() => props.encryptTask(props.id)}
+              onClick={() => props.decryptTask(props.id, props.name)}
             >
               Decrypt
             </button>

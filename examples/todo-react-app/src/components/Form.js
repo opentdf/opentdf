@@ -2,8 +2,6 @@ import React, { useState } from "react";
 
 function Form(props) {
   const [name, setName] = useState('');
-
-
   function handleSubmit(e) {
     e.preventDefault();
     if (!name.trim()) {
@@ -38,6 +36,7 @@ function Form(props) {
       <button type="submit" className="btn btn__primary btn__lg">
         Add
       </button>
+
     </form>
   );
 }

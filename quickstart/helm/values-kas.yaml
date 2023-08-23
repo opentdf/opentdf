@@ -15,3 +15,4 @@ ingress:
     opentdf.local: *paths
 externalEnvSecretName: true
 externalSecretName: kas-secrets
+logLevel: DEBUG

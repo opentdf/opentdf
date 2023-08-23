@@ -4,7 +4,12 @@
   "private": true,
   "homepage": "https://mdn.github.io/todo-react/",
   "dependencies": {
-    "@opentdf/client": "file:opentdf-client-1.2.8.tgz",
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.14.3",
+    "@mui/lab": "^5.0.0-alpha.139",
+    "@mui/material": "^5.14.4",
+    "@opentdf/client": "file:opentdf-client-1.2.10.tgz",
     "@react-keycloak/web": "^3.4.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
