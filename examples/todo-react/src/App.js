@@ -21,6 +21,8 @@ const FILTER_MAP = {
 const FILTER_NAMES = Object.keys(FILTER_MAP);
 
 function App() {
+  const attributes = ['platform',   'saas'];
+  const [attribute, setAttribute] = useState(attributes[0]);
   const [tasks, setTasks] = useState(JSON.parse(localStorage.getItem('tasks') || '[]'));
   const [filter, setFilter] = useState("All");
 
@@ -60,11 +62,13 @@ function App() {
 
   const taskList = tasks
     .filter(FILTER_MAP[filter])
+    .filter(({team}) => team === attribute)
     .map((task) => (
       <Todo
         id={task.id}
         name={task.name}
         completed={task.completed}
+        team={task.team}
         key={task.id}
         toggleTaskCompleted={toggleTaskCompleted}
         deleteTask={deleteTask}
@@ -82,7 +86,7 @@ function App() {
   ));
 
   function addTask(name) {
-    const newTask = { id: "todo-" + nanoid(), name: name, completed: false };
+    const newTask = { id: "todo-" + nanoid(), name: name, completed: false, team: attribute };
     setTasks([...tasks, newTask]);
   }
 
@@ -101,7 +105,14 @@ function App() {
   return (
     <div className="todoapp stack-large">
       <Form addTask={addTask} />
-      <div className="filters btn-group stack-exception">{filterList}</div>
+      <div className="filters btn-group stack-exception">
+        {filterList}
+        <select style={{textAlign: 'center'}} value={attribute} onChange={e => setAttribute(e.target.value)}>
+          {attributes.map(attr => (
+            <option key={attr} value={attr}>Team: {attr}</option>
+          ))}
+        </select>
+      </div>
       <h2 id="list-heading" tabIndex="-1" ref={listHeadingRef}>
         {headingText}
       </h2>
