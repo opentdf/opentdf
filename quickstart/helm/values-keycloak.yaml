@@ -2,7 +2,7 @@ fullnameOverride: keycloak
 image:
   # Keycloak is a non-OpenTDF chart, but with an OpenTDF image
   repository: ghcr.io/opentdf/keycloak
-  tag: 21.1.2-1.4.1
+  tag: 21.1.2-1.4.2
 postgresql:
   # This next option (enabled) determines whether Keycloak should
   # create a Postgres (uniquely) for Keycloak (true) or not (false).
