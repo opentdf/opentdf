@@ -20,9 +20,13 @@ const FILTER_MAP = {
 
 const FILTER_NAMES = Object.keys(FILTER_MAP);
 
-function App(props) {
-  const [tasks, setTasks] = useState(props.tasks);
+function App() {
+  const [tasks, setTasks] = useState(JSON.parse(localStorage.getItem('tasks') || '[]'));
   const [filter, setFilter] = useState("All");
+
+  useEffect(() => {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }, [tasks]);
 
   function toggleTaskCompleted(id) {
     const updatedTasks = tasks.map((task) => {
