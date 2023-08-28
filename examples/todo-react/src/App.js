@@ -3,6 +3,9 @@ import Form from "./components/Form";
 import FilterButton from "./components/FilterButton";
 import Todo from "./components/Todo";
 import { nanoid } from "nanoid";
+import { useKeycloak } from '@react-keycloak/web';
+import Login from './components/Login';
+
 
 function usePrevious(value) {
   const ref = useRef();
@@ -25,6 +28,7 @@ function App() {
   const [attribute, setAttribute] = useState(attributes[0]);
   const [tasks, setTasks] = useState(JSON.parse(localStorage.getItem('tasks') || '[]'));
   const [filter, setFilter] = useState("All");
+  const { keycloak, initialized } = useKeycloak();
 
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -104,7 +108,9 @@ function App() {
 
   return (
     <div className="todoapp stack-large">
-      <Form addTask={addTask} />
+      <Login keycloak={keycloak} initialized={initialized}/>
+
+      {keycloak.authenticated && (<Form addTask={addTask}/>)}
       <div className="filters btn-group stack-exception">
         {filterList}
         <select style={{textAlign: 'center'}} value={attribute} onChange={e => setAttribute(e.target.value)}>
@@ -114,13 +120,15 @@ function App() {
         </select>
       </div>
       <h2 id="list-heading" tabIndex="-1" ref={listHeadingRef}>
-        {headingText}
+        {keycloak.authenticated ? headingText : "Please login"}
       </h2>
-      <ul
-        className="todo-list stack-large stack-exception"
-        aria-labelledby="list-heading">
-        {taskList}
-      </ul>
+      {keycloak.authenticated && (
+        <ul
+          className="todo-list stack-large stack-exception"
+          aria-labelledby="list-heading">
+          {taskList}
+        </ul>
+      )}
     </div>
   );
 }

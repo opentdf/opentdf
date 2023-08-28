@@ -5,9 +5,11 @@
   "homepage": "https://mdn.github.io/todo-react/",
   "dependencies": {
     "@opentdf/client": "^1.3.0",
+    "@react-keycloak/web": "^3.4.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
+    "keycloak-js": "^22.0.1",
     "nanoid": "^4.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
