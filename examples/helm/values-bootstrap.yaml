@@ -522,6 +522,7 @@ attributes:
   password: myuserpassword
   preloadedAuthorities:
     - https://example.com
+    - https://todo.com
   preloadedAttributes:
   # general testing attributes
   - authority: https://example.com
@@ -544,6 +545,18 @@ attributes:
     - PRC
     - PRD
     - PRF
+  - authority: https://todo.com
+    name: platform
+    rule: allOf
+    state: published
+    order:
+    - developer
+  - authority: https://todo.com
+    name: saas
+    rule: allOf
+    state: published
+    order:
+    - developer
   # webcam-app attributes
   - authority: https://example.com
     name: ContentExclusivity
@@ -573,12 +586,20 @@ entitlements:
       alice:
         - https://example.com/attr/AudienceGuidance/value/Restricted
         - https://example.com/attr/ContentExclusivity/value/Premium
+        - https://todo.com/attr/saas/value/developer
       bob:
         - https://example.com/attr/AudienceGuidance/value/All
         - https://example.com/attr/ContentExclusivity/value/Premium
+        - https://todo.com/attr/platform/value/developer
+      carol:
+        - https://todo.com/attr/saas/value/developer
+        - https://todo.com/attr/platform/value/developer
       examples-webcam-app:
         - https://example.com/attr/AudienceGuidance/value/Restricted
         - https://example.com/attr/ContentExclusivity/value/Deluxe
+      todo-react-client:
+        - https://todo.com/attr/saas/value/developer
+        - https://todo.com/attr/platform/value/developer
       tdf-client:
         - https://example.com/attr/Classification/value/S
         - https://example.com/attr/COI/value/PRX
