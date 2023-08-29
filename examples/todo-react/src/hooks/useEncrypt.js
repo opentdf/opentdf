@@ -15,8 +15,9 @@ export default (keycloak) => {
 
     const { stream } = await client.encrypt(encryptParams);
     const encryptedBuffer = await streamToUint8Arr(stream);
+    const tdfId = await client.getPolicyId({ source: { type: 'buffer', location: encryptedBuffer }})
     const base64 = bufferToBase64(encryptedBuffer);
 
-    return base64;
+    return [base64, tdfId];
   }, [keycloak]);
 };

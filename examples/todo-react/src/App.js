@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 import { useKeycloak } from '@react-keycloak/web';
 import Login from './components/Login';
 import AuditSidebar from './components/AuditSidebar';
+import { postEvent } from './utils';
 
 
 function usePrevious(value) {
@@ -31,15 +32,38 @@ function App() {
   const [filter, setFilter] = useState("All");
   const [showAudit, setShowAudit] = useState(false);
   const { keycloak, initialized } = useKeycloak();
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/v1/events?objectName=todo", {
+      method: 'GET',
+      // mode: "no-cors",
+      headers: {
+        'X-Request-Version': 'v2',
+      },
+    }).then(response => response.json()).then(response => response.newEvents && setEvents(response.newEvents))
+  }, [showAudit])
 
   useEffect(() => {
     localStorage.setItem('tasks', JSON.stringify(tasks.map(({ decryptedText, ...task }) => task )));
   }, [tasks]);
 
+  useEffect(() => {
+    console.log(events);
+  }, [events]);
+
   function toggleTaskCompleted(id) {
     const updatedTasks = tasks.map((task) => {
       // if this task has the same ID as the edited task
       if (id === task.id) {
+        postEvent({
+          result: 'success',
+          type: 'update',
+          tdfId: task.tdfId || task.id,
+          ownerId: task.owner,
+          actorId: keycloak.tokenParsed.preferred_username,
+          diff: { message: `"${task.tdfId || task.name}" completion status were set as ${!task.completed}`},
+        })
         // use object spread to make a new obkect
         // whose `completed` prop has been inverted
         return { ...task, completed: !task.completed };
@@ -50,8 +74,15 @@ function App() {
   }
 
   function deleteTask(id) {
-    const remainingTasks = tasks.filter((task) => id !== task.id);
-    setTasks(remainingTasks);
+    const task = tasks.find((task) => id === task.id);
+    postEvent({
+      result: 'success',
+      type: 'delete',
+      tdfId: task.tdfId || task.name,
+      ownerId: task.owner,
+      actorId: keycloak.tokenParsed.preferred_username,
+    })
+    setTasks(tasks.filter((task) => id !== task.id));
   }
 
   function editTask(id, newName, props) {
@@ -78,6 +109,7 @@ function App() {
         protected={task.protected}
         decryptedText={task.decryptedText}
         owner={task.owner}
+        tdfId={task.tdfId}
         keycloak={keycloak}
         toggleTaskCompleted={toggleTaskCompleted}
         deleteTask={deleteTask}

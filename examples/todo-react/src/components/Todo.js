@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import useEncrypt from '../hooks/useEncrypt';
 import useDecrypt from '../hooks/useDecrypt';
+import { postEvent } from '../utils';
 
 function usePrevious(value) {
   const ref = useRef();
@@ -25,20 +26,45 @@ export default function Todo(props) {
 
   function protect() {
     encrypt(props.name, props.team)
-      .then(encryptedName => {
+      .then(([encryptedName, tdfId]) => {
         props.editTask(
-          props.id, encryptedName, { protected: true, owner: props.keycloak.tokenParsed.preferred_username }
+          props.id, encryptedName, { protected: true, owner: props.keycloak.tokenParsed.preferred_username, tdfId }
         );
+        return tdfId;
       })
+      .then((tdfId) => postEvent({
+          result: 'success',
+          type: 'create',
+          tdfId,
+          ownerId: props.keycloak.tokenParsed.preferred_username
+        })
+      )
   }
 
   function showDecryption() {
     decrypt(props.name)
-      .then(decryptedText => {
+      .then((decryptedText) => {
         props.editTask(
           props.id, props.name, { decryptedText }
         );
       })
+      .catch((e) => postEvent({
+          result: 'failure',
+          type: 'read',
+          tdfId: props.tdfId,
+          ownerId: props.owner,
+          actorId: props.keycloak.tokenParsed.preferred_username,
+          eventMetaData: { message: e.message }
+        })
+      )
+      .then(() => postEvent({
+          result: 'success',
+          type: 'read',
+          tdfId: props.tdfId,
+          ownerId: props.owner,
+          actorId: props.keycloak.tokenParsed.preferred_username,
+        })
+      )
   }
 
   function handleChange(e) {
