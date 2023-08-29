@@ -48,15 +48,6 @@ export default function Todo(props) {
           props.id, props.name, { decryptedText }
         );
       })
-      .catch((e) => postEvent({
-          result: 'failure',
-          type: 'read',
-          tdfId: props.tdfId,
-          ownerId: props.owner,
-          actorId: props.keycloak.tokenParsed.preferred_username,
-          eventMetaData: { message: e.message }
-        })
-      )
       .then(() => postEvent({
           result: 'success',
           type: 'read',
@@ -64,6 +55,18 @@ export default function Todo(props) {
           ownerId: props.owner,
           actorId: props.keycloak.tokenParsed.preferred_username,
         })
+      )
+      .catch((e) => {
+          alert('Failed to decrypt');
+          postEvent({
+            result: 'failure',
+            type: 'read',
+            tdfId: props.tdfId,
+            ownerId: props.owner,
+            actorId: props.keycloak.tokenParsed.preferred_username,
+            eventMetaData: {message: e.message}
+          })
+        }
       )
   }
 
@@ -126,7 +129,7 @@ export default function Todo(props) {
           <label className="todo-label" htmlFor={props.id}>
             {!props.protected && props.name}
             {props.protected && (
-              <span style={protectedStyles}>{props.decryptedText || `Encrypted by ${props.owner}`}</span>
+              <span style={protectedStyles}>{props.decryptedText || `Encrypted by ${props.owner}, Task id is ${props.tdfId}`}</span>
             )}
           </label>
         </div>

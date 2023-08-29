@@ -48,9 +48,6 @@ function App() {
     localStorage.setItem('tasks', JSON.stringify(tasks.map(({ decryptedText, ...task }) => task )));
   }, [tasks]);
 
-  useEffect(() => {
-    console.log(events);
-  }, [events]);
 
   function toggleTaskCompleted(id) {
     const updatedTasks = tasks.map((task) => {
@@ -145,7 +142,7 @@ function App() {
 
   return (
     <div className="todoapp stack-large">
-      <AuditSidebar showAudit={showAudit} setShowAudit={setShowAudit}/>
+      <AuditSidebar showAudit={showAudit} setShowAudit={setShowAudit} events={events} />
       <header style={{display: 'flex', justifyContent: 'space-between', maxWidth: '100%'}}>
         <button
           type="button"
