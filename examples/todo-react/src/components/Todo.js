@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-
+import useEncrypt from '../hooks/useEncrypt';
 
 function usePrevious(value) {
   const ref = useRef();
@@ -17,6 +17,16 @@ export default function Todo(props) {
   const editButtonRef = useRef(null);
 
   const wasEditing = usePrevious(isEditing);
+  const encrypt = useEncrypt(props.keycloak);
+
+  function protect() {
+    encrypt(props.name, props.team)
+      .then(encryptedName => {
+        props.editTask(
+          props.id, encryptedName, { protected: true, owner: props.keycloak.tokenParsed.preferred_username }
+        );
+      })
+  }
 
   function handleChange(e) {
     setNewName(e.target.value);
@@ -75,18 +85,20 @@ export default function Todo(props) {
             onChange={() => props.toggleTaskCompleted(props.id)}
           />
           <label className="todo-label" htmlFor={props.id}>
-            {props.name}
+            {!props.protected ? props.name : <span style={{ color: '#004987'}}>Encrypted by {props.owner}</span>}
           </label>
         </div>
         <div className="btn-group">
-        <button
-          type="button"
-          className="btn"
-          onClick={() => setEditing(true)}
-          ref={editButtonRef}
-          >
-            Edit <span className="visually-hidden">{props.name}</span>
-          </button>
+          {!props.protected && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() => setEditing(true)}
+              ref={editButtonRef}
+            >
+              Edit <span className="visually-hidden">{props.name}</span>
+            </button>
+          )}
           <button
             type="button"
             className="btn btn__danger"
@@ -94,6 +106,15 @@ export default function Todo(props) {
           >
             Delete <span className="visually-hidden">{props.name}</span>
           </button>
+          {!props.protected && (
+            <button
+              type="button"
+              className="btn btn__protect"
+              onClick={protect}
+            >
+              Encrypt
+            </button>
+          )}
         </div>
     </div>
   );

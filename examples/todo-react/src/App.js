@@ -52,12 +52,11 @@ function App() {
     setTasks(remainingTasks);
   }
 
-  function editTask(id, newName) {
+  function editTask(id, newName, props) {
     const editedTaskList = tasks.map((task) => {
       // if this task has the same ID as the edited task
       if (id === task.id) {
-        //
-        return { ...task, name: newName };
+        return { ...task, name: newName, ...props };
       }
       return task;
     });
@@ -74,6 +73,9 @@ function App() {
         completed={task.completed}
         team={task.team}
         key={task.id}
+        protected={task.protected}
+        owner={task.owner}
+        keycloak={keycloak}
         toggleTaskCompleted={toggleTaskCompleted}
         deleteTask={deleteTask}
         editTask={editTask}
