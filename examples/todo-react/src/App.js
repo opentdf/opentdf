@@ -5,6 +5,7 @@ import Todo from "./components/Todo";
 import { nanoid } from "nanoid";
 import { useKeycloak } from '@react-keycloak/web';
 import Login from './components/Login';
+import AuditSidebar from './components/AuditSidebar';
 
 
 function usePrevious(value) {
@@ -28,6 +29,7 @@ function App() {
   const [attribute, setAttribute] = useState(attributes[0]);
   const [tasks, setTasks] = useState(JSON.parse(localStorage.getItem('tasks') || '[]'));
   const [filter, setFilter] = useState("All");
+  const [showAudit, setShowAudit] = useState(false);
   const { keycloak, initialized } = useKeycloak();
 
   useEffect(() => {
@@ -111,7 +113,17 @@ function App() {
 
   return (
     <div className="todoapp stack-large">
-      <Login keycloak={keycloak} initialized={initialized}/>
+      <AuditSidebar showAudit={showAudit} setShowAudit={setShowAudit}/>
+      <header style={{display: 'flex', justifyContent: 'space-between', maxWidth: '100%'}}>
+        <button
+          type="button"
+          className="btn btn__protect"
+          onClick={() => setShowAudit(true)}
+        >
+          Audit
+        </button>
+        <Login keycloak={keycloak} initialized={initialized}/>
+      </header>
 
       {keycloak.authenticated && (<Form addTask={addTask}/>)}
       <div className="filters btn-group stack-exception">
