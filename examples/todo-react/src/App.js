@@ -31,7 +31,7 @@ function App() {
   const { keycloak, initialized } = useKeycloak();
 
   useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
+    localStorage.setItem('tasks', JSON.stringify(tasks.map(({ decryptedText, ...task }) => task )));
   }, [tasks]);
 
   function toggleTaskCompleted(id) {
@@ -74,6 +74,7 @@ function App() {
         team={task.team}
         key={task.id}
         protected={task.protected}
+        decryptedText={task.decryptedText}
         owner={task.owner}
         keycloak={keycloak}
         toggleTaskCompleted={toggleTaskCompleted}

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import useEncrypt from '../hooks/useEncrypt';
+import useDecrypt from '../hooks/useDecrypt';
 
 function usePrevious(value) {
   const ref = useRef();
@@ -8,6 +9,8 @@ function usePrevious(value) {
   });
   return ref.current;
 }
+
+const protectedStyles = { color: '#004987', textDecoration: 'underline' };
 
 export default function Todo(props) {
   const [isEditing, setEditing] = useState(false);
@@ -18,12 +21,22 @@ export default function Todo(props) {
 
   const wasEditing = usePrevious(isEditing);
   const encrypt = useEncrypt(props.keycloak);
+  const decrypt = useDecrypt(props.keycloak);
 
   function protect() {
     encrypt(props.name, props.team)
       .then(encryptedName => {
         props.editTask(
           props.id, encryptedName, { protected: true, owner: props.keycloak.tokenParsed.preferred_username }
+        );
+      })
+  }
+
+  function showDecryption() {
+    decrypt(props.name)
+      .then(decryptedText => {
+        props.editTask(
+          props.id, props.name, { decryptedText }
         );
       })
   }
@@ -85,7 +98,10 @@ export default function Todo(props) {
             onChange={() => props.toggleTaskCompleted(props.id)}
           />
           <label className="todo-label" htmlFor={props.id}>
-            {!props.protected ? props.name : <span style={{ color: '#004987'}}>Encrypted by {props.owner}</span>}
+            {!props.protected && props.name}
+            {props.protected && (
+              <span style={protectedStyles}>{props.decryptedText || `Encrypted by ${props.owner}`}</span>
+            )}
           </label>
         </div>
         <div className="btn-group">
@@ -113,6 +129,15 @@ export default function Todo(props) {
               onClick={protect}
             >
               Encrypt
+            </button>
+          )}
+          {props.protected && !props.decryptedText && (
+            <button
+              type="button"
+              className="btn btn__protect"
+              onClick={showDecryption}
+            >
+              Decrypt
             </button>
           )}
         </div>
