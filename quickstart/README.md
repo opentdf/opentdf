@@ -177,7 +177,8 @@ Then navigate to `http://localhost:65432/auth/admin/master/console/#/tdf/clients
 
 You will see a field titled `Valid Redirect URIs`. Add `http://localhost:65432/*` as a valid redirect uri by adding it to the field as shown, clicking the `+` button, and scrolling to the bottom of the page and saving the changes.
 
-![abacus-web](https://github.com/opentdf/opentdf/assets/25446794/b6473e10-8751-4f54-8074-c3c2d9b9598d)
+
+![opentdf-abacus](https://github.com/opentdf/opentdf/assets/25446794/4039a566-82fe-4dbd-9325-171b662dd9e4)
 
 
 Now, to view Abacus, navigate to `http://localhost:65432`.
