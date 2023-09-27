@@ -148,9 +148,9 @@ pip3 uninstall opentdf
 
 ![](../resource/quickstart-diagram.png)
 
-### Client
+### C++ Client
 
-See [the OpenTDF Client base repo](https://github.com/opentdf/client-cpp) for details about how to configure a Python or C++ application to use OpenTDF.
+See [the OpenTDF Client base repo](https://github.com/opentdf/client-cpp) for details about how to configure a C++ application to use OpenTDF.
 
 ### Services
 
