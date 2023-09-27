@@ -118,7 +118,7 @@ Services should be up in 4-6 minutes.
 pip3 install --upgrade opentdf
 ```
 
-### Execute tests to encrypt and decrypt, make sure you're in $PROJECT_ROOT/quickstart
+### Execute tests to encrypt and decrypt. Assume you're in $PROJECT_ROOT/quickstart, run:
 
 ```shell
 python3 tests/oidc-auth.py
@@ -177,7 +177,8 @@ Then navigate to `http://localhost:65432/auth/admin/master/console/#/master/clie
 
 You will see a field titled `Valid Redirect URIs`. Add `http://localhost:65432/*` as a valid redirect uri by adding it to the field as shown, clicking the `+` button, and scrolling to the bottom of the page and saving the changes.
 
-![Keycloak login screen, displaying an empty form for the 'TDF' identity realm](static/tdf-entitlement-valid-redirect.png)
+![abacus-web](https://github.com/opentdf/opentdf/assets/25446794/b6473e10-8751-4f54-8074-c3c2d9b9598d)
+
 
 Now, to view Abacus, navigate to `http://localhost:65432`.
 
