@@ -3,35 +3,6 @@ keycloak:
   adminUsername: keycloakadmin
   adminPassword: mykeycloakpassword
   customConfig:
-  - name: master
-    # master realm
-    clients:
-    - payload:
-        clientId: abacus-web
-        publicClient: "true"
-        standardFlowEnabled: "true"
-        clientAuthenticatorType: client-secret
-        serviceAccountsEnabled: "true"
-        protocol: openid-connect
-        redirectUris:
-        - "{{ externalUrl }}/*"
-        webOrigins:
-        - "+"
-      mappers:
-      - protocol: openid-connect
-        config:
-          id.token.claim: "false"
-          access.token.claim: "true"
-          included.custom.audience: "tdf-entitlement"
-        name: Virtru "tdf-entitlements" Audience Mapper
-        protocolMapper: oidc-audience-mapper
-      - protocol: openid-connect
-        config:
-          id.token.claim: "false"
-          access.token.claim: "true"
-          included.custom.audience: "tdf-attributes"
-        name: Virtru "tdf-attributes" Audience Mapper
-        protocolMapper: oidc-audience-mapper
   - name: tdf
     payload:
       realm: tdf
@@ -337,7 +308,7 @@ attributes:
     name: Classification
     rule: hierarchy
     state: published
-    order: 
+    order:
     - TS
     - S
     - C
@@ -346,7 +317,7 @@ attributes:
     name: COI
     rule: allOf
     state: published
-    order: 
+    order:
     - PRX
     - PRA
     - PRB
