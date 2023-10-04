@@ -10,7 +10,7 @@ a direct connection to the Internet.
 
 To build the bundle, on a connected server that has recent (2022+) versions of
 the following scripts (some of which may be installed with `scripts/pre-reqs`
-on linux and macos):
+on linux and macOS):
 
 - The bash shell
 - git

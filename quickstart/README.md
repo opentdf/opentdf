@@ -189,7 +189,7 @@ Click `Log In`. Abacus will forward you to the login screen to acquire user cred
 
 ![Keycloak login screen, displaying an empty form for the 'TDF' identity realm](static/keycloak-login-empty.png)
 
-Log in using the credentials generated with the bootstrap script (supplied via Helm [here](helm/values-keycloak-bootstrap.yaml#L45-L46)), or with the default credentials, which are currently "user1" and the password is "testuser123".
+Log in using the credentials generated with the bootstrap script (supplied via Helm [here](helm/values-keycloak-bootstrap.yaml#L276-L295)), or with the default credentials, which are currently "user1" and the password is "testuser123".
 
 ![Keycloak login screen, filled with a user login credentials](static/keycloak-login-filled-user1.png)
 

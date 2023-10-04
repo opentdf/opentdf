@@ -11,7 +11,7 @@ Full-motion video with OpenTDF
 
 ## Steps
 
-1. Click **Login** to login all users using OIDC
+1. Click **Login** to log in all users using OIDC
 2. Click **Webcam** to start your webcam and the video stream
 3. As the _Video Operator_, click **Premium** to tag the video stream for consumption by paid users only (Alice, Bob)
 4. As the _Entitlement Grantor_, click **Abacus**, login user1/testuser123, go to **Entitlements** and remove _Premier_ from Alice
