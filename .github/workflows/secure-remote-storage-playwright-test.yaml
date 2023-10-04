@@ -27,9 +27,9 @@ jobs:
             kubectl
             helm
             tilt
-          kubectl: "1.24.1"
-          helm: "3.9.2"
-          tilt: "0.31.2"
+          kubectl: "1.28.2"
+          helm: "3.13.0"
+          tilt: "0.33.6"
       - run: |
           kubectl version --client
           kustomize version
@@ -38,9 +38,9 @@ jobs:
         id: minikube
         uses: medyagh/setup-minikube@master
         with:
-          minikube-version: 1.26.0
+          minikube-version: 1.31.2
           # This should be in sync with the setup-tools version above
-          kubernetes-version: 1.24.1
+          kubernetes-version: 1.27.3
       - name: Add hosts to /etc/hosts for integration test purposes
         run: |-
           echo "127.0.0.1 s3.testminio.com" | sudo tee -a /etc/hosts
