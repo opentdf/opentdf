@@ -28,7 +28,7 @@ jobs:
             helm
             tilt
           kubectl: "1.28.2"
-          helm: "3.13.0"
+          helm: "3.8.1"
           tilt: "0.33.6"
       - run: |
           kubectl version --client
