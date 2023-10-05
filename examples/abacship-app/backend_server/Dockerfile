@@ -1,6 +1,6 @@
 # Context: backend_server
 
-ARG PY_VERSION=3.10
+ARG PY_VERSION=3.11
 ARG ALPINE_VERSION=3.15
 
 # stage - build
