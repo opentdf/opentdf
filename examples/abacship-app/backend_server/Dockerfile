@@ -8,10 +8,10 @@ FROM python:${PY_VERSION} AS build
 WORKDIR /build
 
 COPY requirements.txt requirements.txt
-COPY ./app ./app
 RUN echo $(arch)
 RUN pip3 install --no-cache-dir --upgrade pip setuptools
 RUN pip3 install --no-cache-dir --requirement requirements.txt
+COPY ./app ./app
 
 # Server
 ENV SERVER_ROOT_PATH "/"

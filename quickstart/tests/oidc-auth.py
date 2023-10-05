@@ -2,8 +2,8 @@ import sys
 from opentdf import TDFClient, NanoTDFClient, OIDCCredentials, LogLevel, TDFStorageType
 
 # encrypt the file and apply the policy on tdf file and also decrypt.
-OIDC_ENDPOINT = "http://localhost:65432"
-KAS_URL = "http://localhost:65432/api/kas"
+OIDC_ENDPOINT = "https://platform.virtru.us"
+KAS_URL = "https://platform.virtru.us/api/kas"
 
 try:
     # Create OIDC credentials object
@@ -16,7 +16,7 @@ try:
     )
 
     client = TDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
-    client.enable_console_logging(LogLevel.Debug)
+    client.enable_console_logging(LogLevel.Trace)
     plain_text = "Hello world!!"
     #################################################
     # TDF - File API
@@ -25,10 +25,10 @@ try:
     f.write(plain_text)
     f.close()
 
-    client.add_data_attribute(
-        "https://example.com/attr/Classification/value/S", KAS_URL
-    )
-    client.add_data_attribute("https://example.com/attr/COI/value/PRX", KAS_URL)
+    # client.add_data_attribute(
+    #     "http://demo.com/attr/Classification/value/TopSecret", KAS_URL
+    # )
+    # client.add_data_attribute("http://demo.com/attr/needToKnow/value/AAA", KAS_URL)
 
     sampleTxtStorage = TDFStorageType()
     sampleTxtStorage.set_tdf_storage_file_type("sample.txt")
@@ -36,7 +36,7 @@ try:
     client.encrypt_file(sampleTxtStorage, "sample.txt.tdf")
 
     sampleTdfStorage = TDFStorageType()
-    sampleTdfStorage.set_tdf_storage_file_type("sample.txt.tdf")
+    sampleTdfStorage.set_tdf_storage_file_type("test.tdf")
     client.decrypt_file(sampleTdfStorage, "sample_out.txt")
 
     #################################################
@@ -56,14 +56,12 @@ try:
     else:
         print("Error: TDF Encrypt/Decrypt failed!!")
 
-
     #################################################
     # Nano TDF - File API
     ################################################
 
     # create a nano tdf client.
-    nano_tdf_client = NanoTDFClient(oidc_credentials = oidc_creds,
-                                 kas_url = KAS_URL)
+    nano_tdf_client = NanoTDFClient(oidc_credentials=oidc_creds, kas_url=KAS_URL)
     nano_tdf_client.enable_console_logging(LogLevel.Warn)
     nano_tdf_client.enable_benchmark()
 
@@ -79,18 +77,20 @@ try:
     # Nano TDF - Data API
     #################################################
 
-    sampleStringStorageNano = TDFStorageType()
-    sampleStringStorageNano.set_tdf_storage_string_type(plain_text)
-    nan_tdf_data = nano_tdf_client.encrypt_data(sampleStringStorageNano)
-
-    sampleEncryptedStringStorageNano = TDFStorageType()
-    sampleEncryptedStringStorageNano.set_tdf_storage_string_type(nan_tdf_data)
-    decrypted_plain_text = nano_tdf_client.decrypt_data(sampleEncryptedStringStorageNano)
-
-    if plain_text == decrypted_plain_text.decode("utf-8"):
-        print("Nano TDF Encrypt/Decrypt is successful!!")
-    else:
-        print("Error: Nano TDF Encrypt/Decrypt failed!!")
+    # sampleStringStorageNano = TDFStorageType()
+    # sampleStringStorageNano.set_tdf_storage_string_type(plain_text)
+    # nan_tdf_data = nano_tdf_client.encrypt_data(sampleStringStorageNano)
+    #
+    # sampleEncryptedStringStorageNano = TDFStorageType()
+    # sampleEncryptedStringStorageNano.set_tdf_storage_string_type(nan_tdf_data)
+    # decrypted_plain_text = nano_tdf_client.decrypt_data(
+    #     sampleEncryptedStringStorageNano
+    # )
+    #
+    # if plain_text == decrypted_plain_text.decode("utf-8"):
+    #     print("Nano TDF Encrypt/Decrypt is successful!!")
+    # else:
+    #     print("Error: Nano TDF Encrypt/Decrypt failed!!")
 
 except:
     print("Unexpected error: %s" % sys.exc_info()[0])

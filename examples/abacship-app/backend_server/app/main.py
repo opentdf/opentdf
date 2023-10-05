@@ -1,40 +1,19 @@
-import json
-import logging
-from logging.config import dictConfig
-import os
-import sys
-import requests
 import asyncio
+import logging
 from enum import Enum
-from http.client import NO_CONTENT, BAD_REQUEST, ACCEPTED
-from fastapi.middleware.cors import CORSMiddleware
-# from starlette.middleware.cors import CORSMiddleware
-from typing import Optional, List, Literal#, Annotated
-
+from http.client import NO_CONTENT, BAD_REQUEST
+from logging.config import dictConfig
+from typing import List  # , Annotated
 from fastapi import (
     FastAPI,
     Body,
-    Depends,
     HTTPException,
     Request,
-    Query,
-    Security,
-    status,
 )
-from fastapi.openapi.utils import get_openapi
-
-from pydantic import AnyUrl, BaseSettings, Field, Json, ValidationError, conlist
-from pydantic.main import BaseModel
-#from python_base import Pagination, get_query
-
-from .game import (
-    Status,
-    Player,
-    WholeBoard,
-    Game,
-    validBoard,
-    genRandomBoard
-)
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseSettings, conlist
+from .constants import *
+from .game import Status, Player, Game, validBoard, genRandomBoard
 from .services import (
     setupKeycloak,
     setupAttributes,
@@ -44,14 +23,14 @@ from .services import (
     teardownAttributes,
     teardownKeycloak,
     setupUserEntitlements,
-    addUserEntitlement,
-    deleteUserEntitlement
+    deleteUserEntitlement,
 )
 
-from .constants import *
+# from python_base import Pagination, get_query
 
 dictConfig(LogConfig().dict())
 logger = logging.getLogger("abacship")
+
 
 class Settings(BaseSettings):
     base_path: str = os.getenv("SERVER_ROOT_PATH", "")
@@ -73,7 +52,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-#create the game
+# create the game
 abacship = Game()
 
 
@@ -120,36 +99,40 @@ async def shutdown():
 async def read_semver():
     return {"Hello": "ABACSHIP BACKEND 0.0.1"}
 
+
 class ProbeType(str, Enum):
     liveness = "liveness"
     readiness = "readiness"
 
+
 @app.get("/healthz", status_code=NO_CONTENT, include_in_schema=False)
 async def read_liveness(probe: ProbeType = ProbeType.liveness):
-    if probe == ProbeType.readiness:
-        logger.info("Readiness")
+    pass
+
 
 @app.get(
     "/status",
-    responses={
-        200: {"content": {"application/json": {"example":{
-            "status": 2}}}}
-    },
+    responses={200: {"content": {"application/json": {"example": {"status": 2}}}}},
 )
 async def get_status():
     """
     Returns the current game status
     (See Status enum -- possibly restructuring)
     """
-    logger.debug("Get status")
+    # logger.debug("Get status")
     return abacship.status
+
 
 @app.get(
     "/previous",
     responses={
-        200: {"content": {"application/json": {"example":{
-            "player": "player1", "row": 1, "col": 2}
-            }}}
+        200: {
+            "content": {
+                "application/json": {
+                    "example": {"player": "player1", "row": 1, "col": 2}
+                }
+            }
+        }
     },
 )
 async def get_last_turn():
@@ -163,11 +146,7 @@ async def get_last_turn():
 
 @app.post(
     "/grant",
-    responses={
-        200: {"content": {"application/json": {"example":{
-            "status": 2}
-            }}}
-    }
+    responses={200: {"content": {"application/json": {"example": {"status": 2}}}}},
 )
 async def grant_attribute(player: Player):
     """
@@ -189,14 +168,20 @@ async def grant_attribute(player: Player):
 @app.get(
     "/random",
     responses={
-        200: {"content": {"application/json": {"example":{
-            "board": [
-                ["ocean", "battleship", "ocean", "..."],
-                ["ocean", "battleship", "ocean", "..."],
-                ["ocean", "battleship", "ocean", "..."],
-                ["..."]
-            ]}
-            }}}
+        200: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "board": [
+                            ["ocean", "battleship", "ocean", "..."],
+                            ["ocean", "battleship", "ocean", "..."],
+                            ["ocean", "battleship", "ocean", "..."],
+                            ["..."],
+                        ]
+                    }
+                }
+            }
+        }
     },
 )
 async def get_random_board():
@@ -205,25 +190,32 @@ async def get_random_board():
     """
     logger.debug("Get random board")
     return {"board": genRandomBoard()}
-    
 
 
 @app.get(
     "/board",
     responses={
-        200: {"content": {"application/json": {"example":{
-            "player1": [
-            ["encryptedstring00", "encryptedstring01", "..."],
-            ["encryptedstring10", "encryptedstring11", "..."],
-            ["..."],
-            ["encryptedstring90", "encryptedstring91", "..."]],
-            "player2":[
-                ["encryptedstring00", "encryptedstring01", "..."],
-            ["encryptedstring10", "encryptedstring11", "..."],
-            ["..."],
-            ["encryptedstring90", "encryptedstring91", "..."]]
-            }}}}
-    }
+        200: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "player1": [
+                            ["encryptedstring00", "encryptedstring01", "..."],
+                            ["encryptedstring10", "encryptedstring11", "..."],
+                            ["..."],
+                            ["encryptedstring90", "encryptedstring91", "..."],
+                        ],
+                        "player2": [
+                            ["encryptedstring00", "encryptedstring01", "..."],
+                            ["encryptedstring10", "encryptedstring11", "..."],
+                            ["..."],
+                            ["encryptedstring90", "encryptedstring91", "..."],
+                        ],
+                    }
+                }
+            }
+        }
+    },
 )
 async def get_board():
     """
@@ -231,42 +223,61 @@ async def get_board():
     (or nothing if the board is not set yet)
     """
     logger.debug("Get board")
-    if not (abacship.player1 is not None and abacship.player2 is not None and abacship.player1.ready and abacship.player2.ready):
-        raise HTTPException(status_code=BAD_REQUEST, detail=f"Board not ready yet, waiting for players to submit")
+    if not (
+        abacship.player1 is not None
+        and abacship.player2 is not None
+        and abacship.player1.ready
+        and abacship.player2.ready
+    ):
+        raise HTTPException(
+            status_code=BAD_REQUEST,
+            detail="Board not ready yet, waiting for players to submit",
+        )
     return abacship.getWholeBoard()
 
 
 @app.post(
     "/board",
     responses={
-        200: {"content": {"application/json": {"example":{
-            "player_info": {
-            "name": "player1",
-            "refresh_token": "the refresh token ...",
-            "access_token": "the access token ...",
-            },
-            "status": 2}}}}
-    }
+        200: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "player_info": {
+                            "name": "player1",
+                            "refresh_token": "the refresh token ...",
+                            "access_token": "the access token ...",
+                        },
+                        "status": 2,
+                    }
+                }
+            }
+        }
+    },
 )
-async def post_board(access_token: str, refresh_token: str, player_name: str, board: conlist(conlist(str, min_items=10, max_items=10), min_items=10, max_items=10)):
+async def post_board(
+    access_token: str,
+    refresh_token: str,
+    player_name: str,
+    board: List[List[str]],
+):
     """
-    submit refresh token and 2D array representation of board (unencrypted)
-    returns player information including assigned name and new refresh token,
-    and the full board
+      submit refresh token and 2D array representation of board (unencrypted)
+      returns player information including assigned name and new refresh token,
+      and the full board
 
     (will not return until both player submit their board -- tentative design choice)
 
     performs board verification, assigns attributes to users,
     encryptes strings with tile attribtues
 
-    (im not sure if I will need both the access and refresh token 
+    (im not sure if I will need both the access and refresh token
     -- i will need the username (ex user1) in order to assign attributes, which i can
     get from the access_token, or can just change it to pass in the username instead)
     """
-    logger.debug("Post board")
     # some sort of board verification -- raise error if invalid
     if not validBoard(board):
-        raise HTTPException( #could add some more reasoning here -- valid board could return why invalid
+        raise HTTPException(  # could add some more reasoning here -- valid board could return why invalid
             status_code=BAD_REQUEST,
             detail="Invalid board",
         )
@@ -292,7 +303,12 @@ async def post_board(access_token: str, refresh_token: str, player_name: str, bo
             abacship.player2 = None
             raise e
     payload = {}
-    if not (abacship.player1 is not None and abacship.player2 is not None and abacship.player1.ready and abacship.player2.ready):
+    if not (
+        abacship.player1 is not None
+        and abacship.player2 is not None
+        and abacship.player1.ready
+        and abacship.player2.ready
+    ):
         logger.debug("Waiting for other player")
     else:
         if abacship.status == Status.setup:
@@ -300,36 +316,44 @@ async def post_board(access_token: str, refresh_token: str, player_name: str, bo
     if player_name == "player1":
         payload = {
             "player_info": {
-            "name": player_name,
-            "refresh_token": abacship.player1.player.refresh_token,
-            "access_token": abacship.player1.player.access_token,
+                "name": player_name,
+                "refresh_token": abacship.player1.player.refresh_token,
+                "access_token": abacship.player1.player.access_token,
             },
-            "status": abacship.status
-            }
+            "status": abacship.status,
+        }
     else:
         payload = {
             "player_info": {
-            "name": player_name,
-            "refresh_token": abacship.player2.player.refresh_token,
-            "access_token": abacship.player2.player.access_token,
+                "name": player_name,
+                "refresh_token": abacship.player2.player.refresh_token,
+                "access_token": abacship.player2.player.access_token,
             },
-            "status": abacship.status
+            "status": abacship.status,
         }
     logger.debug(f"Payload: {payload}")
     return payload
 
+
 @app.post(
     "/check/square",
     responses={
-        200: {"content": {"application/json": {"example":{
-            "player_info": {
-            "name": "player1",
-            "refresh_token": "the refresh token ...",
-            "access_token": "the access token ...",
-            },
-            "encrypted_string": "encrypted_stringXY",
-            "status": 2}}}}
-    }
+        200: {
+            "content": {
+                "application/json": {
+                    "example": {
+                        "player_info": {
+                            "name": "player1",
+                            "refresh_token": "the refresh token ...",
+                            "access_token": "the access token ...",
+                        },
+                        "encrypted_string": "encrypted_stringXY",
+                        "status": 2,
+                    }
+                }
+            }
+        }
+    },
 )
 async def check_square(player: Player, row: int, col: int):
     """
@@ -347,12 +371,13 @@ async def check_square(player: Player, row: int, col: int):
     """
     logger.debug(f"Check square {row}, {col}")
     if (player.name == "player1" and abacship.status != Status.p1_turn) or (
-        player.name == "player2" and abacship.status != Status.p2_turn):
+        player.name == "player2" and abacship.status != Status.p2_turn
+    ):
         raise HTTPException(
             status_code=BAD_REQUEST,
             detail="Not your turn",
         )
-    
+
     if row not in range(SIZE) or col not in range(SIZE):
         raise HTTPException(
             status_code=BAD_REQUEST,
@@ -360,15 +385,15 @@ async def check_square(player: Player, row: int, col: int):
         )
 
     if player.name == "player1":
-        if str(row)+str(col) in abacship.player1.guesses:
-            raise HTTPException( #could add some more reasoning here -- valid board could return why invalid
-            status_code=BAD_REQUEST,
-            detail="Has already been guessed",
-        )
+        if str(row) + str(col) in abacship.player1.guesses:
+            raise HTTPException(  # could add some more reasoning here -- valid board could return why invalid
+                status_code=BAD_REQUEST,
+                detail="Has already been guessed",
+            )
         abacship.status = Status.p1_request_attr_from_p2
         # await grant access
         logger.debug("Waiting for player2 to grant access")
-        while not (abacship.status==Status.p2_grants_attr_to_p1):
+        while not (abacship.status == Status.p2_grants_attr_to_p1):
             await asyncio.sleep(1)
         # actually grant the access
         abacship.player1.makeGuess(row, col)
@@ -377,35 +402,35 @@ async def check_square(player: Player, row: int, col: int):
             abacship.player1.refreshPlayerTokens()
         except Exception as e:
             raise HTTPException(
-            status_code=BAD_REQUEST,
-            detail=f"Unable to refresh keycloak tokens -- {str(e)}",
-            ) 
+                status_code=BAD_REQUEST,
+                detail=f"Unable to refresh keycloak tokens -- {str(e)}",
+            )
         # set new status
         victory = abacship.victoryCheck()
         if not victory:
             abacship.status = Status.p2_turn
-        #record the turn
+        # record the turn
         abacship.recordTurn(player.name, row, col)
-        #construct payload
+        # construct payload
         payload = {
             "player_info": {
-            "name": player.name,
-            "refresh_token": abacship.player1.player.refresh_token,
-            "access_token": abacship.player1.player.access_token,
+                "name": player.name,
+                "refresh_token": abacship.player1.player.refresh_token,
+                "access_token": abacship.player1.player.access_token,
             },
             "encrypted_string": abacship.getWholeBoard()["player2"][row][col],
-            "status": abacship.status
+            "status": abacship.status,
         }
     else:
-        if str(row)+str(col) in abacship.player2.guesses:
-            raise HTTPException( #could add some more reasoning here -- valid board could return why invalid
-            status_code=BAD_REQUEST,
-            detail="Has already been guessed",
+        if str(row) + str(col) in abacship.player2.guesses:
+            raise HTTPException(  # could add some more reasoning here -- valid board could return why invalid
+                status_code=BAD_REQUEST,
+                detail="Has already been guessed",
             )
         abacship.status = Status.p2_request_attr_from_p1
         # await grant access
         logger.debug("Waiting for player1 to grant access")
-        while not (abacship.status==Status.p1_grants_attr_to_p2):
+        while not (abacship.status == Status.p1_grants_attr_to_p2):
             await asyncio.sleep(1)
         # actually grant the access
         abacship.player2.makeGuess(row, col)
@@ -415,28 +440,25 @@ async def check_square(player: Player, row: int, col: int):
         victory = abacship.victoryCheck()
         if not victory:
             abacship.status = Status.p1_turn
-        #record the turn
+        # record the turn
         abacship.recordTurn(player.name, row, col)
-        #construct payload
+        # construct payload
         payload = {
             "player_info": {
-            "name": player.name,
-            "refresh_token": abacship.player2.player.refresh_token,
-            "access_token": abacship.player2.player.access_token,
+                "name": player.name,
+                "refresh_token": abacship.player2.player.refresh_token,
+                "access_token": abacship.player2.player.access_token,
             },
             "encrypted_string": abacship.getWholeBoard()["player1"][row][col],
-            "status": abacship.status
+            "status": abacship.status,
         }
     logger.debug(f"Payload: {payload}")
     return payload
-    
+
 
 @app.put(
     "/reset",
-    responses={
-        200: {"content": {"application/json": {"example":{
-            "status": 1}}}}
-    }
+    responses={200: {"content": {"application/json": {"example": {"status": 1}}}}},
 )
 async def reset_game():
     """

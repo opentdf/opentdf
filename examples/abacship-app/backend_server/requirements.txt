@@ -12,10 +12,11 @@ fastapi
 h11
 httptools
 markupsafe
-pydantic
+pydantic==1.10.8
 pyjwt
 python-dotenv
 python-editor
+python-multipart
 sqlalchemy
 starlette
 typing-extensions
