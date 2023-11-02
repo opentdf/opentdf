@@ -84,11 +84,11 @@ suffix="${today}-${digest}"
 : "${OUTPUT_DIRECTORY:="${PROJECT_ROOT}/build/export"}"
 
 # TODO Default to image tags in chart values files
-: "${BACKEND_IMAGE_TAG:="1.2.1"}"
+: "${BACKEND_IMAGE_TAG:="1.4.2"}"
 # FIXME Update with release version
-: "${BACKEND_CHART_TAG:="1.2.1"}"
-: "${FRONTEND_IMAGE_TAG:="1.2.0"}"
-: "${FRONTEND_CHART_TAG:="1.2.0"}"
+: "${BACKEND_CHART_TAG:="1.4.2"}"
+: "${FRONTEND_IMAGE_TAG:="1.4.1"}"
+: "${FRONTEND_CHART_TAG:="1.4.1"}"
 
 # TODO(PLAT-1417) add 'storage' once published to ghcr.io
 services=(abacus attributes entitlement_store entitlement-pdp entitlements entity-resolution kas keycloak-bootstrap)
