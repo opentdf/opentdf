@@ -1,0 +1,25 @@
+name: OpenTDF Traffic Workflow Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-workflow:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 'create file'
+      run: echo "This file shouldn't exist" >warning.txt
+
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v1'
+      with:
+        workload_identity_provider: 'projects/766358470289/locations/global/workloadIdentityPools/opentdf-metrics-id-pool/providers/opentdf-metrics-id-provider'
+        service_account: 'opentdf-metrics@virtru01dw.iam.gserviceaccount.com'
+
+    - id: 'upload-file'
+      uses: 'google-github-actions/upload-cloud-storage@v1'
+      with:
+        path: './warning.txt'
+        destination: 'virtru01dw_staging/OpenTDF Metrics'
