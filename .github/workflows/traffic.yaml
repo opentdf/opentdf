@@ -1,7 +1,7 @@
 name: OpenTDF Traffic Workflow Test
 
 on:
-  workflow_dispatch:
+  push:
 
 jobs:
   test-workflow:
