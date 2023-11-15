@@ -37,6 +37,7 @@ INIT_OPENTDF=1
 INIT_SAMPLE_DATA=1
 INIT_NGINX_CONTROLLER=1
 REWRITE_HOSTNAME=1
+NO_KUBECTL_PORT_FORWARD=
 
 # NOTE: 1.1.0 default values. When releasing a new version, move these below to
 # the api-version selector and update the default.
@@ -88,6 +89,10 @@ while [[ $# -gt 0 ]]; do
       monolog TRACE "--offline"
       RUN_OFFLINE=1
       ;;
+    --no-kubectl-port-forward)
+      monolog TRACE "--no-kubectl-port-forward"
+      NO_KUBECTL_PORT_FORWARD=1
+      ;;      
     *)
       monolog ERROR "Unrecognized option: [$key]"
       exit 1
@@ -341,5 +346,7 @@ if [[ ! $RUN_OFFLINE ]]; then
     --selector=app.kubernetes.io/component=controller \
     --timeout=120s
 
+  if [[ ! $NO_KUBECTL_PORT_FORWARD ]]; then
     kubectl port-forward --namespace=ingress-nginx service/ingress-nginx-controller 65432:80
+  fi
 fi
