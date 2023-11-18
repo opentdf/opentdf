@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import { useKeycloak } from '@react-keycloak/web';
-import { Client, FileClient } from '@opentdf/client';
+import { DecryptParamsBuilder, EncryptParamsBuilder, TDF3Client } from '@opentdf/client';
+import { setRemoteStoreAsStream, toRemoteStore } from '@opentdf/remote-store';
 import { Button, Divider, Input, Layout, Select, Space, Spin, Table, Tooltip, Typography, Upload } from 'antd';
 import { ToolOutlined } from '@ant-design/icons';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
@@ -147,14 +148,15 @@ const App = () => {
     try {
       setShowDownloadSpinner(true);
 
-      const decryptParams = await new Client.DecryptParamsBuilder().setRemoteStore(
+      const decryptParams = await setRemoteStoreAsStream(
+        new DecryptParamsBuilder(),
         fileToDecryptName,
         s3ConfigJson
       );
 
       const decryptedFileName = `${fileToDecryptName}.decrypted`;
 
-      const client = new Client.Client(CLIENT_CONFIG);
+      const client = new TDF3Client(CLIENT_CONFIG);
 
       let plainTextStream = await client.decrypt(decryptParams);
 
@@ -191,25 +193,21 @@ const App = () => {
 
       setShowUploadSpinner(true);
 
-      const client = new Client.Client(CLIENT_CONFIG);
+      const client = new TDF3Client(CLIENT_CONFIG);
 
-      const encryptParams = new Client.EncryptParamsBuilder()
+      const encryptParams = new EncryptParamsBuilder()
         .withStreamSource(toWebReadableStream(fileReaderStream(selectedFile)))
         .withOffline()
         .build();
 
-      const cipherTextStream = await client.encrypt(encryptParams);
-
-      cipherTextStream.toRemoteStore(`${selectedFile.name}.tdf`, s3ConfigJson).then(data => {
-        setShowUploadSpinner(false);
-        setUploadFileList([]);
-        setSelectedFile(null);
-        setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
-      });
-
-      cipherTextStream.on('progress', progress => {
+      const doneOrCanceled = await toRemoteStore(cipherTextStream.stream, `${selectedFile.name}.tdf`, s3ConfigJson, progress => {
         console.log(`Uploaded ${progress.loaded} bytes`);
       });
+      setShowUploadSpinner(false);
+      setUploadFileList([]);
+      setSelectedFile(null);
+      setUploadedFiles([...uploadedFiles, {name: `${selectedFile.name}.tdf`, key: uploadedFiles.length + 1}])
+      console.log(doneOrCanceled);
     } catch (e) {
       setShowUploadSpinner(false);
       console.error(e);

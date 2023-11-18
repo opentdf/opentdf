@@ -5,6 +5,7 @@ ARG NODE_VERSION=lts
 FROM node:${NODE_VERSION} as depender
 WORKDIR /build/
 COPY package-lock.json package.json ./
+COPY *.tgz ./
 RUN npm ci
 
 
