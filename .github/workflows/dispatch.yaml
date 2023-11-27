@@ -32,7 +32,7 @@ jobs:
           workflow_conclusion: success
           name: chartsVersions
           check_artifacts:  true
-#         Use default github_token since same repo and public
+          # Use default GITHUB_TOKEN since same repo and public
           if_no_artifact_found: warn
 
       - name: Parse versions from artifacts
