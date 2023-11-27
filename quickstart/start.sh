@@ -116,14 +116,16 @@ if [[ ! $RUN_OFFLINE ]]; then
   INGRESS_HOSTNAME=
 fi
 
+
+# shellcheck source-path=SCRIPTDIR/../scripts
+. "${TOOLS_ROOT}/lib-local.sh"
+
+
 # we only need local tools if starting cluster or loading images to cluster
 if [[ $LOAD_IMAGES || $START_CLUSTER ]]; then
-  # shellcheck source-path=SCRIPTDIR/../scripts
-  . "${TOOLS_ROOT}/lib-local.sh"
+  # Make sure required utilities are installed.
+  local_info || e "Local cluster manager [${LOCAL_TOOL}] is not available"
 fi
-
-# Make sure required utilities are installed.
-local_info || e "Local cluster manager [${LOCAL_TOOL}] is not available"
 
 kubectl version --client | monolog DEBUG || e "kubectl is not available"
 
