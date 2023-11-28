@@ -5,6 +5,9 @@ on:
 jobs:
   dispatch_if_charts_updated:
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
     steps:
       - uses: actions/checkout@v3
         with:
@@ -32,7 +35,7 @@ jobs:
           workflow_conclusion: success
           name: chartsVersions
           check_artifacts:  true
-          github_token: ${{secrets.PERSONAL_ACCESS_TOKEN}}
+          # Use default GITHUB_TOKEN since same repo and public
           if_no_artifact_found: warn
 
       - name: Parse versions from artifacts

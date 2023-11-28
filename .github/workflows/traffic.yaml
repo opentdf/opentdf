@@ -1,9 +1,9 @@
 on:
-  schedule: 
+  schedule:
     # runs once a week on sunday
     - cron: "55 23 * * 0"
 
-    
+
 jobs:
   traffic:
     runs-on: ubuntu-latest
@@ -34,7 +34,7 @@ jobs:
         EVENT_TYPE: opentdf-${{ matrix.repo-values.event }}github
         TODAY_DATE: ${{ steps.get-date.outputs.DATE }}
       with:
-        github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }} 
+        # Use default GITHUB_TOKEN since same repo and public
         retries: 3
         script: |
           var fs = require('fs')
@@ -45,7 +45,7 @@ jobs:
           await fs.writeFile(process.env.TODAY_DATE + "-" + process.env.EVENT_TYPE +".json", jsonObj, err =>{
           if(err) throw err})
           return result
-          
+
     #https://github.com/marketplace/actions/authenticate-to-google-cloud#setup
     - id: 'auth'
       name: 'Authenticate to Google Cloud'
