@@ -12,7 +12,7 @@ jobs:
 
       - name: If chartsVersions.json file were changed?
         id: changed-chartsVersion-file
-        uses: tj-actions/changed-files@v35
+        uses: tj-actions/changed-files@v41
         with:
           files: chartsVersions.json
 
