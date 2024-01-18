@@ -16,7 +16,14 @@ ingress:
 externalEnvSecretName: true
 externalSecretName: kas-secrets
 auth:
-  "http://localhost:65432/auth/realms/tdf.discoveryBaseUrl": "http://keycloak-http/auth/realms/tdf"
+  "http://localhost:65432/auth/realms/tdf": 
+    discoveryBaseUrl: http://keycloak-http/auth/realms/tdf
 image:
-  repo: ghcr.io
-  tag: latest
+  repo: ghcr.io/opentdf/gokas
+  tag: "1.5.0"
+livenessProbeOverride:
+  grpc:
+    port: "5000"
+readinessProbeOverride:
+  grpc:
+    port: "5000"
