@@ -23,7 +23,7 @@ image:
   tag: "1.5.0"
 livenessProbeOverride:
   grpc:
-    port: "5000"
+    port: 5000
 readinessProbeOverride:
   grpc:
-    port: "5000"
+    port: 5000
