@@ -48,10 +48,14 @@ jobs:
       - name: commit the changes
         run: |-
           cd opentdf
-          git status
+          git add openapi/openapi-aggregate.json openapi/openapi-aggregate.yaml
+          git commit -m "Updating aggregate openapi"
+          git push origin job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
+          git fetch
 
-      # - name: create a PR
-      #   run: |-
-      #     gh pr create -B main -H job-update-aggregate-openapi-1.5.0-${{ github.run_id }} --title 'Update aggregate openapi with backend version ${{ inputs.version }}' --body 'Created by Github action'
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
+      - name: create a PR
+        run: |-
+          cd opentdf
+          gh pr create -B main -H job-update-aggregate-openapi-1.5.0-${{ github.run_id }} --title 'Update aggregate openapi with backend version ${{ inputs.version }}' --body 'Created by Github action'
+        env:
+          GH_TOKEN: ${{ github.token }}
