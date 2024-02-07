@@ -46,7 +46,7 @@ jobs:
       - name: commit the changes
         working-directory: opentdf
         run: |-
-          git config user.name "GitHub Actions Bot"
+          git config user.name "OpenTDF GitHub Actions Bot"
           git config user.email "<>"
           git add openapi/openapi-aggregate.json openapi/openapi-aggregate.yaml
           git commit -m "Updating aggregate openapi"
@@ -56,6 +56,6 @@ jobs:
       - name: create a PR
         working-directory: opentdf
         run: |-
-          gh pr create -B main -H job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }} --title 'Update aggregate openapi with backend version ${{ inputs.version }}' --body 'Created by Github action'
+          gh pr create -B main -H job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }} --title 'Update aggregate openapi with backend version ${{ inputs.version }}' --body 'Created by "Update aggregate openapi" github action with opentdf github-actions bot'
         env:
           GH_TOKEN: ${{ github.token }}
