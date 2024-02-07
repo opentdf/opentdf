@@ -1,0 +1,63 @@
+name: 'Update aggregate openapi'
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "The version of the backend tag you want to reference"
+        required: true
+
+jobs:
+  update-aggregate-openapi:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: opentdf
+
+      - name: Checkout backend repo
+        uses: actions/checkout@v4
+        with:
+          repository: opentdf/backend
+          path: backend
+          ref: 1.5.0 #${{ inputs.version }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      
+      - name: create a new branch
+        run: |-
+          cd opentdf
+          git checkout -b job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
+
+      - name: update the openapi
+        run: |-
+          cd opentdf/openapi
+          npm i
+          npx openapi-merge-cli
+          jq '.output = "./openapi-aggregate.json"' openapi-merge.json >openapi-merge2.json
+          npx openapi-merge-cli --config openapi-merge2.json
+          rm openapi-merge2.json
+
+      - name: commit the changes
+        run: |-
+          cd opentdf
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          git add openapi/openapi-aggregate.json openapi/openapi-aggregate.yaml
+          git commit -m "Updating aggregate openapi"
+          git push origin job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
+          git fetch
+
+      - name: create a PR
+        run: |-
+          cd opentdf
+          gh pr create -B main -H job-update-aggregate-openapi-1.5.0-${{ github.run_id }} --title 'Update aggregate openapi with backend version ${{ inputs.version }}' --body 'Created by Github action'
+        env:
+          GH_TOKEN: ${{ github.token }}
