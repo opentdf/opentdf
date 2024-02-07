@@ -38,7 +38,7 @@ jobs:
 
       - name: update the openapi
         run: |-
-          cd openapi
+          cd opentdf/openapi
           npm i
           npx openapi-merge-cli
           jq '.output = "./openapi-aggregate.json"' openapi-merge.json >openapi-merge2.json
@@ -47,6 +47,7 @@ jobs:
 
       - name: commit the changes
         run: |-
+          cd opentdf
           git status
 
       # - name: create a PR
