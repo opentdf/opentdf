@@ -48,6 +48,8 @@ jobs:
       - name: commit the changes
         run: |-
           cd opentdf
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
           git add openapi/openapi-aggregate.json openapi/openapi-aggregate.yaml
           git commit -m "Updating aggregate openapi"
           git push origin job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
