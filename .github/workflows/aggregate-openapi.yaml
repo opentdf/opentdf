@@ -1,11 +1,9 @@
 name: 'Update aggregate openapi'
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       version:
-        description: "The version of the backend tag you want to reference"
+        description: "The backend tag/branch you want to reference"
         required: true
 
 jobs:
@@ -25,16 +23,16 @@ jobs:
         with:
           repository: opentdf/backend
           path: backend
-          ref: 1.5.0 #${{ inputs.version }}
+          ref: ${{ inputs.version }}
 
       - uses: actions/setup-node@v3
         with:
           node-version: 18
       
       - name: create a new branch
+        working-directory: opentdf
         run: |-
-          cd opentdf
-          git checkout -b job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
+          git checkout -b job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }}
 
       - name: update the openapi
         run: |-
@@ -46,18 +44,18 @@ jobs:
           rm openapi-merge2.json
 
       - name: commit the changes
+        working-directory: opentdf
         run: |-
-          cd opentdf
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
           git add openapi/openapi-aggregate.json openapi/openapi-aggregate.yaml
           git commit -m "Updating aggregate openapi"
-          git push origin job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
+          git push origin job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }}
           git fetch
 
       - name: create a PR
+        working-directory: opentdf
         run: |-
-          cd opentdf
-          gh pr create -B main -H job-update-aggregate-openapi-1.5.0-${{ github.run_id }} --title 'Update aggregate openapi with backend version ${{ inputs.version }}' --body 'Created by Github action'
+          gh pr create -B main -H job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }} --title 'Update aggregate openapi with backend version ${{ inputs.version }}' --body 'Created by Github action'
         env:
           GH_TOKEN: ${{ github.token }}
