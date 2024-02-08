@@ -35,7 +35,7 @@ jobs:
         working-directory: opentdf
         run: |-
           git checkout -b job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
-          git push origin
+          git push origin job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
 
       - name: update the openapi
         run: |-
