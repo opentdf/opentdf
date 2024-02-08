@@ -33,6 +33,7 @@ jobs:
         working-directory: opentdf
         run: |-
           git checkout -b job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }}
+          git push origin job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }}
 
       - name: update the openapi
         run: |-
@@ -43,15 +44,39 @@ jobs:
           npx openapi-merge-cli --config openapi-merge2.json
           rm openapi-merge2.json
 
-      - name: commit the changes
+      - name: commit the yaml changes
         working-directory: opentdf
-        run: |-
-          git config user.name "OpenTDF GitHub Actions Bot"
-          git config user.email "<>"
-          git add openapi/openapi-aggregate.json openapi/openapi-aggregate.yaml
-          git commit -m "Updating aggregate openapi"
-          git push origin job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }}
-          git fetch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FILE_TO_COMMIT: openapi/openapi-aggregate.yaml
+          DESTINATION_BRANCH: job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }}
+        run: |
+          export MESSAGE="Updating aggregate openapi yaml"
+          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
+          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
+          gh api --method PUT /repos/opentdf/opentdf/contents/$FILE_TO_COMMIT \
+            --field message="$MESSAGE" \
+            --field content="$CONTENT" \
+            --field encoding="base64" \
+            --field branch="$DESTINATION_BRANCH" \
+            --field sha="$SHA"
+
+      - name: commit the json changes
+        working-directory: opentdf
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FILE_TO_COMMIT: openapi/openapi-aggregate.json
+          DESTINATION_BRANCH: job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }}
+        run: |
+          export MESSAGE="Updating aggregate openapi yaml"
+          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
+          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
+          gh api --method PUT /repos/opentdf/opentdf/contents/$FILE_TO_COMMIT \
+            --field message="$MESSAGE" \
+            --field content="$CONTENT" \
+            --field encoding="base64" \
+            --field branch="$DESTINATION_BRANCH" \
+            --field sha="$SHA"
 
       - name: create a PR
         working-directory: opentdf
