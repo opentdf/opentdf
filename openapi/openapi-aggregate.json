@@ -6,7 +6,7 @@
       "name": "BSD 3-Clause Clear",
       "url": "https://github.com/opentdf/backend/blob/main/LICENSE"
     },
-    "version": "1.4.0",
+    "version": "1.5.0",
     "x-logo": {
       "url": "https://avatars.githubusercontent.com/u/90051847?s=200&v=4"
     }
@@ -939,7 +939,7 @@
     "/api/kas/kas_public_key": {
       "get": {
         "summary": "Get the public key for KAS",
-        "description": "This endpoint provides a public key for the private key that the\nkas has internally. The public key is used to wrap object keys in\nthe TDF3 or NanoTDF files.\n",
+        "description": "This endpoint provides a public key for the private key that the\nkas has internally. The public key is used to wrap object keys in\nthe TDF3 or NanoTDF files. If there is a fmt or v=2 parameter, will\nreturn in PublicKeyV2 format.\n",
         "operationId": "tdf3_kas_core.web.public_key.get",
         "parameters": [
           {
@@ -950,6 +950,32 @@
               "default": "rsa:2048",
               "type": "string"
             }
+          },
+          {
+            "name": "fmt",
+            "description": "response format",
+            "in": "query",
+            "schema": {
+              "default": "pkcs8",
+              "type": "string",
+              "enum": [
+                "jwk",
+                "pkcs8"
+              ]
+            }
+          },
+          {
+            "name": "v",
+            "description": "request version",
+            "in": "query",
+            "schema": {
+              "default": "1",
+              "type": "string",
+              "enum": [
+                "1",
+                "2"
+              ]
+            }
           }
         ],
         "responses": {
@@ -958,7 +984,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicKey"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/PublicKeyV2"
+                    },
+                    {
+                      "$ref": "#/components/schemas/PublicKey"
+                    }
+                  ]
                 }
               }
             }
@@ -982,6 +1015,13 @@
         "description": "This endpoint performs the primary service of the KAS; to re-wrap\ndata keys as needed to provide access for entities with a TDF that they\nwould like to open.\n",
         "operationId": "tdf3_kas_core.web.rewrap.rewrap",
         "parameters": [
+          {
+            "in": "query",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "in": "header",
             "name": "dpop",
@@ -1138,10 +1178,17 @@
     },
     "/api/kas/upsert": {
       "post": {
-        "summary": "Request a upsert",
+        "summary": "Request an upsert",
         "description": "The upsert service is a proxy to the back-end services that persist\npolicies and keys.\n",
         "operationId": "tdf3_kas_core.web.upsert.upsert",
         "parameters": [
+          {
+            "in": "query",
+            "name": "userId",
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "in": "header",
             "name": "dpop",
@@ -1203,7 +1250,7 @@
     },
     "/api/kas/v2/upsert": {
       "post": {
-        "summary": "Request a upsert",
+        "summary": "Request an upsert",
         "description": "The upsert service is a proxy to the back-end services that persist\npolicies and keys.\n",
         "operationId": "tdf3_kas_core.web.upsert.upsert_v2",
         "parameters": [
@@ -1530,6 +1577,10 @@
         "title": "Initial vector used to encrypt the ciphertext",
         "type": "string"
       },
+      "JWK": {
+        "title": "JSON Web Key",
+        "type": "object"
+      },
       "JWT": {
         "title": "JSON Web token",
         "type": "string",
@@ -1546,6 +1597,9 @@
         "properties": {
           "encryptedMetadata": {
             "$ref": "#/components/schemas/EncryptedMetadata"
+          },
+          "kid": {
+            "type": "string"
           },
           "policySyncOptions": {
             "$ref": "#/components/schemas/Policy"
@@ -1596,6 +1650,29 @@
         "title": "Public key",
         "type": "string",
         "pattern": "-----BEGIN PUBLIC KEY-----(.|\\s)*-----END PUBLIC KEY-----(\\s)*"
+      },
+      "PublicKeyV2": {
+        "title": "Public key and metadata",
+        "type": "object",
+        "required": [
+          "kid",
+          "publicKey"
+        ],
+        "properties": {
+          "kid": {
+            "type": "string"
+          },
+          "publicKey": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PublicKey"
+              },
+              {
+                "$ref": "#/components/schemas/JWK"
+              }
+            ]
+          }
+        }
       },
       "UserId": {
         "title": "User id",
