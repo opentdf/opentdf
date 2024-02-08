@@ -68,7 +68,7 @@ jobs:
           FILE_TO_COMMIT: openapi/openapi-aggregate.json
           DESTINATION_BRANCH: job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }}
         run: |
-          export MESSAGE="Updating aggregate openapi yaml"
+          export MESSAGE="Updating aggregate openapi json"
           export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
           export CONTENT=$( base64 -i $FILE_TO_COMMIT )
           gh api --method PUT /repos/opentdf/opentdf/contents/$FILE_TO_COMMIT \
