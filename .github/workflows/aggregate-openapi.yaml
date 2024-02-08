@@ -1,5 +1,7 @@
 name: 'Update aggregate openapi'
 on:
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       version:
@@ -23,7 +25,7 @@ jobs:
         with:
           repository: opentdf/backend
           path: backend
-          ref: ${{ inputs.version }}
+          ref: 1.5.0
 
       - uses: actions/setup-node@v3
         with:
@@ -32,7 +34,8 @@ jobs:
       - name: create a new branch
         working-directory: opentdf
         run: |-
-          git checkout -b job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }}
+          git checkout -b job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
+          git push origin job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
 
       - name: update the openapi
         run: |-
@@ -43,19 +46,69 @@ jobs:
           npx openapi-merge-cli --config openapi-merge2.json
           rm openapi-merge2.json
 
-      - name: commit the changes
+      - name: commit the yaml changes
         working-directory: opentdf
-        run: |-
-          git config user.name "OpenTDF GitHub Actions Bot"
-          git config user.email "<>"
-          git add openapi/openapi-aggregate.json openapi/openapi-aggregate.yaml
-          git commit -m "Updating aggregate openapi"
-          git push origin job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }}
-          git fetch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FILE_TO_COMMIT: openapi/openapi-aggregate.yaml
+          DESTINATION_BRANCH: job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
+        run: |
+          export MESSAGE="Updating aggregate openapi yaml"
+          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
+          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
+          gh api --method PUT /repos/opentdf/opentdf/contents/$FILE_TO_COMMIT \
+            --field message="$MESSAGE" \
+            --field content="$CONTENT" \
+            --field encoding="base64" \
+            --field branch="$DESTINATION_BRANCH" \
+            --field sha="$SHA"
+
+      - name: commit the json changes
+        working-directory: opentdf
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          FILE_TO_COMMIT: openapi/openapi-aggregate.json
+          DESTINATION_BRANCH: job-update-aggregate-openapi-1.5.0-${{ github.run_id }}
+        run: |
+          export MESSAGE="Updating aggregate openapi yaml"
+          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
+          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
+          gh api --method PUT /repos/opentdf/opentdf/contents/$FILE_TO_COMMIT \
+            --field message="$MESSAGE" \
+            --field content="$CONTENT" \
+            --field encoding="base64" \
+            --field branch="$DESTINATION_BRANCH" \
+            --field sha="$SHA"
+        
+
+      # - name: commit the changes
+      #   working-directory: opentdf
+      #   run: |-
+      #     yamlsha=$(curl -X GET https://api.github.com/repos/opentdf/opentdf/contents/openapi/openapi-aggregate.yaml -s | jq .sha)
+      #     yamlcontent="$(openssl base64 -A -in openapi/openapi-aggregate.yaml)"
+      #     curl -L \
+      #       -X PUT \
+      #       -H "Accept: application/vnd.github+json" \
+      #       -H "Authorization: Bearer $SIGNING_GH_TOKEN" \
+      #       -H "X-GitHub-Api-Version: 2022-11-28" \
+      #       https://api.github.com/repos/opentdf/opentdf/contents/openapi/openapi-aggregate.yaml \
+      #       -d '{"message":"Updating aggregate openapi yaml","committer":{"name":"OpenTDF GitHub Actions Bot","email":"nope@nah.com"},"content":'"\"$yamlcontent\""', "branch": "PLAT-3022-fix-aggregate-openapi-pipeline", "sha":'"$yamlsha"'}'
+
+      #     jsonsha=$(curl -X GET https://api.github.com/repos/opentdf/opentdf/contents/openapi/openapi-aggregate.json -s | jq .sha)
+      #     jsoncontent="$(openssl base64 -A -in openapi/openapi-aggregate.json)"
+      #     curl -L \
+      #       -X PUT \
+      #       -H "Accept: application/vnd.github+json" \
+      #       -H "Authorization: Bearer ${{ github.token }}" \
+      #       -H "X-GitHub-Api-Version: 2022-11-28" \
+      #       https://api.github.com/repos/opentdf/opentdf/contents/openapi/openapi-aggregate.json \
+      #       -d '{"message":"Updating aggregate openapi json","committer":{"name":"OpenTDF GitHub Actions Bot","email":"<>"},"content":'"\"$jsoncontent\""', "branch": "job-update-aggregate-openapi-1.5.0-${{ github.run_id }}", "sha":'"$jsonsha"'}'
+
+      #     git fetch
 
       - name: create a PR
         working-directory: opentdf
         run: |-
-          gh pr create -B main -H job-update-aggregate-openapi-${{ inputs.version }}-${{ github.run_id }} --title 'Update aggregate openapi with backend version ${{ inputs.version }}' --body 'Created by "Update aggregate openapi" github action with opentdf github-actions bot'
+          gh pr create -B main -H job-update-aggregate-openapi-1.5.0-${{ github.run_id }} --title 'Update aggregate openapi with backend version 1.5.0}' --body 'Created by "Update aggregate openapi" github action with opentdf github-actions bot'
         env:
           GH_TOKEN: ${{ github.token }}
