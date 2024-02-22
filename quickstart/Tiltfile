@@ -163,6 +163,7 @@ helm_resource(
         "-f",
         "helm/values-kas.yaml",
     ],
+    
     labels="backend",
     resource_deps=["attributes", "keycloak"],
 )
