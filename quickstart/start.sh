@@ -39,11 +39,11 @@ INIT_NGINX_CONTROLLER=1
 REWRITE_HOSTNAME=1
 NO_KUBECTL_PORT_FORWARD=
 
-# NOTE: 1.5.0 default values. When releasing a new version, move these below to
+# NOTE: 1.6.0 default values. When releasing a new version, move these below to
 # the api-version selector and update the default.
 # TODO update to use chartVersions.json
 services=(abacus attributes entitlement-pdp entitlement-store entitlements entity-resolution kas keycloak keycloak-bootstrap)
-chart_tags=(1.5.0 1.5.0{,,,,,,,})
+chart_tags=(1.6.0 1.6.0{,,,,,,,})
 
 while [[ $# -gt 0 ]]; do
   key="$1"
