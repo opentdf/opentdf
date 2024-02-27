@@ -28,15 +28,19 @@ jobs:
               - 'examples/offline/**'
               - 'quickstart/start.sh'
               - 'quickstart/helm/**'
+              - 'chartsVersions.json'
             quickstart:
               - 'quickstart/**'
+              - 'chartsVersions.json'
             scripts:
               - 'scripts/**'
+              - 'chartsVersions.json'
             examples:
               - 'examples/abacship-app/**'
               - 'examples/web-app/**'
               - 'examples/webcam-app/**'
               - 'examples/secure-remote-storage/**'
+              - 'chartsVersions.json'
 
   scripts-test:
     runs-on: ubuntu-latest
